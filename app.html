@@ -300,6 +300,27 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
     <div class="page active" id="page-dashboard">
       <div class="page-title" id="dash-title">Welcome 👋</div>
       <div class="page-sub" id="dash-llc"><span id="t-dash-sub">Your LLC Overview · 2026</span></div>
+      <!-- PERIOD FILTER -->
+      <div class="period-bar">
+        <select class="period-select" id="period-select" onchange="changePeriod()">
+          <option value="month">This Month</option>
+          <option value="last_month">Last Month</option>
+          <option value="q1">Q1 2026 (Jan–Mar)</option>
+          <option value="q2">Q2 2026 (Apr–Jun)</option>
+          <option value="q3">Q3 2026 (Jul–Sep)</option>
+          <option value="q4">Q4 2026 (Oct–Dec)</option>
+          <option value="year">Full Year 2026</option>
+          <option value="custom">Custom Range</option>
+          <option value="all">All Time</option>
+        </select>
+        <div class="period-custom" id="custom-range" style="display:none">
+          <input type="date" class="period-date" id="custom-from">
+          <span class="period-label">to</span>
+          <input type="date" class="period-date" id="custom-to">
+          <button class="btn-sec" style="padding:8px 14px;font-size:12px" onclick="applyCustomRange()">Apply</button>
+        </div>
+        <span class="period-count" id="period-count"></span>
+      </div>
       <div class="stats-grid">
         <div class="stat-card"><div class="stat-label" id="t-stat-revenue">Revenue</div><div class="stat-value green" id="stat-income">$0</div><div class="stat-change">This month</div></div>
         <div class="stat-card"><div class="stat-label" id="t-stat-expense">Expenses</div><div class="stat-value red" id="stat-expense">$0</div><div class="stat-change">This month</div></div>
@@ -460,6 +481,118 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
 // ─── STATE ───────────────────────────────────────────────
 let userName='', llcName='', transactions=[], chatHistory=[];
 let currentType='expense';
+let filteredTransactions=[];
+let periodFrom=null, periodTo=null;
+
+// ── LOCALSTORAGE PERSISTENCE ──────────────────────────────
+function saveTransactions(){
+  const email=getCurrentUser();
+  if(email) localStorage.setItem('mtf_tx_'+email, JSON.stringify(transactions));
+}
+
+function loadTransactions(){
+  const email=getCurrentUser();
+  if(!email) return;
+  try{
+    const saved=localStorage.getItem('mtf_tx_'+email);
+    if(saved) transactions=JSON.parse(saved);
+  }catch(e){ transactions=[]; }
+}
+
+// ── PERIOD FILTER ─────────────────────────────────────────
+function getPeriodRange(val){
+  const now=new Date();
+  const y=now.getFullYear();
+  if(val==='month'){
+    return [new Date(y,now.getMonth(),1), new Date(y,now.getMonth()+1,0)];
+  } else if(val==='last_month'){
+    return [new Date(y,now.getMonth()-1,1), new Date(y,now.getMonth(),0)];
+  } else if(val==='q1') return [new Date(y,0,1), new Date(y,2,31)];
+  else if(val==='q2') return [new Date(y,3,1), new Date(y,5,30)];
+  else if(val==='q3') return [new Date(y,6,1), new Date(y,8,30)];
+  else if(val==='q4') return [new Date(y,9,1), new Date(y,11,31)];
+  else if(val==='year') return [new Date(y,0,1), new Date(y,11,31)];
+  else if(val==='all') return [new Date(2000,0,1), new Date(2099,11,31)];
+  return [null,null];
+}
+
+function changePeriod(){
+  const val=document.getElementById('period-select').value;
+  const custom=document.getElementById('custom-range');
+  custom.style.display=val==='custom'?'flex':'none';
+  if(val!=='custom'){
+    const [from,to]=getPeriodRange(val);
+    periodFrom=from; periodTo=to;
+    refreshDashboard();
+  }
+}
+
+function applyCustomRange(){
+  const f=document.getElementById('custom-from').value;
+  const t=document.getElementById('custom-to').value;
+  if(!f||!t){alert('Please select both dates.');return;}
+  periodFrom=new Date(f); periodTo=new Date(t);
+  refreshDashboard();
+}
+
+function getFilteredTx(){
+  if(!periodFrom||!periodTo) return transactions;
+  return transactions.filter(t=>{
+    const d=new Date(t.date);
+    return d>=periodFrom && d<=periodTo;
+  });
+}
+
+function refreshDashboard(){
+  const filtered=getFilteredTx();
+  const inc=filtered.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+  const exp=filtered.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+  const prf=inc-exp;
+
+  document.getElementById('stat-income').textContent='$'+inc.toFixed(2);
+  document.getElementById('stat-expense').textContent='$'+exp.toFixed(2);
+  const pe=document.getElementById('stat-profit');
+  pe.textContent='$'+prf.toFixed(2);
+  pe.style.color=prf>=0?'var(--accent)':'var(--warn)';
+  document.getElementById('beleg-count').textContent=filtered.length;
+
+  // Period count label
+  const pc=document.getElementById('period-count');
+  if(pc) pc.textContent=filtered.length===transactions.length?'':'('+filtered.length+' of '+transactions.length+' transactions)';
+
+  const icons={'Software & Tools':'💻','Marketing':'📣','Travel':'✈️','Meals':'🍽️','Professional Services':'👔','Office & Supplies':'📦'};
+  const txList=document.getElementById('tx-list');
+  if(filtered.length===0){
+    txList.innerHTML='<div class="empty-state" style="padding:30px 0"><div class="empty-icon">📂</div><div class="empty-title">No transactions in this period</div><div class="empty-sub">Try selecting a different time range</div></div>';
+  } else {
+    txList.innerHTML=filtered.slice(-5).reverse().map(t=>`<div class="tx-item"><div class="tx-left"><div class="tx-icon">${icons[t.category]||'📄'}</div><div><div class="tx-name">${t.vendor}</div><div class="tx-cat">${t.category}</div></div></div><div class="tx-amount ${t.type==='income'?'in':'out'}">${t.type==='income'?'+':'-'}$${t.amount.toFixed(2)}</div></div>`).join('');
+  }
+
+  const cats={};
+  filtered.filter(t=>t.type==='expense').forEach(t=>{cats[t.category]=(cats[t.category]||0)+t.amount;});
+  const tot=Object.values(cats).reduce((s,v)=>s+v,0)||1;
+  const cls=['','b2','b3','b4'];
+  const catList=document.getElementById('cat-list');
+  if(Object.keys(cats).length===0){
+    catList.innerHTML='<div class="empty-state" style="padding:30px 0"><div class="empty-icon">📊</div><div class="empty-title">No expenses in this period</div></div>';
+  } else {
+    catList.innerHTML=Object.entries(cats).map(([k,v],i)=>`<div class="cat-item"><div class="cat-header"><span class="cat-name">${k}</span><span class="cat-val">$${v.toFixed(2)}</span></div><div class="bar-bg"><div class="bar-fill ${cls[i%4]}" style="width:${(v/tot*100).toFixed(0)}%"></div></div></div>`).join('');
+  }
+}
+
+// ── COOKIE BANNER ─────────────────────────────────────────
+function initCookieBanner(){
+  if(!localStorage.getItem('mtf_cookie_choice')){
+    const banner=document.getElementById('cookie-banner');
+    if(banner) banner.style.display='flex';
+  }
+}
+
+function setCookieChoice(accepted){
+  localStorage.setItem('mtf_cookie_choice', accepted?'all':'essential');
+  const banner=document.getElementById('cookie-banner');
+  if(banner) banner.style.display='none';
+}
 
 // ─── AUTH HELPERS ─────────────────────────────────────────
 // Simple localStorage-based auth for prototype
@@ -527,6 +660,12 @@ function launchApp(name, llc, email){
   document.getElementById('dash-llc').textContent=`${llc} · Overview 2026`;
   document.getElementById('sidebar-user').textContent=email;
   document.getElementById('m-date').value=new Date().toISOString().split('T')[0];
+  loadTransactions();
+  // Init period to current month
+  const [pFrom,pTo]=getPeriodRange('month');
+  periodFrom=pFrom; periodTo=pTo;
+  refreshDashboard();
+  initCookieBanner();
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='block';
 }
@@ -678,20 +817,8 @@ function renderResult(fn,r){
 
 function addTransaction(r){
   transactions.push(r);
-  const inc=transactions.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
-  const exp=transactions.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
-  const prf=inc-exp;
-  document.getElementById('stat-income').textContent=`$${inc.toFixed(2)}`;
-  document.getElementById('stat-expense').textContent=`$${exp.toFixed(2)}`;
-  const pe=document.getElementById('stat-profit');
-  pe.textContent=`$${prf.toFixed(2)}`;pe.style.color=prf>=0?'var(--accent)':'var(--warn)';
-  document.getElementById('beleg-count').textContent=transactions.length;
-  const icons={'Software & Tools':'💻','Marketing':'📣','Travel':'✈️','Meals':'🍽️','Professional Services':'👔','Office & Supplies':'📦'};
-  document.getElementById('tx-list').innerHTML=transactions.slice(-5).reverse().map(t=>`<div class="tx-item"><div class="tx-left"><div class="tx-icon">${icons[t.category]||'📄'}</div><div><div class="tx-name">${t.vendor}</div><div class="tx-cat">${t.category}</div></div></div><div class="tx-amount ${t.type==='income'?'in':'out'}">${t.type==='income'?'+':'-'}$${t.amount.toFixed(2)}</div></div>`).join('');
-  const cats={};transactions.filter(t=>t.type==='expense').forEach(t=>{cats[t.category]=(cats[t.category]||0)+t.amount;});
-  const tot=Object.values(cats).reduce((s,v)=>s+v,0)||1;
-  const cls=['','b2','b3','b4'];
-  document.getElementById('cat-list').innerHTML=Object.entries(cats).map(([k,v],i)=>`<div class="cat-item"><div class="cat-header"><span class="cat-name">${k}</span><span class="cat-val">$${v.toFixed(2)}</span></div><div class="bar-bg"><div class="bar-fill ${cls[i%4]}" style="width:${(v/tot*100).toFixed(0)}%"></div></div></div>`).join('');
+  saveTransactions();
+  refreshDashboard();
 }
 
 async function runDemo(){
@@ -788,7 +915,20 @@ function generateReport(type) {
     </div>
     <div class="disclaimer">⚠️ This report is for informational purposes only and does not constitute tax advice. Always consult a qualified CPA before filing.</div>
     <div class="footer">Generated by MyTaxFly · mytaxfly.com · ${date}</div>
-    </body></html>`;
+    
+<!-- COOKIE BANNER -->
+<div id="cookie-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#13161e;border-top:1px solid #252a38;padding:16px 32px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;">
+  <div style="flex:1;min-width:260px">
+    <div style="font-size:14px;font-weight:600;color:#e8eaf2;margin-bottom:4px">🍪 We use cookies</div>
+    <div style="font-size:12px;color:#7a8099;line-height:1.6">We use essential cookies for login and functionality, and analytics cookies to improve our service. By clicking "Accept" you agree to our <a href="#" onclick="showPage('legal',null);switchLegal('pp',null);document.getElementById('cookie-banner').style.display='none'" style="color:#00c896;text-decoration:none">Privacy Policy</a>.</div>
+  </div>
+  <div style="display:flex;gap:10px;flex-shrink:0">
+    <button onclick="setCookieChoice(false)" style="background:#1a1e28;border:1px solid #252a38;border-radius:8px;padding:9px 18px;color:#7a8099;font-family:'Montserrat',sans-serif;font-size:13px;cursor:pointer;transition:all 0.2s" onmouseover="this.style.borderColor='#00c896';this.style.color='#00c896'" onmouseout="this.style.borderColor='#252a38';this.style.color='#7a8099'">Essential only</button>
+    <button onclick="setCookieChoice(true)" style="background:#00c896;border:none;border-radius:8px;padding:9px 20px;color:#0d0f14;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;cursor:pointer">Accept all</button>
+  </div>
+</div>
+
+</body></html>`;
   }
 
   if (type === 'summary') {
@@ -834,7 +974,20 @@ function generateReport(type) {
     </div>
     <div class="disclaimer">⚠️ This report is for informational purposes only and does not constitute tax advice. Always consult a qualified CPA before filing.</div>
     <div class="footer">Generated by MyTaxFly · mytaxfly.com · ${date}</div>
-    </body></html>`;
+    
+<!-- COOKIE BANNER -->
+<div id="cookie-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#13161e;border-top:1px solid #252a38;padding:16px 32px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;">
+  <div style="flex:1;min-width:260px">
+    <div style="font-size:14px;font-weight:600;color:#e8eaf2;margin-bottom:4px">🍪 We use cookies</div>
+    <div style="font-size:12px;color:#7a8099;line-height:1.6">We use essential cookies for login and functionality, and analytics cookies to improve our service. By clicking "Accept" you agree to our <a href="#" onclick="showPage('legal',null);switchLegal('pp',null);document.getElementById('cookie-banner').style.display='none'" style="color:#00c896;text-decoration:none">Privacy Policy</a>.</div>
+  </div>
+  <div style="display:flex;gap:10px;flex-shrink:0">
+    <button onclick="setCookieChoice(false)" style="background:#1a1e28;border:1px solid #252a38;border-radius:8px;padding:9px 18px;color:#7a8099;font-family:'Montserrat',sans-serif;font-size:13px;cursor:pointer;transition:all 0.2s" onmouseover="this.style.borderColor='#00c896';this.style.color='#00c896'" onmouseout="this.style.borderColor='#252a38';this.style.color='#7a8099'">Essential only</button>
+    <button onclick="setCookieChoice(true)" style="background:#00c896;border:none;border-radius:8px;padding:9px 20px;color:#0d0f14;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;cursor:pointer">Accept all</button>
+  </div>
+</div>
+
+</body></html>`;
   }
 
   // Open as printable window → user can save as PDF
@@ -845,17 +998,19 @@ function generateReport(type) {
 }
 
 function exportCSV(){
-  if(!transactions.length){alert('Please add transactions first!');return;}
+  const filtered=getFilteredTx();
+  if(!filtered.length){alert('No transactions in this period.');return;}
   const header='Date,Vendor,Type,Amount,Currency,Category,Deductible,Note\n';
-  const rows=transactions.map(t=>`${t.date},${t.vendor},${t.type},${t.amount},${t.currency},${t.category},${t.deductible},${t.note}`).join('\n');
+  const rows=filtered.map(t=>`${t.date},${t.vendor},${t.type},${t.amount},${t.currency||'USD'},${t.category},${t.deductible},${t.note}`).join('\n');
   const blob=new Blob([header+rows],{type:'text/csv'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='mytaxfly-transactions.csv';a.click();
 }
 
 async function generateAIReport(){
-  if(!transactions.length){document.getElementById('report-output').innerHTML='<div style="color:var(--warn);font-size:13px">⚠️ Please add transactions first.</div>';return;}
+  const filtered=getFilteredTx();
+  if(!filtered.length){document.getElementById('report-output').innerHTML='<div style="color:var(--warn);font-size:13px">⚠️ No transactions in this period.</div>';return;}
   document.getElementById('report-output').innerHTML='<div class="loading"><div class="spinner"></div> Generating report...</div>';
-  const sum=transactions.map(t=>`- ${t.vendor}: ${t.type==='income'?'+':'-'}$${t.amount} (${t.category}, ${t.deductible?'deductible':'non-deductible'})`).join('\n');
+  const sum=filtered.map(t=>`- ${t.vendor}: ${t.type==='income'?'+':'-'}$${t.amount} (${t.category}, ${t.deductible?'deductible':'non-deductible'})`).join('\n');
   try{
     const report=await callClaude([{role:'user',content:`Create a professional bookkeeping report for LLC "${llcName}":\n\n${sum}\n\nInclude: Executive summary, P&L, total deductible expenses, IRS categories, recommendations. Max 300 words.`}],null,1000);
     document.getElementById('report-output').innerHTML=`<div class="result-card" style="margin-top:0"><div style="font-weight:700;margin-bottom:12px">📊 AI Report — ${llcName}</div><div style="font-size:13px;line-height:1.7;color:var(--text2)">${report.replace(/\n/g,'<br>')}</div><div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);font-size:11px;color:var(--text3)">⚠️ Informational only. Not tax advice. Consult a CPA.</div></div>`;
@@ -970,5 +1125,18 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 </script>
+
+<!-- COOKIE BANNER -->
+<div id="cookie-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#13161e;border-top:1px solid #252a38;padding:16px 32px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;">
+  <div style="flex:1;min-width:260px">
+    <div style="font-size:14px;font-weight:600;color:#e8eaf2;margin-bottom:4px">🍪 We use cookies</div>
+    <div style="font-size:12px;color:#7a8099;line-height:1.6">We use essential cookies for login and functionality, and analytics cookies to improve our service. By clicking "Accept" you agree to our <a href="#" onclick="showPage('legal',null);switchLegal('pp',null);document.getElementById('cookie-banner').style.display='none'" style="color:#00c896;text-decoration:none">Privacy Policy</a>.</div>
+  </div>
+  <div style="display:flex;gap:10px;flex-shrink:0">
+    <button onclick="setCookieChoice(false)" style="background:#1a1e28;border:1px solid #252a38;border-radius:8px;padding:9px 18px;color:#7a8099;font-family:'Montserrat',sans-serif;font-size:13px;cursor:pointer;transition:all 0.2s" onmouseover="this.style.borderColor='#00c896';this.style.color='#00c896'" onmouseout="this.style.borderColor='#252a38';this.style.color='#7a8099'">Essential only</button>
+    <button onclick="setCookieChoice(true)" style="background:#00c896;border:none;border-radius:8px;padding:9px 20px;color:#0d0f14;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;cursor:pointer">Accept all</button>
+  </div>
+</div>
+
 </body>
 </html>
