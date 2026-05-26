@@ -176,17 +176,46 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
 .legal-contact{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-top:12px;font-size:13px;color:var(--text2);line-height:1.8;}
 .legal-contact strong{color:var(--accent);display:block;margin-bottom:6px;font-weight:700;}
 
-  /* LANGUAGE SWITCHER */
-  .lang-switcher{position:relative;display:flex;align-items:center;}
-  .lang-btn{display:flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;transition:all 0.2s;font-family:'Montserrat',sans-serif;}
-  .lang-btn:hover{border-color:var(--accent);color:var(--accent);}
-  .lang-dropdown{position:absolute;bottom:calc(100% + 8px);left:0;background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;min-width:160px;z-index:200;box-shadow:0 16px 40px rgba(0,0,0,0.4);display:none;}
-  .lang-dropdown.open{display:block;animation:fadeInUp 0.15s ease;}
-  @keyframes fadeInUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+  to{opacity:1;transform:translateY(0)}}
   .lang-option{display:flex;align-items:center;gap:10px;padding:10px 16px;color:var(--text2);font-size:13px;cursor:pointer;transition:background 0.15s;}
   .lang-option:hover{background:var(--bg3);color:var(--text);}
   .lang-option.active{color:var(--accent);background:rgba(0,200,150,0.05);}
-@media(max-width:900px){.stats-grid{grid-template-columns:repeat(2,1fr)}.two-col{grid-template-columns:1fr}.form-row{grid-template-columns:1fr}}
+
+  /* ── LANGUAGE SWITCHER ── */
+  .lang-switcher { position:relative; display:inline-block; }
+  .lang-btn {
+    display:flex; align-items:center; gap:6px;
+    background:var(--bg3); border:1px solid var(--border);
+    border-radius:8px; padding:6px 10px;
+    color:var(--text2); font-size:12px; font-weight:500;
+    cursor:pointer; font-family:'Montserrat',sans-serif;
+    transition:border-color 0.2s, color 0.2s;
+  }
+  .lang-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .lang-dropdown {
+    display:none;
+    position:absolute;
+    bottom:calc(100% + 6px);
+    left:0;
+    background:var(--bg2);
+    border:1px solid var(--border);
+    border-radius:10px;
+    overflow:hidden;
+    min-width:100px;
+    z-index:9999;
+    box-shadow:0 12px 32px rgba(0,0,0,0.5);
+  }
+  .lang-dropdown.open { display:block; }
+  .lang-option {
+    display:flex; align-items:center; gap:8px;
+    padding:9px 14px; color:var(--text2); font-size:13px;
+    cursor:pointer; transition:background 0.15s;
+    white-space:nowrap;
+  }
+  .lang-option:hover { background:var(--bg3); color:var(--text); }
+  .lang-option.active { color:var(--accent); background:rgba(0,200,150,0.06); }
+
+  @media(max-width:900px){.stats-grid{grid-template-columns:repeat(2,1fr)}.two-col{grid-template-columns:1fr}.form-row{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -703,7 +732,117 @@ function appendTyping(){
 }
 
 // ─── REPORTS ──────────────────────────────────────────────
-function generateReport(t){if(!transactions.length){alert('Please add transactions first!');return;}alert(`${t.toUpperCase()} export — available in the full version.`);}
+function generateReport(type) {
+  if (!transactions.length) { alert('Please add transactions first!'); return; }
+
+  const inc = transactions.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+  const exp = transactions.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+  const profit = inc - exp;
+  const date = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+
+  // Group by category
+  const cats = {};
+  transactions.filter(t=>t.type==='expense').forEach(t=>{
+    cats[t.category] = (cats[t.category]||0) + t.amount;
+  });
+  const deductible = transactions.filter(t=>t.deductible).reduce((s,t)=>s+t.amount,0);
+
+  let html = '';
+
+  if (type === 'pl') {
+    html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <style>
+      body{font-family:Arial,sans-serif;max-width:800px;margin:40px auto;color:#1a1a1a;padding:0 20px}
+      h1{color:#00c896;border-bottom:3px solid #00c896;padding-bottom:12px}
+      h2{color:#333;margin-top:32px}
+      .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px}
+      .meta{font-size:13px;color:#666}
+      table{width:100%;border-collapse:collapse;margin:16px 0}
+      th{background:#f5f5f5;padding:10px 14px;text-align:left;font-size:13px;border-bottom:2px solid #ddd}
+      td{padding:10px 14px;border-bottom:1px solid #eee;font-size:13px}
+      .amount{text-align:right;font-weight:600}
+      .green{color:#00c896}.red{color:#e53e3e}
+      .total-row{background:#f9f9f9;font-weight:700;border-top:2px solid #333}
+      .profit-box{background:#f0fdf4;border:2px solid #00c896;border-radius:8px;padding:20px;margin-top:24px;text-align:center}
+      .profit-num{font-size:36px;font-weight:800;color:#00c896}
+      .disclaimer{margin-top:40px;padding:12px;background:#fff8f0;border:1px solid #f6ad55;border-radius:6px;font-size:11px;color:#744210}
+      .footer{margin-top:32px;text-align:center;font-size:11px;color:#999;border-top:1px solid #eee;padding-top:16px}
+    </style></head><body>
+    <div class="header">
+      <div><h1>Profit & Loss Statement</h1><div style="font-size:20px;font-weight:700">${llcName}</div></div>
+      <div class="meta">Generated: ${date}<br>Period: ${new Date().getFullYear()}</div>
+    </div>
+    <h2>Income</h2>
+    <table><thead><tr><th>Vendor</th><th>Category</th><th>Date</th><th class="amount">Amount</th></tr></thead><tbody>
+    ${transactions.filter(t=>t.type==='income').map(t=>`<tr><td>${t.vendor}</td><td>${t.category}</td><td>${t.date}</td><td class="amount green">+$${t.amount.toFixed(2)}</td></tr>`).join('')}
+    <tr class="total-row"><td colspan="3">Total Revenue</td><td class="amount green">$${inc.toFixed(2)}</td></tr>
+    </tbody></table>
+    <h2>Expenses</h2>
+    <table><thead><tr><th>Vendor</th><th>Category</th><th>Date</th><th class="amount">Amount</th></tr></thead><tbody>
+    ${transactions.filter(t=>t.type==='expense').map(t=>`<tr><td>${t.vendor}</td><td>${t.category}</td><td>${t.date}</td><td class="amount red">-$${t.amount.toFixed(2)}</td></tr>`).join('')}
+    <tr class="total-row"><td colspan="3">Total Expenses</td><td class="amount red">$${exp.toFixed(2)}</td></tr>
+    </tbody></table>
+    <div class="profit-box">
+      <div style="font-size:13px;color:#555;margin-bottom:8px">NET PROFIT / LOSS</div>
+      <div class="profit-num">${profit >= 0 ? '+' : ''}$${profit.toFixed(2)}</div>
+    </div>
+    <div class="disclaimer">⚠️ This report is for informational purposes only and does not constitute tax advice. Always consult a qualified CPA before filing.</div>
+    <div class="footer">Generated by MyTaxFly · mytaxfly.com · ${date}</div>
+    </body></html>`;
+  }
+
+  if (type === 'summary') {
+    html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <style>
+      body{font-family:Arial,sans-serif;max-width:800px;margin:40px auto;color:#1a1a1a;padding:0 20px}
+      h1{color:#00c896;border-bottom:3px solid #00c896;padding-bottom:12px}
+      h2{color:#333;margin-top:32px}
+      .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px}
+      .meta{font-size:13px;color:#666}
+      table{width:100%;border-collapse:collapse;margin:16px 0}
+      th{background:#f5f5f5;padding:10px 14px;text-align:left;font-size:13px;border-bottom:2px solid #ddd}
+      td{padding:10px 14px;border-bottom:1px solid #eee;font-size:13px}
+      .amount{text-align:right;font-weight:600}
+      .green{color:#00c896}.red{color:#e53e3e}
+      .total-row{background:#f9f9f9;font-weight:700;border-top:2px solid #333}
+      .badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+      .badge-green{background:#dcfce7;color:#166534}
+      .badge-gray{background:#f3f4f6;color:#374151}
+      .summary-box{background:#f0fdf4;border:2px solid #00c896;border-radius:8px;padding:20px;margin-top:24px}
+      .disclaimer{margin-top:40px;padding:12px;background:#fff8f0;border:1px solid #f6ad55;border-radius:6px;font-size:11px;color:#744210}
+      .footer{margin-top:32px;text-align:center;font-size:11px;color:#999;border-top:1px solid #eee;padding-top:16px}
+    </style></head><body>
+    <div class="header">
+      <div><h1>Tax Summary Report</h1><div style="font-size:20px;font-weight:700">${llcName}</div></div>
+      <div class="meta">Generated: ${date}<br>Period: ${new Date().getFullYear()}</div>
+    </div>
+    <h2>Deductible Expenses by IRS Category</h2>
+    <table><thead><tr><th>IRS Category</th><th>Deductible %</th><th class="amount">Amount</th></tr></thead><tbody>
+    ${Object.entries(cats).map(([k,v])=>`<tr><td>${k}</td><td><span class="badge badge-green">100%</span></td><td class="amount">$${v.toFixed(2)}</td></tr>`).join('')}
+    <tr class="total-row"><td colspan="2">Total Deductible Expenses</td><td class="amount">$${deductible.toFixed(2)}</td></tr>
+    </tbody></table>
+    <h2>All Transactions</h2>
+    <table><thead><tr><th>Date</th><th>Vendor</th><th>Type</th><th>Category</th><th>Deductible</th><th class="amount">Amount</th></tr></thead><tbody>
+    ${transactions.map(t=>`<tr><td>${t.date}</td><td>${t.vendor}</td><td>${t.type}</td><td>${t.category}</td><td><span class="badge ${t.deductible?'badge-green':'badge-gray'}">${t.deductible?'Yes':'No'}</span></td><td class="amount ${t.type==='income'?'green':'red'}">${t.type==='income'?'+':'-'}$${t.amount.toFixed(2)}</td></tr>`).join('')}
+    </tbody></table>
+    <div class="summary-box">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;text-align:center">
+        <div><div style="font-size:11px;color:#555;text-transform:uppercase;margin-bottom:4px">Total Revenue</div><div style="font-size:22px;font-weight:800;color:#00c896">$${inc.toFixed(2)}</div></div>
+        <div><div style="font-size:11px;color:#555;text-transform:uppercase;margin-bottom:4px">Total Expenses</div><div style="font-size:22px;font-weight:800;color:#e53e3e">$${exp.toFixed(2)}</div></div>
+        <div><div style="font-size:11px;color:#555;text-transform:uppercase;margin-bottom:4px">Total Deductible</div><div style="font-size:22px;font-weight:800;color:#00c896">$${deductible.toFixed(2)}</div></div>
+      </div>
+    </div>
+    <div class="disclaimer">⚠️ This report is for informational purposes only and does not constitute tax advice. Always consult a qualified CPA before filing.</div>
+    <div class="footer">Generated by MyTaxFly · mytaxfly.com · ${date}</div>
+    </body></html>`;
+  }
+
+  // Open as printable window → user can save as PDF
+  const win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+  setTimeout(() => win.print(), 500);
+}
 
 function exportCSV(){
   if(!transactions.length){alert('Please add transactions first!');return;}
