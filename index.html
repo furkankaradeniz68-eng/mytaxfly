@@ -934,6 +934,16 @@ footer {
   transform:translateY(0);
 }
 
+
+  /* BILLING TOGGLE */
+  .billing-toggle{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:28px;}
+  .billing-label{font-size:14px;color:var(--text2);font-weight:500;cursor:pointer;transition:color 0.2s;}
+  .billing-label.active{color:var(--text);font-weight:600;}
+  .toggle-switch{width:48px;height:26px;background:var(--border);border-radius:100px;cursor:pointer;position:relative;transition:background 0.3s;flex-shrink:0;}
+  .toggle-switch.on{background:var(--accent);}
+  .toggle-knob{width:20px;height:20px;background:white;border-radius:50%;position:absolute;top:3px;left:3px;transition:left 0.3s;box-shadow:0 1px 4px rgba(0,0,0,0.3);}
+  .toggle-switch.on .toggle-knob{left:25px;}
+  .save-badge{background:var(--accent);color:#080b10;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;margin-left:6px;vertical-align:middle;}
 /* RESPONSIVE */
 @media(max-width:1024px) {
   nav { padding:5px 30px; }
@@ -1201,7 +1211,15 @@ footer {
   <div class="fade-up" style="text-align:center">
     <div class="section-label">Pricing</div>
     <h2 class="section-title"><span id="t-price-h2">Simple, transparent pricing.</span></h2>
-    <p class="section-sub" style="margin:0 auto"><span id="t-price-sub">No surprises. Cancel anytime. All plans include the AI core.</span></p></div>
+    <p class="section-sub" style="margin:0 auto"><span id="t-price-sub">No surprises. Cancel anytime. All plans include the AI core.</span></p>
+    <div class="billing-toggle">
+      <span class="billing-label active" id="label-monthly" onclick="setBilling('monthly')">Monthly</span>
+      <div class="toggle-switch" id="toggle-switch" onclick="toggleBilling()">
+        <div class="toggle-knob"></div>
+      </div>
+      <span class="billing-label" id="label-yearly" onclick="setBilling('yearly')">Yearly <span class="save-badge">Save 20%</span></span>
+    </div>
+  </div>
 
   <div class="pricing-grid">
 
@@ -1209,8 +1227,8 @@ footer {
     <div class="pricing-card fade-up">
       <div class="pricing-header">
         <div class="pricing-name">Basic</div>
-        <div class="pricing-price"><sup>$</sup>29</div>
-        <div class="pricing-period">per month</div>
+        <div class="pricing-price"><sup>$</sup><span id="price-basic" data-monthly="29" data-yearly="23">29</span></div>
+        <div class="pricing-period"><span id="period-basic">per month</span></div>
       </div>
       <div class="pricing-body">
         <ul class="pricing-features">
@@ -1223,7 +1241,7 @@ footer {
           <li class="dim">Bank Sync</li>
           <li class="dim">Multi-Entity</li>
         </ul>
-        <a href="https://buy.stripe.com/test_14AeVeeZ48Cagcb0pweEo05" class="btn-plan" id="btn-basic"><span id="t-btn-basic">Get Basic →</span></a>
+        <a href="https://buy.stripe.com/test_14AeVeeZ48Cagcb0pweEo05" data-monthly="https://buy.stripe.com/test_14AeVeeZ48Cagcb0pweEo05" data-yearly="https://buy.stripe.com/test_4gMfZi5ou2dMaRRegmeEo04" class="btn-plan" id="btn-basic-old""https://buy.stripe.com/test_14AeVeeZ48Cagcb0pweEo05" data-yearly="https://buy.stripe.com/test_4gMfZi5ou2dMaRRegmeEo04"><span id="t-btn-basic">Get Basic →</span></a>
       </div>
     </div>
 
@@ -1231,8 +1249,8 @@ footer {
     <div class="pricing-card featured fade-up" style="transition-delay:0.1s">
       <div class="pricing-header">
         <div class="pricing-name">Pro <span class="pricing-badge">POPULAR</span></div>
-        <div class="pricing-price"><sup>$</sup>59</div>
-        <div class="pricing-period">per month</div>
+        <div class="pricing-price"><sup>$</sup><span id="price-pro" data-monthly="59" data-yearly="47">59</span></div>
+        <div class="pricing-period"><span id="period-pro">per month</span></div>
       </div>
       <div class="pricing-body">
         <ul class="pricing-features" id="t-pro-feats">
@@ -1245,7 +1263,7 @@ footer {
           <li>IRS Deadline Alerts</li>
           <li class="dim">Multi-Entity</li>
         </ul>
-        <a href="https://buy.stripe.com/test_dRm6oIg38dWuaRR2xEeEo00" class="btn-plan featured-btn" id="btn-pro"><span id="t-btn-pro">Get Pro →</span></a>
+        <a href="https://buy.stripe.com/test_dRm6oIg38dWuaRR2xEeEo00" data-monthly="https://buy.stripe.com/test_dRm6oIg38dWuaRR2xEeEo00" data-yearly="https://buy.stripe.com/test_7sY7sM6syf0yf874FMeEo01" class="btn-plan featured-btn" id="btn-pro" data-monthly="https://buy.stripe.com/test_dRm6oIg38dWuaRR2xEeEo00" data-yearly="https://buy.stripe.com/test_7sY7sM6syf0yf874FMeEo01"><span id="t-btn-pro">Get Pro →</span></a>
       </div>
     </div>
 
@@ -1253,8 +1271,8 @@ footer {
     <div class="pricing-card fade-up" style="transition-delay:0.2s">
       <div class="pricing-header">
         <div class="pricing-name">Business</div>
-        <div class="pricing-price"><sup>$</sup>99</div>
-        <div class="pricing-period">per month</div>
+        <div class="pricing-price"><sup>$</sup><span id="price-biz" data-monthly="99" data-yearly="79">99</span></div>
+        <div class="pricing-period"><span id="period-biz">per month</span></div>
       </div>
       <div class="pricing-body">
         <ul class="pricing-features" id="t-biz-feats">
@@ -1267,7 +1285,7 @@ footer {
           <li>Bank Sync (coming soon)</li>
           <li>API Access (coming soon)</li>
         </ul>
-        <a href="https://buy.stripe.com/test_dRm7sMbMS4lU8JJdcieEo02" class="btn-plan" id="btn-business"><span id="t-btn-biz">Get Business →</span></a>
+        <a href="https://buy.stripe.com/test_dRm7sMbMS4lU8JJdcieEo02" data-monthly="https://buy.stripe.com/test_dRm7sMbMS4lU8JJdcieEo02" data-yearly="https://buy.stripe.com/test_4gM9AUbMSf0ybVV7RYeEo03" class="btn-plan" id="btn-business"><span id="t-btn-biz">Get Business →</span></a>
       </div>
     </div>
 
@@ -1553,6 +1571,27 @@ window.addEventListener('DOMContentLoaded',()=>{
     document.getElementById('cookie-banner').style.display='flex';
   }
 });
+
+// ── BILLING TOGGLE ────────────────────────────────────────
+let billingMode='monthly';
+function toggleBilling(){ setBilling(billingMode==='monthly'?'yearly':'monthly'); }
+function setBilling(mode){
+  billingMode=mode;
+  const isY=mode==='yearly';
+  document.getElementById('toggle-switch').classList.toggle('on',isY);
+  document.getElementById('label-monthly').classList.toggle('active',!isY);
+  document.getElementById('label-yearly').classList.toggle('active',isY);
+  ['basic','pro','biz'].forEach(id=>{
+    const p=document.getElementById('price-'+id);
+    if(p) p.textContent=isY?p.dataset.yearly:p.dataset.monthly;
+    const per=document.getElementById('period-'+id);
+    if(per) per.textContent=isY?'per month, billed yearly':'per month';
+  });
+  ['btn-basic','btn-pro','btn-biz'].forEach(id=>{
+    const b=document.getElementById(id);
+    if(b) b.href=isY?b.dataset.yearly:b.dataset.monthly;
+  });
+}
 </script>
 
 </body>
