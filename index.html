@@ -1529,5 +1529,31 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 </script>
+
+<!-- COOKIE BANNER -->
+<div id="cookie-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#0d1117;border-top:1px solid #1e2633;padding:16px 48px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;">
+  <div style="flex:1;min-width:260px">
+    <div style="font-size:14px;font-weight:600;color:#e8edf5;margin-bottom:4px">🍪 We use cookies</div>
+    <div style="font-size:12px;color:#8a95a8;line-height:1.6">We use essential cookies for functionality and analytics cookies to improve our service. See our <a href="./app.html" style="color:#00c896;text-decoration:none">Privacy Policy</a> for details.</div>
+  </div>
+  <div style="display:flex;gap:10px;flex-shrink:0">
+    <button onclick="setCookieChoice(false)" style="background:transparent;border:1px solid #1e2633;border-radius:8px;padding:9px 18px;color:#8a95a8;font-family:'Montserrat',sans-serif;font-size:13px;cursor:pointer;transition:all 0.2s" onmouseover="this.style.borderColor='#00c896';this.style.color='#00c896'" onmouseout="this.style.borderColor='#1e2633';this.style.color='#8a95a8'">Essential only</button>
+    <button onclick="setCookieChoice(true)" style="background:#00c896;border:none;border-radius:8px;padding:9px 20px;color:#080b10;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;cursor:pointer">Accept all</button>
+  </div>
+</div>
+
+<script>
+function setCookieChoice(accepted){
+  localStorage.setItem('mtf_cookie_choice', accepted?'all':'essential');
+  document.getElementById('cookie-banner').style.display='none';
+}
+// Show banner if no choice made yet
+window.addEventListener('DOMContentLoaded',()=>{
+  if(!localStorage.getItem('mtf_cookie_choice')){
+    document.getElementById('cookie-banner').style.display='flex';
+  }
+});
+</script>
+
 </body>
 </html>
