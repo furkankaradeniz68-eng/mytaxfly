@@ -947,6 +947,41 @@ footer {
   .hero-stats { gap:24px; }
   .preview-section { padding:0 30px 60px; }
 }
+
+  /* ── LANGUAGE SWITCHER ── */
+  .lang-switcher { position:relative; display:inline-block; }
+  .lang-btn {
+    display:flex; align-items:center; gap:6px;
+    background:transparent; border:1px solid var(--border);
+    border-radius:8px; padding:7px 12px;
+    color:var(--text2); font-size:13px; font-weight:500;
+    cursor:pointer; font-family:'Montserrat',sans-serif;
+    transition:border-color 0.2s, color 0.2s;
+  }
+  .lang-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .lang-dropdown {
+    display:none;
+    position:absolute;
+    top:calc(100% + 6px);
+    left:0;
+    background:var(--bg2);
+    border:1px solid var(--border);
+    border-radius:10px;
+    overflow:hidden;
+    min-width:100px;
+    z-index:9999;
+    box-shadow:0 12px 32px rgba(0,0,0,0.5);
+  }
+  .lang-dropdown.open { display:block; }
+  .lang-option {
+    display:flex; align-items:center; gap:8px;
+    padding:9px 14px; color:var(--text2); font-size:13px;
+    cursor:pointer; transition:background 0.15s;
+    white-space:nowrap;
+  }
+  .lang-option:hover { background:var(--bg3); color:var(--text); }
+  .lang-option.active { color:var(--accent); background:rgba(0,200,150,0.06); }
+
 </style>
 </head>
 <body>
@@ -961,17 +996,17 @@ footer {
   </ul>
     <div class="nav-cta">
     <div class="lang-switcher" id="lang-switcher">
-      <button class="lang-btn" onclick="toggleLangMenu()">
-        <span class="lang-flag" id="current-flag">🇬🇧</span>
+      <button class="lang-btn" onclick="toggleLangMenu()" id="lang-btn-main">
+        <span id="current-flag">🇬🇧</span>
         <span id="current-lang-name">EN</span>
-        <span style="font-size:9px;margin-left:2px">▾</span>
+        <span style="font-size:9px;margin-left:1px">▾</span>
       </button>
       <div class="lang-dropdown" id="lang-dropdown">
-        <div class="lang-option active" onclick="setLang('en')"><span class="flag">🇬🇧</span><span class="lang-name">EN</span></div>
-        <div class="lang-option" onclick="setLang('de')"><span class="flag">🇩🇪</span><span class="lang-name">DE</span></div>
-        <div class="lang-option" onclick="setLang('es')"><span class="flag">🇪🇸</span><span class="lang-name">ES</span></div>
-        <div class="lang-option" onclick="setLang('fr')"><span class="flag">🇫🇷</span><span class="lang-name">FR</span></div>
-        <div class="lang-option" onclick="setLang('pt')"><span class="flag">🇵🇹</span><span class="lang-name">POR</span></div>
+        <div class="lang-option active" onclick="setLang('en')"><span>🇬🇧</span><span>EN</span></div>
+        <div class="lang-option" onclick="setLang('de')"><span>🇩🇪</span><span>DE</span></div>
+        <div class="lang-option" onclick="setLang('es')"><span>🇪🇸</span><span>ES</span></div>
+        <div class="lang-option" onclick="setLang('fr')"><span>🇫🇷</span><span>FR</span></div>
+        <div class="lang-option" onclick="setLang('pt')"><span>🇵🇹</span><span>POR</span></div>
       </div>
     </div>
     <a href="./app.html" class="btn-ghost"><span id="t-nav-signin">Sign in</span></a>
