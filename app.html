@@ -546,12 +546,7 @@ function selectPeriod(val, label){
   }
 }
 
-// Close period dropdown on outside click
-document.addEventListener('click', e=>{
-  const sw=document.getElementById('period-switcher');
-  if(sw && !sw.contains(e.target))
-    document.getElementById('period-dropdown').classList.remove('open');
-});
+
 
 function applyCustomRange(){
   const f=document.getElementById('custom-from').value;
@@ -1052,9 +1047,14 @@ function toggleLangMenu(){
   document.getElementById('app-lang-dropdown').classList.toggle('open');
 }
 document.addEventListener('click', e => {
-  const sw = document.getElementById('lang-switcher');
-  if(sw && !sw.contains(e.target))
+  // Close lang dropdown
+  const lsw = document.getElementById('lang-switcher');
+  if(lsw && !lsw.contains(e.target))
     document.getElementById('app-lang-dropdown').classList.remove('open');
+  // Close period dropdown
+  const psw = document.getElementById('period-switcher');
+  if(psw && !psw.contains(e.target))
+    document.getElementById('period-dropdown').classList.remove('open');
 });
 
 function setAppLang(lang){
