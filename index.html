@@ -960,7 +960,21 @@ footer {
     <li><a href="#pricing"><span id="t-nav-pricing">Pricing</span></a></li>
   </ul>
   <div class="nav-cta">
-    <a href="./app.html" class="btn-ghost">Sign in</a>
+    <a href="./app.html" class="btn-ghost"><span id="t-nav-signin">Sign in</span></a>
+    <div class="lang-switcher" id="lang-switcher">
+      <button class="lang-btn" onclick="toggleLangMenu()" id="lang-btn-main">
+        <span class="lang-flag" id="current-flag">🇬🇧</span>
+        <span id="current-lang-name">EN</span>
+        <span style="font-size:10px">▾</span>
+      </button>
+      <div class="lang-dropdown" id="lang-dropdown">
+        <div class="lang-option active" onclick="setLang('en')"><span class="flag">🇬🇧</span><span class="lang-name">English</span></div>
+        <div class="lang-option" onclick="setLang('de')"><span class="flag">🇩🇪</span><span class="lang-name">Deutsch</span></div>
+        <div class="lang-option" onclick="setLang('es')"><span class="flag">🇪🇸</span><span class="lang-name">Español</span></div>
+        <div class="lang-option" onclick="setLang('fr')"><span class="flag">🇫🇷</span><span class="lang-name">Français</span></div>
+        <div class="lang-option" onclick="setLang('pt')"><span class="flag">🇧🇷</span><span class="lang-name">Português</span></div>
+      </div>
+    </div>
     <a href="#pricing" class="btn-nav"><span id="t-nav-getstarted">Get started →</span></a>
   </div>
 </nav>
@@ -1153,9 +1167,6 @@ footer {
     <div class="section-label">Pricing</div>
     <h2 class="section-title"><span id="t-price-h2">Simple, transparent pricing.</span></h2>
     <p class="section-sub" style="margin:0 auto"><span id="t-price-sub">No surprises. Cancel anytime. All plans include the AI core.</span></p></div>
-      <span class="billing-label" id="label-yearly">Yearly <span class="save-badge">Save 20%</span></span>
-    </div>
-  </div>
 
   <div class="pricing-grid">
 
