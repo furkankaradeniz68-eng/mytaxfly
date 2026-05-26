@@ -1212,13 +1212,15 @@ footer {
     <div class="section-label">Pricing</div>
     <h2 class="section-title"><span id="t-price-h2">Simple, transparent pricing.</span></h2>
     <p class="section-sub" style="margin:0 auto"><span id="t-price-sub">No surprises. Cancel anytime. All plans include the AI core.</span></p>
-    <div class="billing-toggle">
-      <span class="billing-label active" id="label-monthly" onclick="setBilling('monthly')">Monthly</span>
-      <div class="toggle-switch" id="toggle-switch" onclick="toggleBilling()">
-        <div class="toggle-knob"></div>
-      </div>
-      <span class="billing-label" id="label-yearly" onclick="setBilling('yearly')">Yearly <span class="save-badge">Save 20%</span></span>
+  </div>
+
+  <!-- BILLING TOGGLE -->
+  <div class="billing-toggle" style="margin-top:32px;margin-bottom:8px;">
+    <span class="billing-label active" id="label-monthly" onclick="setBilling('monthly')">Monthly</span>
+    <div class="toggle-switch" id="toggle-switch" onclick="toggleBilling()">
+      <div class="toggle-knob"></div>
     </div>
+    <span class="billing-label" id="label-yearly" onclick="setBilling('yearly')">Yearly <span class="save-badge">Save 20%</span></span>
   </div>
 
   <div class="pricing-grid">
