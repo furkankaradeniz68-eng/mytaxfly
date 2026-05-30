@@ -998,7 +998,7 @@ footer {
    BURGER — hidden on desktop
 ═══════════════════════════════ */
 .burger {
-  display:none;
+  display:none !important;
   flex-direction:column;
   justify-content:center;
   gap:5px;
@@ -1176,7 +1176,8 @@ footer {
   </button>
 </nav>
 
-<!-- MOBILE FULLSCREEN MENU -->
+
+<!-- MOBILE MENU — only visible on mobile -->
 <div class="mobile-menu" id="mobile-menu">
   <button class="mobile-menu-close" onclick="toggleMobileMenu()">✕</button>
   <div class="mobile-menu-links">
@@ -1185,22 +1186,15 @@ footer {
     <a href="#pricing" onclick="toggleMobileMenu()">Pricing</a>
   </div>
   <div class="mobile-menu-bottom">
-    <div class="lang-switcher" id="lang-switcher-mob" style="margin-bottom:8px">
-      <button class="lang-btn" onclick="document.getElementById('lang-dropdown-mob').classList.toggle('open')">
-        <span id="mob-flag">🇬🇧</span>
-        <span id="mob-lang-name">EN</span>
-        <span style="font-size:9px">▾</span>
-      </button>
-      <div class="lang-dropdown" id="lang-dropdown-mob">
-        <div class="lang-option active" onclick="setLang('en');updateMobLang('en')"><span>🇬🇧</span><span>EN</span></div>
-        <div class="lang-option" onclick="setLang('de');updateMobLang('de')"><span>🇩🇪</span><span>DE</span></div>
-        <div class="lang-option" onclick="setLang('es');updateMobLang('es')"><span>🇪🇸</span><span>ES</span></div>
-        <div class="lang-option" onclick="setLang('fr');updateMobLang('fr')"><span>🇫🇷</span><span>FR</span></div>
-        <div class="lang-option" onclick="setLang('pt');updateMobLang('pt')"><span>🇵🇹</span><span>POR</span></div>
-      </div>
+    <div style="display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;margin-bottom:8px;">
+      <span onclick="setLang('en');updateMobLang('en');toggleMobileMenu()" style="cursor:pointer;font-size:14px;color:#7a8099;font-family:'Montserrat',sans-serif;">🇬🇧 EN</span>
+      <span onclick="setLang('de');updateMobLang('de');toggleMobileMenu()" style="cursor:pointer;font-size:14px;color:#7a8099;font-family:'Montserrat',sans-serif;">🇩🇪 DE</span>
+      <span onclick="setLang('es');updateMobLang('es');toggleMobileMenu()" style="cursor:pointer;font-size:14px;color:#7a8099;font-family:'Montserrat',sans-serif;">🇪🇸 ES</span>
+      <span onclick="setLang('fr');updateMobLang('fr');toggleMobileMenu()" style="cursor:pointer;font-size:14px;color:#7a8099;font-family:'Montserrat',sans-serif;">🇫🇷 FR</span>
+      <span onclick="setLang('pt');updateMobLang('pt');toggleMobileMenu()" style="cursor:pointer;font-size:14px;color:#7a8099;font-family:'Montserrat',sans-serif;">🇵🇹 POR</span>
     </div>
-    <a href="./dashboard.html" style="display:block;width:100%;text-align:center;background:#00c896;color:#0d0f14;font-weight:700;font-size:16px;padding:16px;border-radius:12px;text-decoration:none;font-family:'Montserrat',sans-serif">Start free trial →</a>
-    <a href="./dashboard.html" style="display:block;width:100%;text-align:center;color:#7a8099;font-size:14px;padding:12px;text-decoration:none;font-family:'Montserrat',sans-serif">Sign in</a>
+    <a href="./dashboard.html" onclick="toggleMobileMenu()" style="display:block;width:100%;text-align:center;background:#00c896;color:#0d0f14;font-weight:700;font-size:16px;padding:16px;border-radius:12px;text-decoration:none;font-family:'Montserrat',sans-serif;">Start free trial →</a>
+    <a href="./dashboard.html" onclick="toggleMobileMenu()" style="display:block;width:100%;text-align:center;color:#7a8099;font-size:14px;padding:12px;text-decoration:none;font-family:'Montserrat',sans-serif;">Sign in</a>
   </div>
 </div>
 
