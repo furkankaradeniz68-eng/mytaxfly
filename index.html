@@ -1019,7 +1019,7 @@ footer {
         <div class="lang-option" onclick="setLang('pt')"><span>🇵🇹</span><span>POR</span></div>
       </div>
     </div>
-    <a href="./app.html" class="btn-ghost"><span id="t-nav-signin">Sign in</span></a>
+    <a href="./dashboard.html" class="btn-ghost"><span id="t-nav-signin">Sign in</span></a>
     <a href="#pricing" class="btn-nav"><span id="t-nav-getstarted">Start free trial →</span></a>
   </div>
 </nav>
@@ -1220,7 +1220,7 @@ footer {
     <div class="toggle-switch" id="toggle-switch" onclick="toggleBilling()">
       <div class="toggle-knob"></div>
     </div>
-    <span class="billing-label" id="label-yearly" onclick="setBilling('yearly')">Yearly</span>
+    <span class="billing-label" id="label-yearly" onclick="setBilling('yearly')">Yearly <span class="save-badge">Save 20%</span></span>
   </div>
 
   <div class="pricing-grid">
@@ -1230,7 +1230,7 @@ footer {
       <div class="pricing-header">
         <div class="pricing-name">Basic</div>
         <div class="pricing-price"><sup>$</sup><span id="price-basic" data-monthly="29" data-yearly="23">29</span></div>
-        <div class="pricing-period"><span id="period-basic">per month</span><div id="yearly-note-basic" style="display:none;font-size:12px;color:var(--accent);margin-top:4px;font-weight:600">$348 / year</div></div>
+        <div class="pricing-period"><span id="period-basic">per month</span><div id="yearly-note-basic" style="display:none;margin-top:6px"><span style="font-size:12px;color:var(--accent);font-weight:700">$348 billed yearly</span> <span style="font-size:11px;color:#7a8099;text-decoration:line-through;margin-left:4px">$348</span> <span style="font-size:11px;background:rgba(0,200,150,0.15);color:var(--accent);border-radius:4px;padding:1px 6px;font-weight:700;margin-left:4px">Save $70/yr</span></div></div>
       </div>
       <div class="pricing-body">
         <ul class="pricing-features">
@@ -1243,7 +1243,7 @@ footer {
           <li class="dim">Bank Sync</li>
           <li class="dim">Multi-Entity</li>
         </ul>
-        <a href="https://buy.stripe.com/test_14AeVeeZ48Cagcb0pweEo05?locale=en" data-monthly="https://buy.stripe.com/test_14AeVeeZ48Cagcb0pweEo05?locale=en" data-yearly="https://buy.stripe.com/test_00weVebMSaKi8JJegmeEo07?locale=en" class="btn-plan" id="btn-basic"><span id="t-btn-basic">Get Basic →</span></a>
+        <a href="https://buy.stripe.com/test_14AeVeeZ48Cagcb0pweEo05?locale=en" data-monthly="https://buy.stripe.com/test_14AeVeeZ48Cagcb0pweEo05?locale=en" data-yearly="https://buy.stripe.com/test_4gMcN63gmbOmf872xEeEo0e?locale=en" class="btn-plan" id="btn-basic"><span id="t-btn-basic">Get Basic →</span></a>
       </div>
     </div>
 
@@ -1252,7 +1252,7 @@ footer {
       <div class="pricing-header">
         <div class="pricing-name">Pro <span class="pricing-badge">POPULAR</span></div>
         <div class="pricing-price"><sup>$</sup><span id="price-pro" data-monthly="59" data-yearly="47">59</span></div>
-        <div class="pricing-period"><span id="period-pro">per month</span><div id="yearly-note-pro" style="display:none;font-size:12px;color:var(--accent);margin-top:4px;font-weight:600">$708 / year</div></div>
+        <div class="pricing-period"><span id="period-pro">per month</span><div id="yearly-note-pro" style="display:none;margin-top:6px"><span style="font-size:12px;color:var(--accent);font-weight:700">$564 billed yearly</span> <span style="font-size:11px;color:#7a8099;text-decoration:line-through;margin-left:4px">$708</span> <span style="font-size:11px;background:rgba(0,200,150,0.15);color:var(--accent);border-radius:4px;padding:1px 6px;font-weight:700;margin-left:4px">Save $144/yr</span></div></div>
       </div>
       <div class="pricing-body">
         <ul class="pricing-features" id="t-pro-feats">
@@ -1265,7 +1265,7 @@ footer {
           <li>IRS Deadline Alerts</li>
           <li class="dim">Multi-Entity</li>
         </ul>
-        <a href="https://buy.stripe.com/test_dRm6oIg38dWuaRR2xEeEo00?locale=en" data-monthly="https://buy.stripe.com/test_dRm6oIg38dWuaRR2xEeEo00?locale=en" data-yearly="https://buy.stripe.com/test_28E28s6syaKiaRRb4aeEo0a?locale=en" class="btn-plan featured-btn" id="btn-pro"><span id="t-btn-pro">Get Pro →</span></a>
+        <a href="https://buy.stripe.com/test_dRm6oIg38dWuaRR2xEeEo00?locale=en" data-monthly="https://buy.stripe.com/test_dRm6oIg38dWuaRR2xEeEo00?locale=en" data-yearly="https://buy.stripe.com/test_dRm7sMeZ42dM9NNgoueEo0d?locale=en" class="btn-plan featured-btn" id="btn-pro"><span id="t-btn-pro">Get Pro →</span></a>
       </div>
     </div>
 
@@ -1274,7 +1274,7 @@ footer {
       <div class="pricing-header">
         <div class="pricing-name">Business</div>
         <div class="pricing-price"><sup>$</sup><span id="price-biz" data-monthly="99" data-yearly="79">99</span></div>
-        <div class="pricing-period"><span id="period-biz">per month</span><div id="yearly-note-biz" style="display:none;font-size:12px;color:var(--accent);margin-top:4px;font-weight:600">$1,188 / year</div></div>
+        <div class="pricing-period"><span id="period-biz">per month</span><div id="yearly-note-biz" style="display:none;margin-top:6px"><span style="font-size:12px;color:var(--accent);font-weight:700">$948 billed yearly</span> <span style="font-size:11px;color:#7a8099;text-decoration:line-through;margin-left:4px">$1,188</span> <span style="font-size:11px;background:rgba(0,200,150,0.15);color:var(--accent);border-radius:4px;padding:1px 6px;font-weight:700;margin-left:4px">Save $240/yr</span></div></div>
       </div>
       <div class="pricing-body">
         <ul class="pricing-features" id="t-biz-feats">
@@ -1287,7 +1287,7 @@ footer {
           <li>Bank Sync (coming soon)</li>
           <li>API Access (coming soon)</li>
         </ul>
-        <a href="https://buy.stripe.com/test_dRm7sMbMS4lU8JJdcieEo02?locale=en" data-monthly="https://buy.stripe.com/test_dRm7sMbMS4lU8JJdcieEo02?locale=en" data-yearly="https://buy.stripe.com/test_aFa3cw4kq4lU0dd1tAeEo0b?locale=en" class="btn-plan" id="btn-biz"><span id="t-btn-biz">Get Business →</span></a>
+        <a href="https://buy.stripe.com/test_dRm7sMbMS4lU8JJdcieEo02?locale=en" data-monthly="https://buy.stripe.com/test_dRm7sMbMS4lU8JJdcieEo02?locale=en" data-yearly="https://buy.stripe.com/test_6oUcN6g384lUaRR7RYeEo0c?locale=en" class="btn-plan" id="btn-biz"><span id="t-btn-biz">Get Business →</span></a>
       </div>
     </div>
 
@@ -1366,14 +1366,14 @@ footer {
         <li><a href="#how">How it works</a></li>
         <li><a href="#features">Features</a></li>
         <li><a href="#pricing">Pricing</a></li>
-        <li><a href="./app.html">Sign in</a></li>
+        <li><a href="./dashboard.html">Sign in</a></li>
       </ul>
     </div>
     <div class="footer-col">
       <h4>Legal</h4>
       <ul>
-        <li><a href="./app.html">Terms of Service</a></li>
-        <li><a href="./app.html">Privacy Policy</a></li>
+        <li><a href="./dashboard.html">Terms of Service</a></li>
+        <li><a href="./dashboard.html">Privacy Policy</a></li>
         <li><a href="#"><span id="t-footer-cookie">Cookie Policy</span></a></li>
       </ul>
     </div>
@@ -1554,7 +1554,7 @@ window.addEventListener('DOMContentLoaded', () => {
 <div id="cookie-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#0d1117;border-top:1px solid #1e2633;padding:16px 48px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;">
   <div style="flex:1;min-width:260px">
     <div style="font-size:14px;font-weight:600;color:#e8edf5;margin-bottom:4px">🍪 We use cookies</div>
-    <div style="font-size:12px;color:#8a95a8;line-height:1.6">We use essential cookies for functionality and analytics cookies to improve our service. See our <a href="./app.html" style="color:#00c896;text-decoration:none">Privacy Policy</a> for details.</div>
+    <div style="font-size:12px;color:#8a95a8;line-height:1.6">We use essential cookies for functionality and analytics cookies to improve our service. See our <a href="./dashboard.html" style="color:#00c896;text-decoration:none">Privacy Policy</a> for details.</div>
   </div>
   <div style="display:flex;gap:10px;flex-shrink:0">
     <button onclick="setCookieChoice(false)" style="background:transparent;border:1px solid #1e2633;border-radius:8px;padding:9px 18px;color:#8a95a8;font-family:'Montserrat',sans-serif;font-size:13px;cursor:pointer;transition:all 0.2s" onmouseover="this.style.borderColor='#00c896';this.style.color='#00c896'" onmouseout="this.style.borderColor='#1e2633';this.style.color='#8a95a8'">Essential only</button>
@@ -1583,15 +1583,39 @@ function setBilling(mode){
   document.getElementById('toggle-switch').classList.toggle('on',isY);
   document.getElementById('label-monthly').classList.toggle('active',!isY);
   document.getElementById('label-yearly').classList.toggle('active',isY);
+
+  // Price + period + savings
+  const plans={basic:{m:29,y:23,save:70},pro:{m:59,y:47,save:144},biz:{m:99,y:79,save:240}};
   ['basic','pro','biz'].forEach(id=>{
+    const p=document.getElementById('price-'+id);
+    if(p) p.textContent=isY?plans[id].y:plans[id].m;
     const per=document.getElementById('period-'+id);
     if(per) per.textContent=isY?'per month, billed yearly':'per month';
     const note=document.getElementById('yearly-note-'+id);
     if(note) note.style.display=isY?'block':'none';
   });
+
+  // Button links
   ['btn-basic','btn-pro','btn-biz'].forEach(id=>{
     const b=document.getElementById(id);
     if(b) b.href=isY?b.dataset.yearly:b.dataset.monthly;
+  });
+
+  // Button text
+  const btnLabels={
+    'btn-basic': {m:'Get Basic →', y:'Get Basic →'},
+    'btn-pro':   {m:'Get Pro →',   y:'Get Pro →'},
+    'btn-biz':   {m:'Get Business →', y:'Get Business →'},
+  };
+  // Update plan button subtext if exists
+  ['btn-basic','btn-pro','btn-biz'].forEach(id=>{
+    const sub=document.getElementById(id+'-sub');
+    const plans2={
+      'btn-basic':{m:'$29/month',y:'$23/month — save $70/yr'},
+      'btn-pro':{m:'$59/month',y:'$47/month — save $144/yr'},
+      'btn-biz':{m:'$99/month',y:'$79/month — save $240/yr'},
+    };
+    if(sub) sub.textContent=isY?plans2[id].y:plans2[id].m;
   });
 }
 </script>
