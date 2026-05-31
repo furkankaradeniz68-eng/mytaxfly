@@ -287,10 +287,10 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
   }
   .mobile-header-logo { font-size:18px; font-weight:800; color:var(--accent); }
   .mobile-burger {
-    display:flex; flex-direction:column; gap:4px;
-    cursor:pointer; padding:6px; background:none; border:none;
+    display:flex; flex-direction:column; gap:5px;
+    cursor:pointer; padding:8px; background:none; border:none;
   }
-  .mobile-burger span { display:block; width:20px; height:2px; background:var(--text); border-radius:2px; transition:all 0.3s; }
+  .mobile-burger span { display:block; width:22px; height:2.5px; background:#00c896; border-radius:3px; transition:all 0.3s; box-shadow:0 0 6px rgba(0,200,150,0.35); }
   .mobile-burger.open span:nth-child(1) { transform:rotate(45deg) translate(4px,4px); }
   .mobile-burger.open span:nth-child(2) { opacity:0; }
   .mobile-burger.open span:nth-child(3) { transform:rotate(-45deg) translate(4px,-4px); }
@@ -380,6 +380,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
 .mobile-burger { display:none; }
 @media(max-width:768px) {
   .mobile-header { display:flex; }
+  .mobile-burger { display:flex; }
 }
 </style>
 </head>
@@ -389,7 +390,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
 
 <!-- MOBILE HEADER -->
 <div class="mobile-header" id="mobile-header">
-  <div class="mobile-header-logo">mytaxfly</div>
+  <div class="mobile-header-logo">MyTaxFly</div>
   <button class="mobile-burger" id="mobile-burger" onclick="toggleSidebar()">
     <span></span><span></span><span></span>
   </button>
