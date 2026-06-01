@@ -422,6 +422,21 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
       <a href="/" class="back-link"><span id="t-back-login">← Back to mytaxfly.com</span></a>
     </div>
 
+    <!-- 2FA FORM -->
+    <div id="form-2fa" style="display:none">
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="font-size:32px;margin-bottom:8px">🔐</div>
+        <div style="font-size:15px;font-weight:700;color:var(--text1);margin-bottom:6px">Two-Factor Authentication</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.6">Enter the 6-digit code from your<br>authenticator app (e.g. Google Authenticator)</div>
+      </div>
+      <label class="form-label">Authentication Code</label>
+      <input class="form-input" id="totp-code" type="text" inputmode="numeric" maxlength="6" placeholder="000000" style="text-align:center;font-size:22px;font-weight:700;letter-spacing:8px">
+      <button class="btn-primary" id="btn-verify-2fa" onclick="handleVerify2FA()"><span>Verify →</span></button>
+      <div style="text-align:center;margin-top:12px">
+        <a href="#" onclick="cancel2FA()" style="font-size:12px;color:var(--text2);text-decoration:none">← Back to login</a>
+      </div>
+    </div>
+
     <!-- REGISTER FORM -->
     <div id="form-register" style="display:none">
       <label class="form-label" id="t-label-name">Your Name</label>
@@ -470,6 +485,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
       </div>
       <div class="user-info" id="sidebar-user">user@example.com</div>
       <a href="https://billing.stripe.com/p/login/test_9B65kvcrcfGI6yE2iDbAs00" target="_blank" class="btn-manage-sub">💳 Manage Subscription</a>
+      <button class="btn-manage-sub" onclick="handle2FASetup()" id="btn-2fa-setup" style="border-color:#7c6fe0;color:#7c6fe0;cursor:pointer;background:var(--bg3)">🔐 Enable 2FA</button>
       <button class="btn-logout" onclick="handleLogout()"><span id="t-nav-signout">Sign Out</span></button>
     </div>
   </div>
@@ -767,16 +783,62 @@ function showError(msg){
   el.textContent=msg; el.style.display='block';
 }
 
+let mfaFactorId=null, mfaChallengeId=null;
+
 async function handleLogin(){
   const email=document.getElementById('login-email').value.trim().toLowerCase();
   const password=document.getElementById('login-password').value;
   if(!email||!password){showError('Please fill in all fields.');return;}
   const btn=document.getElementById('btn-login');
   btn.disabled=true; btn.querySelector('span').textContent='Signing in...';
-  const {error}=await sb.auth.signInWithPassword({email,password});
+  const {data,error}=await sb.auth.signInWithPassword({email,password});
   btn.disabled=false;
   if(error){showError(error.message);btn.querySelector('span').textContent='Sign In →';return;}
-  // Auth state change will trigger launchApp
+
+  // Check if 2FA is required
+  const {data:aalData}=await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+  if(aalData?.nextLevel==='aal2' && aalData?.nextLevel!==aalData?.currentLevel){
+    // User has 2FA enabled — show code input
+    const {data:factors}=await sb.auth.mfa.listFactors();
+    const totpFactor=factors?.totp?.[0];
+    if(totpFactor){
+      const {data:challenge,error:cErr}=await sb.auth.mfa.challenge({factorId:totpFactor.id});
+      if(cErr){showError(cErr.message);return;}
+      mfaFactorId=totpFactor.id;
+      mfaChallengeId=challenge.id;
+      document.getElementById('form-login').style.display='none';
+      document.getElementById('form-2fa').style.display='block';
+      document.getElementById('login-error').style.display='none';
+      document.getElementById('totp-code').focus();
+    }
+  }
+  // If no 2FA → auth state change will trigger launchApp
+}
+
+async function handleVerify2FA(){
+  const code=document.getElementById('totp-code').value.trim();
+  if(code.length!==6){showError('Please enter the 6-digit code.');return;}
+  const btn=document.getElementById('btn-verify-2fa');
+  btn.disabled=true; btn.querySelector('span').textContent='Verifying...';
+  const {error}=await sb.auth.mfa.verify({factorId:mfaFactorId,challengeId:mfaChallengeId,code});
+  btn.disabled=false;
+  if(error){
+    showError('Invalid code. Please try again.');
+    btn.querySelector('span').textContent='Verify →';
+    document.getElementById('totp-code').value='';
+    document.getElementById('totp-code').focus();
+    return;
+  }
+  // 2FA success → auth state change will trigger launchApp
+}
+
+function cancel2FA(){
+  mfaFactorId=null; mfaChallengeId=null;
+  document.getElementById('form-2fa').style.display='none';
+  document.getElementById('form-login').style.display='block';
+  document.getElementById('totp-code').value='';
+  document.getElementById('login-error').style.display='none';
+  sb.auth.signOut();
 }
 
 async function handleRegister(){
@@ -810,6 +872,56 @@ async function handleRegister(){
   showError('✅ Account created! Please check your email to confirm, then sign in.');
   document.getElementById('login-error').style.color='var(--accent)';
   switchAuthTab('login');
+}
+
+async function handle2FASetup(){
+  // Check if already enrolled
+  const {data:factors}=await sb.auth.mfa.listFactors();
+  if(factors?.totp?.length>0){
+    alert('✅ 2FA is already enabled on your account.\n\nTo disable it, contact support@mytaxfly.com');
+    return;
+  }
+  // Enroll new TOTP factor
+  const {data,error}=await sb.auth.mfa.enroll({factorType:'totp',friendlyName:'MyTaxFly Authenticator'});
+  if(error){alert('Error: '+error.message);return;}
+  // Show QR code modal
+  const qrUrl=data.totp.qr_code;
+  const secret=data.totp.secret;
+  const factorId=data.id;
+  const modal=document.createElement('div');
+  modal.id='modal-2fa-setup';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px';
+  modal.innerHTML=`
+    <div style="background:#13161e;border:1px solid #252a38;border-radius:16px;padding:32px;max-width:380px;width:100%;text-align:center">
+      <div style="font-size:28px;margin-bottom:8px">🔐</div>
+      <div style="font-size:16px;font-weight:700;color:#e8eaf2;margin-bottom:8px">Set Up Two-Factor Authentication</div>
+      <div style="font-size:12px;color:#7a8099;margin-bottom:20px;line-height:1.6">Scan this QR code with<br><strong style="color:#e8eaf2">Google Authenticator</strong> or <strong style="color:#e8eaf2">Authy</strong></div>
+      <img src="${qrUrl}" style="width:180px;height:180px;border-radius:8px;background:white;padding:8px;margin-bottom:16px">
+      <div style="font-size:11px;color:#7a8099;margin-bottom:8px">Or enter manually:</div>
+      <div style="font-size:13px;font-weight:700;color:#00c896;letter-spacing:2px;margin-bottom:20px;word-break:break-all">${secret}</div>
+      <div style="font-size:12px;color:#7a8099;margin-bottom:8px">Enter the 6-digit code to confirm:</div>
+      <input id="setup-totp-code" type="text" inputmode="numeric" maxlength="6" placeholder="000000" style="width:100%;padding:12px;background:#0d1117;border:1px solid #252a38;border-radius:8px;color:#e8eaf2;font-size:20px;text-align:center;letter-spacing:8px;font-family:Montserrat,sans-serif;margin-bottom:16px;box-sizing:border-box">
+      <div id="setup-2fa-error" style="color:#ff6b35;font-size:12px;margin-bottom:12px;display:none"></div>
+      <button onclick="confirmEnroll2FA('${factorId}')" style="width:100%;background:#00c896;border:none;border-radius:8px;padding:12px;color:#080b10;font-family:Montserrat,sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:12px">✅ Activate 2FA</button>
+      <button onclick="document.getElementById('modal-2fa-setup').remove();sb.auth.mfa.unenroll({factorId:'${factorId}'})" style="width:100%;background:transparent;border:1px solid #252a38;border-radius:8px;padding:10px;color:#7a8099;font-family:Montserrat,sans-serif;font-size:13px;cursor:pointer">Cancel</button>
+    </div>`;
+  document.body.appendChild(modal);
+  setTimeout(()=>document.getElementById('setup-totp-code')?.focus(),100);
+}
+
+async function confirmEnroll2FA(factorId){
+  const code=document.getElementById('setup-totp-code').value.trim();
+  const errEl=document.getElementById('setup-2fa-error');
+  if(code.length!==6){errEl.textContent='Please enter the 6-digit code.';errEl.style.display='block';return;}
+  const {data:challenge,error:cErr}=await sb.auth.mfa.challenge({factorId});
+  if(cErr){errEl.textContent=cErr.message;errEl.style.display='block';return;}
+  const {error}=await sb.auth.mfa.verify({factorId,challengeId:challenge.id,code});
+  if(error){errEl.textContent='Invalid code. Try again.';errEl.style.display='block';document.getElementById('setup-totp-code').value='';return;}
+  document.getElementById('modal-2fa-setup').remove();
+  document.getElementById('btn-2fa-setup').textContent='🔐 2FA Active ✅';
+  document.getElementById('btn-2fa-setup').style.borderColor='#00c896';
+  document.getElementById('btn-2fa-setup').style.color='#00c896';
+  alert('✅ Two-Factor Authentication is now active!\n\nYou will be asked for a code on every login.');
 }
 
 async function handleLogout(){
