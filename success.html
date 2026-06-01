@@ -5,64 +5,144 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Welcome to MyTaxFly!</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     body{background:#080b10;color:#e8edf5;font-family:'Montserrat',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
-    .card{background:#0d1117;border:1px solid #1e2633;border-radius:20px;padding:48px 40px;max-width:480px;width:100%;text-align:center}
-    .icon{font-size:56px;margin-bottom:20px}
-    .title{font-size:26px;font-weight:800;color:#e8edf5;margin-bottom:12px}
-    .subtitle{font-size:15px;color:#7a8099;line-height:1.7;margin-bottom:32px}
+    .card{background:#0d1117;border:1px solid #1e2633;border-radius:20px;padding:48px 40px;max-width:440px;width:100%;text-align:center}
+    .logo-text{font-size:22px;font-weight:800;color:#e8edf5;margin-bottom:4px}
+    .logo-sub{font-size:11px;color:#7a8099;margin-bottom:32px}
+    .icon{font-size:48px;margin-bottom:16px}
+    .title{font-size:22px;font-weight:800;color:#e8edf5;margin-bottom:8px}
+    .subtitle{font-size:13px;color:#7a8099;line-height:1.7;margin-bottom:28px}
     .highlight{color:#00c896;font-weight:700}
-    .steps{text-align:left;background:#13161e;border-radius:12px;padding:24px;margin-bottom:32px}
-    .step{display:flex;align-items:flex-start;gap:14px;margin-bottom:18px}
-    .step:last-child{margin-bottom:0}
-    .step-num{background:#00c896;color:#080b10;font-weight:800;font-size:13px;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
-    .step-text{font-size:13px;color:#b0b8c8;line-height:1.6}
-    .step-text strong{color:#e8edf5}
-    .btn{display:block;background:#00c896;color:#080b10;font-family:'Montserrat',sans-serif;font-weight:700;font-size:15px;padding:14px 24px;border-radius:10px;text-decoration:none;margin-bottom:14px;transition:opacity 0.2s}
+    .form-label{display:block;font-size:11px;font-weight:700;color:#7a8099;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;text-align:left}
+    .form-input{width:100%;background:#13161e;border:1px solid #1e2633;border-radius:8px;padding:11px 14px;color:#e8edf5;font-family:'Montserrat',sans-serif;font-size:14px;margin-bottom:16px;outline:none;transition:border-color 0.2s}
+    .form-input:focus{border-color:#00c896}
+    .btn{width:100%;background:#00c896;border:none;border-radius:10px;padding:13px;color:#080b10;font-family:'Montserrat',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:opacity 0.2s;margin-top:4px}
     .btn:hover{opacity:0.85}
-    .btn-secondary{display:block;color:#7a8099;font-size:13px;text-decoration:none}
-    .btn-secondary:hover{color:#e8edf5}
-    .logo{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:32px}
-    .logo-text{font-size:20px;font-weight:800;color:#e8edf5}
-    .logo-sub{font-size:10px;color:#7a8099}
+    .btn:disabled{opacity:0.5;cursor:not-allowed}
+    .error{background:rgba(255,107,53,0.1);border:1px solid rgba(255,107,53,0.3);border-radius:8px;padding:10px 14px;font-size:13px;color:#ff6b35;margin-bottom:16px;display:none;text-align:left}
+    .success-state{display:none;text-align:center;padding:10px 0}
     .divider{height:1px;background:#1e2633;margin:24px 0}
     .note{font-size:11px;color:#4a5568;line-height:1.6}
+    .pw-hint{font-size:11px;color:#4a5568;text-align:left;margin-top:-10px;margin-bottom:16px}
   </style>
 </head>
 <body>
   <div class="card">
-    <div class="logo">
-      <div>
-        <div class="logo-text">mytaxfly</div>
-        <div class="logo-sub">Your LLC. Our AI. Zero stress.</div>
-      </div>
+    <div class="logo-text">mytaxfly</div>
+    <div class="logo-sub">Your LLC. Our AI. Zero stress.</div>
+
+    <!-- Step 1: Create Account -->
+    <div id="step-create">
+      <div class="icon">🎉</div>
+      <div class="title">Payment Successful!</div>
+      <div class="subtitle">Your subscription is active. Now create your account to access your dashboard.</div>
+
+      <div id="form-error" class="error"></div>
+
+      <label class="form-label">Your Name</label>
+      <input class="form-input" id="reg-name" type="text" placeholder="e.g. John Smith">
+
+      <label class="form-label">Email (used at checkout)</label>
+      <input class="form-input" id="reg-email" type="email" placeholder="you@example.com">
+
+      <label class="form-label">Password</label>
+      <input class="form-input" id="reg-password" type="password" placeholder="min. 8 characters">
+      <div class="pw-hint">Min. 8 characters — you'll use this to sign in next time.</div>
+
+      <label class="form-label">LLC Name (optional)</label>
+      <input class="form-input" id="reg-llc" type="text" placeholder="e.g. Acme Ventures LLC">
+
+      <button class="btn" id="btn-create" onclick="createAccount()">
+        <span id="btn-text">Create Account & Go to Dashboard →</span>
+      </button>
+
+      <div class="divider"></div>
+      <div class="note">Already have an account? <a href="./dashboard.html" style="color:#00c896;text-decoration:none">Sign In →</a></div>
     </div>
 
-    <div class="icon">🎉</div>
-    <div class="title">Payment Successful!</div>
-    <div class="subtitle">Welcome to MyTaxFly. Your account is being set up.<br><span class="highlight">Check your email</span> — we sent you a magic link to access your dashboard.</div>
-
-    <div class="steps">
-      <div class="step">
-        <div class="step-num">1</div>
-        <div class="step-text"><strong>Check your inbox</strong><br>We sent a magic link to the email you used at checkout.</div>
-      </div>
-      <div class="step">
-        <div class="step-num">2</div>
-        <div class="step-text"><strong>Click the link in the email</strong><br>It will open your MyTaxFly dashboard automatically.</div>
-      </div>
-      <div class="step">
-        <div class="step-num">3</div>
-        <div class="step-text"><strong>Start using MyTaxFly</strong><br>Upload receipts, track expenses, and let AI handle your bookkeeping.</div>
+    <!-- Step 2: Success -->
+    <div id="step-success" class="success-state">
+      <div style="font-size:56px;margin-bottom:16px">✅</div>
+      <div style="font-size:18px;font-weight:800;color:#e8edf5;margin-bottom:10px">Account Created!</div>
+      <div style="font-size:13px;color:#7a8099;line-height:1.7;margin-bottom:24px">Taking you to your dashboard...</div>
+      <div style="width:100%;background:#1e2633;border-radius:99px;height:4px;overflow:hidden">
+        <div id="progress-bar" style="width:0%;height:100%;background:#00c896;transition:width 2s ease"></div>
       </div>
     </div>
-
-    <a href="./dashboard.html" class="btn">Go to Dashboard →</a>
-    <a href="mailto:support@mytaxfly.com" class="btn-secondary">Didn't receive an email? Contact support</a>
-
-    <div class="divider"></div>
-    <div class="note">The magic link expires after 24 hours. If you don't see the email, check your spam folder or contact support@mytaxfly.com</div>
   </div>
+
+  <script>
+    const sb = supabase.createClient(
+      'https://yacwkxstvqvdgiiffwos.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlhY3dreHN0dnF2ZGdpaWZmd29zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzMjI0MDIsImV4cCI6MjA2Mzg5ODQwMn0.jPvBFlQfuaM4_9sUE6ok8LwdCINxHjaBJT8yTTQmSO8'
+    );
+
+    function showError(msg) {
+      const el = document.getElementById('form-error');
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+
+    async function createAccount() {
+      const name     = document.getElementById('reg-name').value.trim();
+      const email    = document.getElementById('reg-email').value.trim().toLowerCase();
+      const password = document.getElementById('reg-password').value;
+      const llc      = document.getElementById('reg-llc').value.trim();
+
+      document.getElementById('form-error').style.display = 'none';
+
+      if (!name)                   return showError('Please enter your name.');
+      if (!email.includes('@'))    return showError('Please enter a valid email.');
+      if (password.length < 8)    return showError('Password must be at least 8 characters.');
+
+      const btn = document.getElementById('btn-create');
+      btn.disabled = true;
+      document.getElementById('btn-text').textContent = 'Creating account...';
+
+      // Check active subscription
+      const { data: sub } = await sb
+        .from('subscriptions')
+        .select('status,plan')
+        .eq('email', email)
+        .eq('status', 'active')
+        .single();
+
+      if (!sub) {
+        btn.disabled = false;
+        document.getElementById('btn-text').textContent = 'Create Account & Go to Dashboard →';
+        return showError('No active subscription found for this email. Please complete checkout first or contact support@mytaxfly.com');
+      }
+
+      // Create Supabase account
+      const { error } = await sb.auth.signUp({
+        email,
+        password,
+        options: { data: { name, llc_name: llc || 'My LLC' } }
+      });
+
+      if (error) {
+        btn.disabled = false;
+        document.getElementById('btn-text').textContent = 'Create Account & Go to Dashboard →';
+        return showError(error.message);
+      }
+
+      // Sign in immediately
+      await sb.auth.signInWithPassword({ email, password });
+
+      // Show success state
+      document.getElementById('step-create').style.display = 'none';
+      document.getElementById('step-success').style.display = 'block';
+      setTimeout(() => document.getElementById('progress-bar').style.width = '100%', 100);
+      setTimeout(() => window.location.href = './dashboard.html', 2200);
+    }
+
+    // Allow Enter key to submit
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter') createAccount();
+    });
+  </script>
 </body>
 </html>
