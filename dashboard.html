@@ -660,7 +660,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
 // ── SUPABASE INIT ─────────────────────────────────────────
 const { createClient } = supabase;
 const sb = createClient('https://yacwkxstvqvdgiiffwos.supabase.co', 'sb_publishable_JAGI28ms4nmK_dDoS1BLzA_O8locPZk');
-const ADMIN_EMAIL = 'furkan.karadeniz68@googlemail.com';
+const ADMIN_EMAILS = ['furkan.karadeniz68@googlemail.com', 'anil@aynauniverse.com'];
 
 // ── STATE ─────────────────────────────────────────────────
 let userName='', llcName='', userEmail='', transactions=[], chatHistory=[];
@@ -790,8 +790,8 @@ async function handleRegister(){
   if(password.length<8){showError('Password must be at least 8 characters.');return;}
   if(!agreed){showError('Please agree to the Terms of Service and Privacy Policy.');return;}
 
-  // Check subscription (skip for admin)
-  if(email!==ADMIN_EMAIL){
+  // Check subscription (skip for admin/testers)
+  if(!ADMIN_EMAILS.includes(email)){
     const {data:sub}=await sb.from('subscriptions').select('status').eq('email',email).eq('status','active').single();
     if(!sub){
       showError('No active subscription found for this email. Please purchase a plan first.');
