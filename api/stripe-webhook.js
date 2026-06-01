@@ -52,8 +52,13 @@ export default async function handler(req, res) {
 
 function getPlanFromAmount(amount) {
   if (!amount) return 'basic';
+  // Monthly prices (in cents): Basic=2900, Pro=5900, Business=9900
+  // Yearly prices (in cents):  Basic=27600, Pro=56400, Business=94800
   if (amount <= 2900) return 'basic';
   if (amount <= 5900) return 'pro';
+  if (amount <= 9900) return 'business';
+  if (amount <= 27600) return 'basic';
+  if (amount <= 56400) return 'pro';
   return 'business';
 }
 
