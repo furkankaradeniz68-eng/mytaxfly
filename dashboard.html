@@ -418,25 +418,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
       <label class="form-label" id="t-label-pw">Password</label>
       <input class="form-input" id="login-password" type="password" placeholder="••••••••">
       <button class="btn-primary" id="btn-login" onclick="handleLogin()"><span id="t-signin-btn">Sign In →</span></button>
-      <div style="text-align:center;margin-top:12px">
-        <a href="#" onclick="handleMagicLink()" style="font-size:12px;color:#00c896;text-decoration:none">✉️ Send me a magic link instead</a>
-      </div>
       <a href="/" class="back-link"><span id="t-back-login">← Back to mytaxfly.com</span></a>
-    </div>
-
-    <!-- MAGIC LINK FORM -->
-    <div id="form-magic" style="display:none">
-      <div style="text-align:center;margin-bottom:20px">
-        <div style="font-size:32px;margin-bottom:8px">✉️</div>
-        <div style="font-size:15px;font-weight:700;color:var(--text1);margin-bottom:6px">Magic Link Login</div>
-        <div style="font-size:12px;color:var(--text2);line-height:1.6">Enter your email and we'll send you<br>a link to log in instantly — no password needed.</div>
-      </div>
-      <label class="form-label">Email</label>
-      <input class="form-input" id="magic-email" type="email" placeholder="you@example.com">
-      <button class="btn-primary" id="btn-magic" onclick="sendMagicLink()"><span>Send Magic Link →</span></button>
-      <div style="text-align:center;margin-top:12px">
-        <a href="#" onclick="showPasswordLogin()" style="font-size:12px;color:var(--text2);text-decoration:none">← Back to password login</a>
-      </div>
     </div>
 
     <!-- 2FA FORM -->
@@ -802,40 +784,6 @@ function showError(msg){
 
 let mfaFactorId=null, mfaChallengeId=null;
 
-function handleMagicLink(){
-  document.getElementById('form-login').style.display='none';
-  document.getElementById('form-magic').style.display='block';
-  document.getElementById('login-error').style.display='none';
-  const email=document.getElementById('login-email').value;
-  if(email) document.getElementById('magic-email').value=email;
-  document.getElementById('magic-email').focus();
-}
-
-function showPasswordLogin(){
-  document.getElementById('form-magic').style.display='none';
-  document.getElementById('form-login').style.display='block';
-  document.getElementById('login-error').style.display='none';
-}
-
-async function sendMagicLink(){
-  const email=document.getElementById('magic-email').value.trim().toLowerCase();
-  if(!email||!email.includes('@')){showError('Please enter a valid email.');return;}
-  const btn=document.getElementById('btn-magic');
-  btn.disabled=true; btn.querySelector('span').textContent='Sending...';
-  const {error}=await sb.auth.signInWithOtp({
-    email,
-    options:{emailRedirectTo:'https://mytaxfly.vercel.app/dashboard.html'}
-  });
-  btn.disabled=false;
-  if(error){showError(error.message);btn.querySelector('span').textContent='Send Magic Link →';return;}
-  // Show success message
-  document.getElementById('form-magic').innerHTML=`
-    <div style="text-align:center;padding:20px 0">
-      <div style="font-size:48px;margin-bottom:16px">📬</div>
-      <div style="font-size:16px;font-weight:700;color:var(--text1);margin-bottom:10px">Check your inbox!</div>
-      <div style="font-size:13px;color:var(--text2);line-height:1.7">We sent a magic link to<br><strong style="color:var(--accent)">${email}</strong><br><br>Click the link in the email to log in.<br>Check your spam folder if you don't see it.</div>
-    </div>`;
-}
 
 async function handleLogin(){
   const email=document.getElementById('login-email').value.trim().toLowerCase();
