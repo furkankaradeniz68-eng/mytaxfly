@@ -795,22 +795,21 @@ async function handleLogin(){
   btn.disabled=false;
   if(error){showError(error.message);btn.querySelector('span').textContent='Sign In →';return;}
 
-  // Check if 2FA is required
-  const {data:aalData}=await sb.auth.mfa.getAuthenticatorAssuranceLevel();
-  if(aalData?.nextLevel==='aal2' && aalData?.nextLevel!==aalData?.currentLevel){
-    // User has 2FA enabled — show code input
-    const {data:factors}=await sb.auth.mfa.listFactors();
-    const totpFactor=factors?.totp?.[0];
-    if(totpFactor){
-      const {data:challenge,error:cErr}=await sb.auth.mfa.challenge({factorId:totpFactor.id});
-      if(cErr){showError(cErr.message);return;}
-      mfaFactorId=totpFactor.id;
-      mfaChallengeId=challenge.id;
-      document.getElementById('form-login').style.display='none';
-      document.getElementById('form-2fa').style.display='block';
-      document.getElementById('login-error').style.display='none';
-      document.getElementById('totp-code').focus();
-    }
+  // Check if 2FA is required — fetch AAL and factors in parallel
+  const [{data:aalData},{data:factors}]=await Promise.all([
+    sb.auth.mfa.getAuthenticatorAssuranceLevel(),
+    sb.auth.mfa.listFactors()
+  ]);
+  const totpFactor=factors?.totp?.[0];
+  if(aalData?.nextLevel==='aal2' && aalData?.nextLevel!==aalData?.currentLevel && totpFactor){
+    const {data:challenge,error:cErr}=await sb.auth.mfa.challenge({factorId:totpFactor.id});
+    if(cErr){showError(cErr.message);return;}
+    mfaFactorId=totpFactor.id;
+    mfaChallengeId=challenge.id;
+    document.getElementById('form-login').style.display='none';
+    document.getElementById('form-2fa').style.display='block';
+    document.getElementById('login-error').style.display='none';
+    document.getElementById('totp-code').focus();
   }
   // If no 2FA → auth state change will trigger launchApp
 }
