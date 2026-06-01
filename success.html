@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to MyTaxFly!</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:#080b10;color:#e8edf5;font-family:'Montserrat',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+    .card{background:#0d1117;border:1px solid #1e2633;border-radius:20px;padding:48px 40px;max-width:480px;width:100%;text-align:center}
+    .icon{font-size:56px;margin-bottom:20px}
+    .title{font-size:26px;font-weight:800;color:#e8edf5;margin-bottom:12px}
+    .subtitle{font-size:15px;color:#7a8099;line-height:1.7;margin-bottom:32px}
+    .highlight{color:#00c896;font-weight:700}
+    .steps{text-align:left;background:#13161e;border-radius:12px;padding:24px;margin-bottom:32px}
+    .step{display:flex;align-items:flex-start;gap:14px;margin-bottom:18px}
+    .step:last-child{margin-bottom:0}
+    .step-num{background:#00c896;color:#080b10;font-weight:800;font-size:13px;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+    .step-text{font-size:13px;color:#b0b8c8;line-height:1.6}
+    .step-text strong{color:#e8edf5}
+    .btn{display:block;background:#00c896;color:#080b10;font-family:'Montserrat',sans-serif;font-weight:700;font-size:15px;padding:14px 24px;border-radius:10px;text-decoration:none;margin-bottom:14px;transition:opacity 0.2s}
+    .btn:hover{opacity:0.85}
+    .btn-secondary{display:block;color:#7a8099;font-size:13px;text-decoration:none}
+    .btn-secondary:hover{color:#e8edf5}
+    .logo{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:32px}
+    .logo-text{font-size:20px;font-weight:800;color:#e8edf5}
+    .logo-sub{font-size:10px;color:#7a8099}
+    .divider{height:1px;background:#1e2633;margin:24px 0}
+    .note{font-size:11px;color:#4a5568;line-height:1.6}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">
+      <div>
+        <div class="logo-text">mytaxfly</div>
+        <div class="logo-sub">Your LLC. Our AI. Zero stress.</div>
+      </div>
+    </div>
+
+    <div class="icon">🎉</div>
+    <div class="title">Payment Successful!</div>
+    <div class="subtitle">Welcome to MyTaxFly. Your account is being set up.<br><span class="highlight">Check your email</span> — we sent you a magic link to access your dashboard.</div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text"><strong>Check your inbox</strong><br>We sent a magic link to the email you used at checkout.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text"><strong>Click the link in the email</strong><br>It will open your MyTaxFly dashboard automatically.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text"><strong>Start using MyTaxFly</strong><br>Upload receipts, track expenses, and let AI handle your bookkeeping.</div>
+      </div>
+    </div>
+
+    <a href="./dashboard.html" class="btn">Go to Dashboard →</a>
+    <a href="mailto:support@mytaxfly.com" class="btn-secondary">Didn't receive an email? Contact support</a>
+
+    <div class="divider"></div>
+    <div class="note">The magic link expires after 24 hours. If you don't see the email, check your spam folder or contact support@mytaxfly.com</div>
+  </div>
+</body>
+</html>
