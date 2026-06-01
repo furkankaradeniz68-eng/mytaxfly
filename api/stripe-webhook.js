@@ -28,14 +28,39 @@ export default async function handler(req, res) {
     const plan = getPlanFromAmount(session.amount_total);
 
     if (email) {
+      const normalizedEmail = email.toLowerCase();
+
+      // Save subscription to Supabase
       await sb.from('subscriptions').upsert({
-        email: email.toLowerCase(),
+        email: normalizedEmail,
         stripe_customer_id: session.customer,
         stripe_subscription_id: session.subscription || session.id,
         plan: plan,
         status: 'active',
       }, { onConflict: 'email' });
-      console.log(`✅ Subscription activated for ${email} — Plan: ${plan}`);
+      console.log(`✅ Subscription activated for ${normalizedEmail} — Plan: ${plan}`);
+
+      // Send magic link email so customer can access dashboard
+      try {
+        const { error: inviteError } = await sb.auth.admin.inviteUserByEmail(normalizedEmail, {
+          redirectTo: 'https://mytaxfly.vercel.app/dashboard.html',
+          data: { plan }
+        });
+        if (inviteError) {
+          // User might already exist — send magic link instead
+          const { error: magicError } = await sb.auth.admin.generateLink({
+            type: 'magiclink',
+            email: normalizedEmail,
+            options: { redirectTo: 'https://mytaxfly.vercel.app/dashboard.html' }
+          });
+          if (magicError) console.error('Magic link error:', magicError.message);
+          else console.log(`📧 Magic link sent to ${normalizedEmail}`);
+        } else {
+          console.log(`📧 Invite email sent to ${normalizedEmail}`);
+        }
+      } catch(e) {
+        console.error('Email sending failed:', e.message);
+      }
     }
   }
 
