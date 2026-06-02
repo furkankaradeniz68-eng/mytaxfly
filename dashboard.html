@@ -693,6 +693,9 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
 // ── SUPABASE INIT ─────────────────────────────────────────
 const { createClient } = supabase;
 const sb = createClient('https://yacwkxstvqvdgiiffwos.supabase.co', 'sb_publishable_JAGI28ms4nmK_dDoS1BLzA_O8locPZk');
+
+// Warm up Supabase connection on page load to reduce login delay
+sb.auth.getSession().catch(()=>{});
 const ADMIN_EMAILS = ['furkan.karadeniz68@googlemail.com', 'anil@aynauniverse.com'];
 
 // ── STATE ─────────────────────────────────────────────────
