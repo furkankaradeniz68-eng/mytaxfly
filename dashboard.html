@@ -418,7 +418,25 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
       <label class="form-label" id="t-label-pw">Password</label>
       <input class="form-input" id="login-password" type="password" placeholder="••••••••">
       <button class="btn-primary" id="btn-login" onclick="handleLogin()"><span id="t-signin-btn">Sign In →</span></button>
+      <div style="text-align:center;margin-top:12px">
+        <a href="#" onclick="showForgotPassword()" style="font-size:12px;color:var(--text2);text-decoration:none">Forgot password?</a>
+      </div>
       <a href="/" class="back-link"><span id="t-back-login">← Back to mytaxfly.com</span></a>
+    </div>
+
+    <!-- FORGOT PASSWORD FORM -->
+    <div id="form-forgot" style="display:none">
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="font-size:32px;margin-bottom:8px">🔑</div>
+        <div style="font-size:15px;font-weight:700;color:var(--text1);margin-bottom:6px">Reset Password</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.6">Enter your email and we'll send you<br>a link to reset your password.</div>
+      </div>
+      <label class="form-label">Email</label>
+      <input class="form-input" id="forgot-email" type="email" placeholder="you@example.com">
+      <button class="btn-primary" id="btn-forgot" onclick="sendPasswordReset()"><span>Send Reset Link →</span></button>
+      <div style="text-align:center;margin-top:12px">
+        <a href="#" onclick="showSignIn()" style="font-size:12px;color:var(--text2);text-decoration:none">← Back to Sign In</a>
+      </div>
     </div>
 
     <!-- 2FA FORM -->
@@ -783,6 +801,41 @@ function showError(msg){
 }
 
 let mfaFactorId=null, mfaChallengeId=null;
+
+function showForgotPassword(){
+  document.getElementById('form-login').style.display='none';
+  document.getElementById('form-forgot').style.display='block';
+  document.getElementById('login-error').style.display='none';
+  const email=document.getElementById('login-email').value;
+  if(email) document.getElementById('forgot-email').value=email;
+  document.getElementById('forgot-email').focus();
+}
+
+function showSignIn(){
+  document.getElementById('form-forgot').style.display='none';
+  document.getElementById('form-login').style.display='block';
+  document.getElementById('login-error').style.display='none';
+}
+
+async function sendPasswordReset(){
+  const email=document.getElementById('forgot-email').value.trim().toLowerCase();
+  if(!email||!email.includes('@')){showError('Please enter a valid email.');return;}
+  const btn=document.getElementById('btn-forgot');
+  btn.disabled=true; btn.querySelector('span').textContent='Sending...';
+  const {error}=await sb.auth.resetPasswordForEmail(email,{
+    redirectTo:'https://mytaxfly.vercel.app/dashboard.html'
+  });
+  btn.disabled=false;
+  if(error){showError(error.message);btn.querySelector('span').textContent='Send Reset Link →';return;}
+  // Show success message
+  document.getElementById('form-forgot').innerHTML=`
+    <div style="text-align:center;padding:10px 0">
+      <div style="font-size:48px;margin-bottom:16px">📬</div>
+      <div style="font-size:16px;font-weight:700;color:var(--text1);margin-bottom:10px">Check your inbox!</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.7">We sent a password reset link to<br><strong style="color:var(--accent)">${email}</strong><br><br>Click the link to set a new password.<br>Check your spam folder if you don't see it.</div>
+      <div style="margin-top:20px"><a href="#" onclick="location.reload()" style="font-size:12px;color:var(--text2);text-decoration:none">← Back to Sign In</a></div>
+    </div>`
+}
 
 
 async function handleLogin(){
