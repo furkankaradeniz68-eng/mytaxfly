@@ -60,7 +60,7 @@
       </button>
 
       <div class="divider"></div>
-      <div class="note">Already have an account? <a href="./dashboard.html" style="color:#00c896;text-decoration:none">Sign In →</a></div>
+      <div class="note">Already have an account? <a href="/dashboard" style="color:#00c896;text-decoration:none">Sign In →</a></div>
     </div>
 
     <!-- Step 2: Success -->
@@ -136,7 +136,7 @@
       document.getElementById('step-create').style.display = 'none';
       document.getElementById('step-success').style.display = 'block';
       setTimeout(() => document.getElementById('progress-bar').style.width = '100%', 100);
-      setTimeout(() => window.location.href = './dashboard.html', 2200);
+      setTimeout(() => window.location.href = '/dashboard', 2200);
     }
 
     // Allow Enter key to submit
