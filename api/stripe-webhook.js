@@ -43,7 +43,7 @@ export default async function handler(req, res) {
       // Send magic link email so customer can access dashboard
       try {
         const { error: inviteError } = await sb.auth.admin.inviteUserByEmail(normalizedEmail, {
-          redirectTo: 'https://mytaxfly.vercel.app/dashboard.html',
+          redirectTo: 'https://mytaxfly.vercel.app/dashboard',
           data: { plan }
         });
         if (inviteError) {
@@ -51,7 +51,7 @@ export default async function handler(req, res) {
           const { error: magicError } = await sb.auth.admin.generateLink({
             type: 'magiclink',
             email: normalizedEmail,
-            options: { redirectTo: 'https://mytaxfly.vercel.app/dashboard.html' }
+            options: { redirectTo: 'https://mytaxfly.vercel.app/dashboard' }
           });
           if (magicError) console.error('Magic link error:', magicError.message);
           else console.log(`📧 Magic link sent to ${normalizedEmail}`);
