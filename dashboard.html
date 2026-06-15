@@ -826,7 +826,7 @@ async function sendPasswordReset(){
   const btn=document.getElementById('btn-forgot');
   btn.disabled=true; btn.querySelector('span').textContent='Sending...';
   const {error}=await sb.auth.resetPasswordForEmail(email,{
-    redirectTo:'https://mytaxfly.vercel.app/dashboard.html'
+    redirectTo:'https://mytaxfly.vercel.app/dashboard'
   });
   btn.disabled=false;
   if(error){showError(error.message);btn.querySelector('span').textContent='Send Reset Link →';return;}
