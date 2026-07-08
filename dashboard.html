@@ -943,22 +943,26 @@ async function handle2FASetup(){
   const qrUrl=data.totp.qr_code;
   const secret=data.totp.secret;
   const factorId=data.id;
+  const isUrl = qrUrl.startsWith('http');
+  const qrImgHtml = isUrl
+    ? `<img src="${qrUrl}" style="width:160px;height:160px;border-radius:8px;background:white;padding:6px;margin-bottom:12px">`
+    : `<div style="width:160px;height:160px;background:white;border-radius:8px;padding:6px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center">${qrUrl}</div>`;
   const modal=document.createElement('div');
   modal.id='modal-2fa-setup';
-  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
   modal.innerHTML=`
-    <div style="background:#13161e;border:1px solid #252a38;border-radius:16px;padding:32px;max-width:380px;width:100%;text-align:center">
-      <div style="font-size:28px;margin-bottom:8px">🔐</div>
-      <div style="font-size:16px;font-weight:700;color:#e8eaf2;margin-bottom:8px">Set Up Two-Factor Authentication</div>
-      <div style="font-size:12px;color:#7a8099;margin-bottom:20px;line-height:1.6">Scan this QR code with<br><strong style="color:#e8eaf2">Google Authenticator</strong> or <strong style="color:#e8eaf2">Authy</strong></div>
-      <img src="${qrUrl}" style="width:180px;height:180px;border-radius:8px;background:white;padding:8px;margin-bottom:16px">
-      <div style="font-size:11px;color:#7a8099;margin-bottom:8px">Or enter manually:</div>
-      <div style="font-size:13px;font-weight:700;color:#00c896;letter-spacing:2px;margin-bottom:20px;word-break:break-all">${secret}</div>
-      <div style="font-size:12px;color:#7a8099;margin-bottom:8px">Enter the 6-digit code to confirm:</div>
-      <input id="setup-totp-code" type="text" inputmode="numeric" maxlength="6" placeholder="000000" style="width:100%;padding:12px;background:#0d1117;border:1px solid #252a38;border-radius:8px;color:#e8eaf2;font-size:20px;text-align:center;letter-spacing:8px;font-family:Montserrat,sans-serif;margin-bottom:16px;box-sizing:border-box">
-      <div id="setup-2fa-error" style="color:#ff6b35;font-size:12px;margin-bottom:12px;display:none"></div>
-      <button onclick="confirmEnroll2FA('${factorId}')" style="width:100%;background:#00c896;border:none;border-radius:8px;padding:12px;color:#080b10;font-family:Montserrat,sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:12px">✅ Activate 2FA</button>
-      <button onclick="document.getElementById('modal-2fa-setup').remove();sb.auth.mfa.unenroll({factorId:'${factorId}'})" style="width:100%;background:transparent;border:1px solid #252a38;border-radius:8px;padding:10px;color:#7a8099;font-family:Montserrat,sans-serif;font-size:13px;cursor:pointer">Cancel</button>
+    <div style="background:#13161e;border:1px solid #252a38;border-radius:14px;padding:24px 20px;max-width:320px;width:100%;text-align:center">
+      <div style="font-size:22px;margin-bottom:6px">🔐</div>
+      <div style="font-size:14px;font-weight:700;color:#e8eaf2;margin-bottom:4px">Set Up 2FA</div>
+      <div style="font-size:11px;color:#7a8099;margin-bottom:16px;line-height:1.5">Scan with <strong style="color:#e8eaf2">Google Authenticator</strong> or <strong style="color:#e8eaf2">Authy</strong></div>
+      ${qrImgHtml}
+      <div style="font-size:10px;color:#7a8099;margin-bottom:4px">Or enter manually:</div>
+      <div style="font-size:11px;font-weight:700;color:#00c896;letter-spacing:1px;margin-bottom:16px;word-break:break-all;padding:0 4px">${secret}</div>
+      <div style="font-size:11px;color:#7a8099;margin-bottom:6px">Enter the 6-digit code to confirm:</div>
+      <input id="setup-totp-code" type="text" inputmode="numeric" maxlength="6" placeholder="000000" style="width:100%;padding:10px;background:#0d1117;border:1px solid #252a38;border-radius:8px;color:#e8eaf2;font-size:18px;text-align:center;letter-spacing:6px;font-family:Montserrat,sans-serif;margin-bottom:12px;box-sizing:border-box">
+      <div id="setup-2fa-error" style="color:#ff6b35;font-size:11px;margin-bottom:10px;display:none"></div>
+      <button onclick="confirmEnroll2FA('${factorId}')" style="width:100%;background:#00c896;border:none;border-radius:8px;padding:10px;color:#080b10;font-family:Montserrat,sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px">✅ Activate 2FA</button>
+      <button onclick="document.getElementById('modal-2fa-setup').remove();sb.auth.mfa.unenroll({factorId:'${factorId}'})" style="width:100%;background:transparent;border:1px solid #252a38;border-radius:8px;padding:8px;color:#7a8099;font-family:Montserrat,sans-serif;font-size:12px;cursor:pointer">Cancel</button>
     </div>`;
   document.body.appendChild(modal);
   setTimeout(()=>document.getElementById('setup-totp-code')?.focus(),100);
