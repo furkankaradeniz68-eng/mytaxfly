@@ -84,6 +84,10 @@ nav.scrolled .nav-links a {
 nav.scrolled .nav-links a:hover {
   color:#fff;
 }
+nav.scrolled .nav-links a[href="#tax-forms"] {
+  color:#00c896;
+  font-weight:700;
+}
 nav.scrolled .btn-ghost {
   color:#00c896;
   border-color:#00c896;
@@ -1162,6 +1166,7 @@ footer {
   <ul class="nav-links">
     <li><a href="#how"><span id="t-nav-how"><span id="t-how-label">How it works</span></span></a></li>
     <li><a href="#features"><span id="t-nav-features"><span id="t-feat-label">Features</span></span></a></li>
+    <li><a href="#tax-forms" style="color:#00c896;font-weight:600">IRS Forms</a></li>
     <li><a href="#pricing"><span id="t-nav-pricing">Pricing</span></a></li>
   </ul>
     <div class="nav-cta">
@@ -1196,6 +1201,7 @@ footer {
   <div class="mobile-menu-links">
     <a href="#how" onclick="toggleMobileMenu()">How it works</a>
     <a href="#features" onclick="toggleMobileMenu()">Features</a>
+    <a href="#tax-forms" onclick="toggleMobileMenu()" style="color:#00c896;font-weight:600">IRS Forms</a>
     <a href="#pricing" onclick="toggleMobileMenu()">Pricing</a>
   </div>
   <div class="mobile-menu-bottom">
@@ -1393,7 +1399,7 @@ footer {
 </div>
 
 <!-- USP SPOTLIGHT: TAX FORM EXPORT -->
-<div style="background:var(--card);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:80px 0">
+<div id="tax-forms" style="background:var(--card);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:80px 0">
   <div style="max-width:1100px;margin:0 auto;padding:0 40px;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center">
     <div>
       <div class="section-label">Unique to MyTaxFly</div>
