@@ -485,6 +485,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
     <div class="nav-item" onclick="showPage('reports',this)"><span class="nav-icon">☰</span> <span id="t-nav-reports">Reports</span></div>
     <div class="nav-divider"></div>
     <div class="nav-item" onclick="showPage('legal',this)"><span class="nav-icon">⚖</span> <span id="t-nav-legal">Legal</span></div>
+    <a href="/" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:#00c896;font-size:12px;font-weight:600;padding:10px 24px;margin-top:4px;transition:opacity 0.2s" onmouseover="this.style.opacity='0.75'" onmouseout="this.style.opacity='1'">← Back to mytaxfly.com</a>
     <div class="sidebar-bottom">
       <div class="lang-switcher" id="lang-switcher" style="margin-bottom:8px;">
         <button class="lang-btn" onclick="toggleLangMenu()">
@@ -501,7 +502,6 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
         </div>
       </div>
       <div class="user-info" id="sidebar-user">user@example.com</div>
-      <a href="/" style="display:flex;align-items:center;gap:6px;text-decoration:none;color:var(--text2);font-size:12px;padding:8px 0;margin-bottom:8px;transition:color 0.2s" onmouseover="this.style.color='#00c896'" onmouseout="this.style.color='var(--text2)'">← Back to mytaxfly.com</a>
       <a href="https://billing.stripe.com/p/login/test_9B65kvcrcfGI6yE2iDbAs00" target="_blank" class="btn-manage-sub">💳 Manage Subscription</a>
       <button class="btn-manage-sub" onclick="handle2FASetup()" id="btn-2fa-setup" style="border-color:#7c6fe0;color:#7c6fe0;cursor:pointer;background:var(--bg3)">🔐 Enable 2FA</button>
       <button class="btn-logout" onclick="handleLogout()"><span id="t-nav-signout">Sign Out</span></button>
@@ -695,8 +695,13 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
 const { createClient } = supabase;
 const sb = createClient('https://yacwkxstvqvdgiiffwos.supabase.co', 'sb_publishable_JAGI28ms4nmK_dDoS1BLzA_O8locPZk');
 
-// Warm up Supabase connection on page load to reduce login delay
-sb.auth.getSession().catch(()=>{});
+// Check session immediately and hide login screen if already logged in
+(async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session?.user) {
+    document.getElementById('login-screen').style.display = 'none';
+  }
+})();
 const ADMIN_EMAILS = ['furkan.karadeniz68@googlemail.com', 'anil@aynauniverse.com'];
 
 // ── STATE ─────────────────────────────────────────────────

@@ -1830,26 +1830,21 @@ window.addEventListener('resize', ()=>{
     );
     const { data: { session } } = await sb.auth.getSession();
     if (session) {
-      // "Sign in" ghost button → subtle dashboard link
+      // "Sign in" ghost button → Sign Out (left, ghost style)
       const signinBtn = document.querySelector('a[href="./dashboard.html"].btn-ghost');
       if (signinBtn) {
-        signinBtn.href = '/dashboard';
-        signinBtn.style.cssText = 'display:inline-flex;align-items:center;gap:6px;background:transparent;border:1px solid rgba(0,200,150,0.3);border-radius:10px;padding:9px 18px;color:#00c896;font-family:Montserrat,sans-serif;font-size:14px;font-weight:600;text-decoration:none;transition:all 0.2s';
-        signinBtn.innerHTML = '⚡ Dashboard';
-        signinBtn.onmouseover = () => { signinBtn.style.background='rgba(0,200,150,0.1)'; };
-        signinBtn.onmouseout  = () => { signinBtn.style.background='transparent'; };
+        signinBtn.removeAttribute('href');
+        signinBtn.style.cssText = 'display:inline-flex;align-items:center;background:transparent;border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:9px 18px;color:#7a8099;font-family:Montserrat,sans-serif;font-size:14px;font-weight:600;text-decoration:none;transition:all 0.2s;cursor:pointer';
+        signinBtn.innerHTML = '<span>Sign Out</span>';
+        signinBtn.onmouseover = () => { signinBtn.style.borderColor='rgba(255,107,53,0.4)'; signinBtn.style.color='#ff6b35'; };
+        signinBtn.onmouseout  = () => { signinBtn.style.borderColor='rgba(255,255,255,0.15)'; signinBtn.style.color='#7a8099'; };
+        signinBtn.onclick = async (e) => { e.preventDefault(); await sb.auth.signOut(); window.location.reload(); };
       }
-      // "Start free trial" green CTA → Sign Out
+      // "Start free trial" green CTA → Dashboard (right, green)
       const ctaBtn = document.querySelector('a[href="#pricing"].btn-nav');
       if (ctaBtn) {
-        ctaBtn.removeAttribute('href');
-        ctaBtn.style.cursor = 'pointer';
-        ctaBtn.innerHTML = '<span>Sign Out</span>';
-        ctaBtn.onclick = async (e) => {
-          e.preventDefault();
-          await sb.auth.signOut();
-          window.location.reload();
-        };
+        ctaBtn.href = '/dashboard';
+        ctaBtn.innerHTML = '<span>Dashboard →</span>';
       }
       // Mobile menu
       const mobSignin = document.querySelector('#mobile-menu a[href="./dashboard.html"]');
