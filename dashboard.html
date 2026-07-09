@@ -562,6 +562,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
       <div class="entry-tabs">
         <div class="entry-tab active" id="tab-manual" onclick="switchTab('manual')"><span id="t-tab-manual">✏️ Manual Entry</span></div>
         <div class="entry-tab" id="tab-upload" onclick="switchTab('upload')"><span id="t-tab-upload">📄 Upload Receipt</span></div>
+        <div class="entry-tab" id="tab-csv" onclick="switchTab('csv')">📥 Import CSV</div>
       </div>
       <div id="panel-manual">
         <div class="entry-form">
@@ -598,6 +599,18 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
           <div style="font-size:12px;color:var(--text3);margin-bottom:8px" id="t-demo-or">Or test with a demo receipt:</div>
           <button class="btn-sec" onclick="runDemo()"><span id="t-demo-btn">Analyze Demo Receipt ▶</span></button>
         </div>
+      </div>
+
+      <!-- CSV IMPORT PANEL -->
+      <div id="panel-csv" style="display:none">
+        <div class="upload-zone" id="csv-drop-zone" onclick="document.getElementById('csv-file-input').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleCSVDrop(event)">
+          <div class="empty-icon">📥</div>
+          <div class="upload-title">Drop bank statement CSV here or click</div>
+          <div class="upload-sub">Supports Chase, Mercury, Wise, Bank of America, and most banks · .csv files</div>
+          <br><button class="btn-sec" onclick="event.stopPropagation();document.getElementById('csv-file-input').click()">Select CSV File</button>
+        </div>
+        <input type="file" id="csv-file-input" accept=".csv" onchange="handleCSVFile(event)" style="display:none">
+        <div id="csv-preview"></div>
       </div>
     </div>
 
@@ -1075,8 +1088,10 @@ function showPage(name,el){
 function switchTab(tab){
   document.getElementById('tab-manual').classList.toggle('active',tab==='manual');
   document.getElementById('tab-upload').classList.toggle('active',tab==='upload');
+  document.getElementById('tab-csv').classList.toggle('active',tab==='csv');
   document.getElementById('panel-manual').style.display=tab==='manual'?'block':'none';
   document.getElementById('panel-upload').style.display=tab==='upload'?'block':'none';
+  document.getElementById('panel-csv').style.display=tab==='csv'?'block':'none';
 }
 
 function setType(type){
@@ -1233,6 +1248,25 @@ function appendTyping(){
 }
 
 // ── REPORTS ───────────────────────────────────────────────
+function reportCSS(){
+  return `body{font-family:Arial,sans-serif;max-width:820px;margin:40px auto;color:#1a1a1a;padding:0 24px}
+h1{color:#00c896;border-bottom:3px solid #00c896;padding-bottom:12px;margin-bottom:4px}
+h2{font-size:15px;margin:24px 0 8px;color:#333}
+table{width:100%;border-collapse:collapse;margin:8px 0 20px}
+th{background:#f5f5f5;padding:9px 12px;text-align:left;font-size:12px;font-weight:700;border-bottom:2px solid #ddd;text-transform:uppercase;letter-spacing:.5px}
+td{padding:9px 12px;border-bottom:1px solid #eee;font-size:13px}
+.amount{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.green{color:#00c896}.red{color:#e53e3e}
+.total-row td{background:#f9f9f9;font-weight:700;border-top:2px solid #aaa}
+.profit-box{background:#f0fdf4;border:2px solid #00c896;border-radius:10px;padding:24px;margin:24px 0;text-align:center}
+.summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;text-align:center}
+.stat-label{font-size:11px;color:#777;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.stat-val{font-size:22px;font-weight:800}
+.disclaimer{margin-top:36px;padding:12px 16px;background:#fff8f0;border:1px solid #f6ad55;border-radius:6px;font-size:11px;color:#744210;line-height:1.5}
+.footer{margin-top:24px;text-align:center;font-size:11px;color:#bbb;border-top:1px solid #eee;padding-top:16px}
+@media print{@page{margin:20mm}}`;
+}
+
 function generateReport(type){
   const filtered=getFilteredTx();
   if(!filtered.length){alert('No transactions in this period.');return;}
@@ -1244,57 +1278,197 @@ function generateReport(type){
   filtered.filter(t=>t.type==='expense').forEach(t=>{cats[t.category]=(cats[t.category]||0)+t.amount;});
   const deductible=filtered.filter(t=>t.deductible).reduce((s,t)=>s+t.amount,0);
   let html='';
+
   if(type==='pl'){
-    html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif;max-width:800px;margin:40px auto;color:#1a1a1a;padding:0 20px}h1{color:#00c896;border-bottom:3px solid #00c896;padding-bottom:12px}table{width:100%;border-collapse:collapse;margin:16px 0}th{background:#f5f5f5;padding:10px 14px;text-align:left;font-size:13px;border-bottom:2px solid #ddd}td{padding:10px 14px;border-bottom:1px solid #eee;font-size:13px}.amount{text-align:right;font-weight:600}.green{color:#00c896}.red{color:#e53e3e}.total-row{background:#f9f9f9;font-weight:700;border-top:2px solid #333}.profit-box{background:#f0fdf4;border:2px solid #00c896;border-radius:8px;padding:20px;margin-top:24px;text-align:center}.disclaimer{margin-top:40px;padding:12px;background:#fff8f0;border:1px solid #f6ad55;border-radius:6px;font-size:11px;color:#744210}.footer{margin-top:32px;text-align:center;font-size:11px;color:#999;border-top:1px solid #eee;padding-top:16px}</style></head><body><h1>Profit & Loss Statement</h1><div style="font-size:20px;font-weight:700;margin-bottom:4px">${llcName}</div><div style="font-size:13px;color:#666;margin-bottom:24px">Generated: ${date}</div><h2>Income</h2><table><thead><tr><th>Vendor</th><th>Category</th><th>Date</th><th class="amount">Amount</th></tr></thead><tbody>${filtered.filter(t=>t.type==='income').map(t=>`<tr><td>${t.vendor}</td><td>${t.category}</td><td>${t.date}</td><td class="amount green">+$${t.amount.toFixed(2)}</td></tr>`).join('')}<tr class="total-row"><td colspan="3">Total Revenue</td><td class="amount green">$${inc.toFixed(2)}</td></tr></tbody></table><h2>Expenses</h2><table><thead><tr><th>Vendor</th><th>Category</th><th>Date</th><th class="amount">Amount</th></tr></thead><tbody>${filtered.filter(t=>t.type==='expense').map(t=>`<tr><td>${t.vendor}</td><td>${t.category}</td><td>${t.date}</td><td class="amount red">-$${t.amount.toFixed(2)}</td></tr>`).join('')}<tr class="total-row"><td colspan="3">Total Expenses</td><td class="amount red">$${exp.toFixed(2)}</td></tr></tbody></table><div class="profit-box"><div style="font-size:13px;color:#555;margin-bottom:8px">NET PROFIT / LOSS</div><div style="font-size:36px;font-weight:800;color:#00c896">${profit>=0?'+':''}$${profit.toFixed(2)}</div></div><div class="disclaimer">⚠️ For informational purposes only. Not tax advice. Consult a qualified CPA before filing.</div><div class="footer">Generated by MyTaxFly · mytaxfly.com · ${date}</div>
-<!-- MOBILE BOTTOM NAV -->
-<div class="mobile-bottom-nav" id="mobile-bottom-nav">
-  <button class="mobile-nav-btn active" id="mnav-dashboard" onclick="showPage('dashboard',null);setMobileNav('dashboard')">
-    <span class="mobile-nav-icon">⬛</span>
-    <span>Dashboard</span>
-  </button>
-  <button class="mobile-nav-btn" id="mnav-add" onclick="showPage('add',null);setMobileNav('add')">
-    <span class="mobile-nav-icon">➕</span>
-    <span>Add</span>
-  </button>
-  <button class="mobile-nav-btn" id="mnav-ai" onclick="showPage('ai',null);setMobileNav('ai')">
-    <span class="mobile-nav-icon">✦</span>
-    <span>AI</span>
-  </button>
-  <button class="mobile-nav-btn" id="mnav-reports" onclick="showPage('reports',null);setMobileNav('reports')">
-    <span class="mobile-nav-icon">📊</span>
-    <span>Reports</span>
-  </button>
+    const incRows=filtered.filter(t=>t.type==='income').map(t=>`<tr><td>${t.vendor}</td><td>${t.category||'—'}</td><td>${t.date}</td><td class="amount green">+$${t.amount.toFixed(2)}</td></tr>`).join('');
+    const expRows=filtered.filter(t=>t.type==='expense').map(t=>`<tr><td>${t.vendor}</td><td>${t.category||'—'}</td><td>${t.date}</td><td class="amount red">−$${t.amount.toFixed(2)}</td></tr>`).join('');
+    html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>P&L — ${llcName}</title><style>${reportCSS()}</style></head><body>
+<h1>Profit &amp; Loss Statement</h1>
+<div style="font-size:19px;font-weight:700;margin-bottom:2px">${llcName}</div>
+<div style="font-size:13px;color:#777;margin-bottom:28px">Generated: ${date}</div>
+<h2>Income</h2>
+<table><thead><tr><th>Vendor</th><th>Category</th><th>Date</th><th class="amount">Amount</th></tr></thead>
+<tbody>${incRows}<tr class="total-row"><td colspan="3">Total Revenue</td><td class="amount green">$${inc.toFixed(2)}</td></tr></tbody></table>
+<h2>Expenses</h2>
+<table><thead><tr><th>Vendor</th><th>Category</th><th>Date</th><th class="amount">Amount</th></tr></thead>
+<tbody>${expRows}<tr class="total-row"><td colspan="3">Total Expenses</td><td class="amount red">$${exp.toFixed(2)}</td></tr></tbody></table>
+<div class="profit-box">
+  <div style="font-size:12px;color:#555;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Net Profit / Loss</div>
+  <div style="font-size:42px;font-weight:800;color:${profit>=0?'#00c896':'#e53e3e'}">${profit>=0?'+':''}$${profit.toFixed(2)}</div>
 </div>
-
+<div class="disclaimer">⚠️ For informational purposes only. This is not tax advice. Always consult a qualified CPA before filing your taxes.</div>
+<div class="footer">Generated by MyTaxFly · mytaxfly.com · ${date}</div>
 </body></html>`;
   }
+
   if(type==='summary'){
-    html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif;max-width:800px;margin:40px auto;color:#1a1a1a;padding:0 20px}h1{color:#00c896;border-bottom:3px solid #00c896;padding-bottom:12px}table{width:100%;border-collapse:collapse;margin:16px 0}th{background:#f5f5f5;padding:10px 14px;text-align:left;font-size:13px;border-bottom:2px solid #ddd}td{padding:10px 14px;border-bottom:1px solid #eee;font-size:13px}.amount{text-align:right;font-weight:600}.green{color:#00c896}.red{color:#e53e3e}.total-row{background:#f9f9f9;font-weight:700;border-top:2px solid #333}.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;background:#dcfce7;color:#166534}.summary-box{background:#f0fdf4;border:2px solid #00c896;border-radius:8px;padding:20px;margin-top:24px}.disclaimer{margin-top:40px;padding:12px;background:#fff8f0;border:1px solid #f6ad55;border-radius:6px;font-size:11px;color:#744210}.footer{margin-top:32px;text-align:center;font-size:11px;color:#999;border-top:1px solid #eee;padding-top:16px}</style></head><body><h1>Tax Summary Report</h1><div style="font-size:20px;font-weight:700;margin-bottom:4px">${llcName}</div><div style="font-size:13px;color:#666;margin-bottom:24px">Generated: ${date}</div><h2>Deductible Expenses by IRS Category</h2><table><thead><tr><th>IRS Category</th><th class="amount">Amount</th></tr></thead><tbody>${Object.entries(cats).map(([k,v])=>`<tr><td>${k}</td><td class="amount">$${v.toFixed(2)}</td></tr>`).join('')}<tr class="total-row"><td>Total Deductible</td><td class="amount">$${deductible.toFixed(2)}</td></tr></tbody></table><div class="summary-box"><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;text-align:center"><div><div style="font-size:11px;color:#555;text-transform:uppercase;margin-bottom:4px">Revenue</div><div style="font-size:22px;font-weight:800;color:#00c896">$${inc.toFixed(2)}</div></div><div><div style="font-size:11px;color:#555;text-transform:uppercase;margin-bottom:4px">Expenses</div><div style="font-size:22px;font-weight:800;color:#e53e3e">$${exp.toFixed(2)}</div></div><div><div style="font-size:11px;color:#555;text-transform:uppercase;margin-bottom:4px">Net Profit</div><div style="font-size:22px;font-weight:800;color:#00c896">${profit>=0?'+':''}$${profit.toFixed(2)}</div></div></div></div><div class="disclaimer">⚠️ For informational purposes only. Not tax advice. Consult a qualified CPA before filing.</div><div class="footer">Generated by MyTaxFly · mytaxfly.com · ${date}</div>
-<!-- MOBILE BOTTOM NAV -->
-<div class="mobile-bottom-nav" id="mobile-bottom-nav">
-  <button class="mobile-nav-btn active" id="mnav-dashboard" onclick="showPage('dashboard',null);setMobileNav('dashboard')">
-    <span class="mobile-nav-icon">⬛</span>
-    <span>Dashboard</span>
-  </button>
-  <button class="mobile-nav-btn" id="mnav-add" onclick="showPage('add',null);setMobileNav('add')">
-    <span class="mobile-nav-icon">➕</span>
-    <span>Add</span>
-  </button>
-  <button class="mobile-nav-btn" id="mnav-ai" onclick="showPage('ai',null);setMobileNav('ai')">
-    <span class="mobile-nav-icon">✦</span>
-    <span>AI</span>
-  </button>
-  <button class="mobile-nav-btn" id="mnav-reports" onclick="showPage('reports',null);setMobileNav('reports')">
-    <span class="mobile-nav-icon">📊</span>
-    <span>Reports</span>
-  </button>
+    const catRows=Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<tr><td>${k}</td><td class="amount">$${v.toFixed(2)}</td></tr>`).join('');
+    html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Tax Summary — ${llcName}</title><style>${reportCSS()}</style></head><body>
+<h1>Tax Summary Report</h1>
+<div style="font-size:19px;font-weight:700;margin-bottom:2px">${llcName}</div>
+<div style="font-size:13px;color:#777;margin-bottom:28px">Generated: ${date}</div>
+<h2>Deductible Expenses by IRS Schedule C Category</h2>
+<table><thead><tr><th>IRS Category</th><th class="amount">Amount</th></tr></thead>
+<tbody>${catRows}<tr class="total-row"><td>Total Deductible Expenses</td><td class="amount">$${deductible.toFixed(2)}</td></tr></tbody></table>
+<div class="profit-box">
+  <div class="summary-grid">
+    <div><div class="stat-label">Revenue</div><div class="stat-val green">$${inc.toFixed(2)}</div></div>
+    <div><div class="stat-label">Expenses</div><div class="stat-val red">$${exp.toFixed(2)}</div></div>
+    <div><div class="stat-label">Net Profit</div><div class="stat-val" style="color:${profit>=0?'#00c896':'#e53e3e'}">${profit>=0?'+':''}$${profit.toFixed(2)}</div></div>
+  </div>
 </div>
-
+<div class="disclaimer">⚠️ For informational purposes only. This is not tax advice. Always consult a qualified CPA before filing your taxes.</div>
+<div class="footer">Generated by MyTaxFly · mytaxfly.com · ${date}</div>
 </body></html>`;
   }
+
   const win=window.open('','_blank');
   win.document.write(html); win.document.close();
-  setTimeout(()=>win.print(),500);
+  setTimeout(()=>win.print(),600);
+}
+
+// ── CSV IMPORT ────────────────────────────────────────────
+function handleCSVDrop(e){e.preventDefault();document.getElementById('csv-drop-zone').classList.remove('drag');const f=e.dataTransfer.files[0];if(f)parseCSVFile(f);}
+function handleCSVFile(e){const f=e.target.files[0];if(f)parseCSVFile(f);}
+
+function parseCSV(text){
+  const lines=text.trim().split(/\r?\n/);
+  const headers=lines[0].split(',').map(h=>h.replace(/"/g,'').trim().toLowerCase());
+  const rows=lines.slice(1).filter(l=>l.trim()).map(line=>{
+    const vals=[];let cur='',inQ=false;
+    for(const c of line){if(c==='"'){inQ=!inQ;}else if(c===','&&!inQ){vals.push(cur.trim());cur='';}else{cur+=c;}}
+    vals.push(cur.trim());
+    return vals;
+  });
+  return{headers,rows};
+}
+
+function detectColumns(headers){
+  const find=(keys)=>headers.findIndex(h=>keys.some(k=>h.includes(k)));
+  return{
+    date: find(['date','posted','transaction date','trans date']),
+    desc: find(['description','desc','memo','name','details','payee','vendor','merchant']),
+    amount: find(['amount','sum','total']),
+    debit: find(['debit','withdrawal','out']),
+    credit: find(['credit','deposit','in']),
+    type: find(['type','transaction type'])
+  };
+}
+
+async function parseCSVFile(file){
+  const preview=document.getElementById('csv-preview');
+  preview.innerHTML='<div class="loading"><div class="spinner"></div> Reading CSV...</div>';
+  const text=await readTxt(file);
+  const {headers,rows}=parseCSV(text);
+  const cols=detectColumns(headers);
+  if(rows.length===0){preview.innerHTML='<div style="color:var(--warn);padding:16px">⚠️ No data found in CSV.</div>';return;}
+
+  // Build preview table (first 5 rows)
+  const sample=rows.slice(0,5);
+  const colOptions=headers.map((h,i)=>`<option value="${i}">${h}</option>`).join('');
+  const none=`<option value="-1">— ignore —</option>`;
+
+  preview.innerHTML=`
+  <div class="result-card" style="margin-top:20px">
+    <div style="font-weight:700;font-size:15px;margin-bottom:4px">📥 ${file.name}</div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:16px">${rows.length} rows detected · Map your columns below</div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px">
+      <div class="form-group"><div class="f-label">Date column</div>
+        <select class="f-input" id="csv-col-date">${none}${colOptions}</select></div>
+      <div class="form-group"><div class="f-label">Description / Vendor</div>
+        <select class="f-input" id="csv-col-desc">${none}${colOptions}</select></div>
+      <div class="form-group"><div class="f-label">Amount (single column)</div>
+        <select class="f-input" id="csv-col-amount">${none}${colOptions}</select></div>
+      <div class="form-group"><div class="f-label">Or: Debit column</div>
+        <select class="f-input" id="csv-col-debit">${none}${colOptions}</select></div>
+      <div class="form-group"><div class="f-label">Credit column</div>
+        <select class="f-input" id="csv-col-credit">${none}${colOptions}</select></div>
+    </div>
+    <div style="overflow-x:auto;margin-bottom:16px">
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead><tr>${headers.map(h=>`<th style="padding:6px 10px;background:var(--card2);border-bottom:1px solid var(--border);text-align:left;white-space:nowrap">${h}</th>`).join('')}</tr></thead>
+        <tbody>${sample.map(r=>`<tr>${r.map(v=>`<td style="padding:6px 10px;border-bottom:1px solid var(--border);white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis">${v}</td>`).join('')}</tr>`).join('')}</tbody>
+      </table>
+    </div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Showing first 5 of ${rows.length} rows</div>
+    <button class="btn-primary" style="width:auto;padding:12px 28px" onclick="importCSVRows(${JSON.stringify(rows).replace(/</g,'&lt;').replace(/>/g,'&gt;')})">✦ AI Categorize &amp; Import All ${rows.length} Transactions →</button>
+  </div>`;
+
+  // Auto-select detected columns
+  const set=(id,val)=>{if(val>=0){const el=document.getElementById(id);if(el)el.value=val;}};
+  set('csv-col-date',cols.date); set('csv-col-desc',cols.desc);
+  set('csv-col-amount',cols.amount); set('csv-col-debit',cols.debit);
+  set('csv-col-credit',cols.credit);
+}
+
+async function importCSVRows(rows){
+  const gi=id=>parseInt(document.getElementById(id).value);
+  const dateCol=gi('csv-col-date'), descCol=gi('csv-col-desc');
+  const amtCol=gi('csv-col-amount'), debitCol=gi('csv-col-debit'), creditCol=gi('csv-col-credit');
+
+  if(descCol<0){alert('Please select a Description column.');return;}
+
+  const preview=document.getElementById('csv-preview');
+  preview.innerHTML=`<div class="loading"><div class="spinner"></div> AI categorizing ${rows.length} transactions — this may take a moment...</div>`;
+
+  const parsed=rows.map(r=>{
+    const desc=r[descCol]||'Unknown';
+    const rawDate=dateCol>=0?r[dateCol]:'';
+    let date=new Date().toISOString().slice(0,10);
+    if(rawDate){try{const d=new Date(rawDate);if(!isNaN(d))date=d.toISOString().slice(0,10);}catch(e){}}
+    let amount=0,type='expense';
+    if(amtCol>=0){
+      const v=parseFloat(r[amtCol].replace(/[$,\s]/g,''));
+      if(!isNaN(v)){amount=Math.abs(v);type=v>=0?'income':'expense';}
+    } else {
+      const d=debitCol>=0?parseFloat(r[debitCol].replace(/[$,\s]/g,'')||0):0;
+      const c=creditCol>=0?parseFloat(r[creditCol].replace(/[$,\s]/g,'')||0):0;
+      if(c>0){amount=c;type='income';}else{amount=Math.abs(d)||0;type='expense';}
+    }
+    return{desc,date,amount,type};
+  }).filter(r=>r.amount>0);
+
+  // Batch AI categorize — send up to 30 at once
+  const BATCH=30;
+  let imported=0,errors=0;
+  for(let i=0;i<parsed.length;i+=BATCH){
+    const batch=parsed.slice(i,i+BATCH);
+    const prompt=`Categorize these ${batch.length} US LLC transactions into IRS Schedule C categories.
+Categories: Software & Tools | Marketing | Office & Supplies | Travel | Meals | Professional Services | Other
+Respond ONLY with a JSON array, one object per transaction:
+[{"vendor":"cleaned name","category":"category","deductible":true,"deductible_percent":100,"note":"short IRS note"}]
+
+Transactions:
+${batch.map((r,j)=>`${j+1}. ${r.type.toUpperCase()} $${r.amount.toFixed(2)} — ${r.desc}`).join('\n')}`;
+    try{
+      const raw=await callClaude([{role:'user',content:prompt}],null,2000);
+      const results=JSON.parse(raw.replace(/```json|```/g,'').trim());
+      for(let j=0;j<batch.length;j++){
+        const b=batch[j], res=results[j]||{};
+        await addTransaction({
+          vendor:res.vendor||b.desc,
+          amount:b.amount,
+          date:b.date,
+          type:b.type,
+          category:res.category||'Other',
+          currency:'USD',
+          deductible:res.deductible!==false,
+          deductible_percent:res.deductible_percent||100,
+          note:res.note||''
+        });
+        imported++;
+      }
+    }catch(e){errors+=batch.length;}
+    preview.innerHTML=`<div class="loading"><div class="spinner"></div> Importing... ${imported}/${parsed.length}</div>`;
+  }
+
+  preview.innerHTML=`<div class="result-card" style="margin-top:20px">
+    <div class="success-banner" style="opacity:1;transform:none">
+      <div class="success-icon">✓</div>
+      <div><div class="success-title">${imported} transactions imported successfully</div>
+      <div class="success-sub">${errors>0?`${errors} rows skipped · `:''}AI categorized all transactions · <span style="cursor:pointer;text-decoration:underline;color:var(--accent)" onclick="showPage('dashboard',document.querySelectorAll('.nav-item')[0])">View Dashboard →</span></div></div>
+    </div>
+  </div>`;
 }
 
 function exportCSV(){
