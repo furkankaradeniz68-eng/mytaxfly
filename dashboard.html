@@ -645,6 +645,43 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
         <div class="stat-card" style="cursor:pointer" onclick="generateReport('summary')"><div style="font-size:28px;margin-bottom:10px">📋</div><div style="font-weight:700;margin-bottom:4px"><span id="t-rep2">Tax Summary</span></div><div style="font-size:12px;color:var(--text3)"><span id="t-rep2-sub">Deductible expenses by IRS category</span></div><div style="margin-top:12px"><span class="badge green">PDF Export</span></div></div>
         <div class="stat-card" style="cursor:pointer" onclick="exportCSV()"><div style="font-size:28px;margin-bottom:10px">📑</div><div style="font-weight:700;margin-bottom:4px"><span id="t-rep3">All Transactions</span></div><div style="font-size:12px;color:var(--text3)"><span id="t-rep3-sub">Complete list as CSV</span></div><div style="margin-top:12px"><span class="badge orange">CSV Export</span></div></div>
       </div>
+      <!-- IRS TAX FORM EXPORT -->
+      <div class="card" style="border-color:rgba(0,200,150,0.3);background:linear-gradient(135deg,rgba(0,200,150,0.05) 0%,var(--card) 60%)">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <span style="font-size:22px">🗂️</span>
+          <div class="card-title" style="color:#00c896;margin:0">IRS Tax Form Export</div>
+          <span style="font-size:11px;font-weight:700;padding:2px 9px;background:rgba(0,200,150,0.15);color:#00c896;border-radius:20px;border:1px solid rgba(0,200,150,0.3)">Unique Feature</span>
+        </div>
+        <div style="font-size:13px;color:var(--text2);margin-bottom:16px">Export your data pre-filled into <strong style="color:var(--text)">Form 1120</strong> and <strong style="color:var(--text)">Form 5472</strong> — the two IRS forms every foreign-owned US LLC must file. Your numbers, in the right fields, ready for your CPA.</div>
+        <div id="tax-profile-section">
+          <div style="background:rgba(255,200,50,0.08);border:1px solid rgba(255,200,50,0.25);border-radius:10px;padding:14px 16px;margin-bottom:16px">
+            <div style="font-size:13px;font-weight:600;color:#f6ad55;margin-bottom:4px">⚠️ Complete your LLC profile to enable export</div>
+            <div style="font-size:12px;color:var(--text3)">We need your EIN and a few details to pre-fill the forms correctly. This is a one-time setup.</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+            <div class="form-group"><div class="f-label">EIN (Employer Identification Number)</div><input class="f-input" id="tp-ein" placeholder="12-3456789" maxlength="10"></div>
+            <div class="form-group"><div class="f-label">LLC Address (Street)</div><input class="f-input" id="tp-address" placeholder="123 Main St, Suite 100"></div>
+            <div class="form-group"><div class="f-label">City, State, ZIP</div><input class="f-input" id="tp-city" placeholder="New York, NY 10001"></div>
+            <div class="form-group"><div class="f-label">Date of Incorporation</div><input class="f-input" id="tp-inc-date" type="date"></div>
+            <div class="form-group"><div class="f-label">Principal Business Activity</div><input class="f-input" id="tp-activity" placeholder="e.g. Software / Consulting"></div>
+            <div class="form-group"><div class="f-label">Country of Incorporation</div><input class="f-input" id="tp-country" placeholder="United States (Delaware)"></div>
+          </div>
+          <div style="font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin:16px 0 10px">Foreign Shareholder (You)</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+            <div class="form-group"><div class="f-label">Full Name &amp; Address</div><input class="f-input" id="tp-sh-name" placeholder="Your Name, Street, City, Country"></div>
+            <div class="form-group"><div class="f-label">Country of Citizenship</div><input class="f-input" id="tp-sh-country" placeholder="Germany"></div>
+            <div class="form-group"><div class="f-label">Foreign Tax ID (FTIN)</div><input class="f-input" id="tp-sh-ftin" placeholder="e.g. German Steuer-ID"></div>
+            <div class="form-group"><div class="f-label">Country of Tax Residence</div><input class="f-input" id="tp-sh-res" placeholder="Germany"></div>
+          </div>
+          <button class="btn-primary" style="width:auto;padding:12px 24px;margin-right:8px" onclick="saveTaxProfile()">💾 Save Profile</button>
+          <div id="tp-saved" style="display:inline;font-size:12px;color:#00c896;display:none">✓ Saved</div>
+        </div>
+        <div id="tax-export-btn-wrap" style="margin-top:16px">
+          <button class="btn-primary" style="width:100%;padding:16px;font-size:15px;background:linear-gradient(135deg,#00c896,#00a87a)" onclick="exportTaxForms()">🗂️ Export Tax Package — Form 1120 + Form 5472 →</button>
+          <div style="font-size:11px;color:var(--text3);text-align:center;margin-top:8px">⚠️ Review with your CPA before filing to the IRS. Signature required.</div>
+        </div>
+      </div>
+
       <div class="card">
         <div class="card-title" id="t-ai-report">⚡ Generate AI Report</div>
         <div style="font-size:13px;color:var(--text2);margin-bottom:16px" id="t-ai-report-sub">AI creates a professional report from all your transactions</div>
@@ -1051,6 +1088,7 @@ async function launchApp(user){
   const [pFrom,pTo]=getPeriodRange('month');
   periodFrom=pFrom; periodTo=pTo;
   await loadTransactions();
+  loadTaxProfile();
   initCookieBanner();
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='block';
@@ -1489,6 +1527,172 @@ async function generateAIReport(){
     const report=await callClaude([{role:'user',content:`Create a professional bookkeeping report for LLC "${llcName}":\n\n${sum}\n\nInclude: Executive summary, P&L, total deductible expenses, IRS categories, recommendations. Max 300 words.`}],null,1000);
     document.getElementById('report-output').innerHTML=`<div class="result-card" style="margin-top:0"><div style="font-weight:700;margin-bottom:12px">📊 AI Report — ${llcName}</div><div style="font-size:13px;line-height:1.7;color:var(--text2)">${report.replace(/\n/g,'<br>')}</div><div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);font-size:11px;color:var(--text3)">⚠️ Informational only. Not tax advice. Consult a CPA.</div></div>`;
   }catch(e){document.getElementById('report-output').innerHTML=`<div style="color:var(--warn);font-size:13px">❌ Error: ${e.message}</div>`;}
+}
+
+// ── TAX PROFILE ───────────────────────────────────────────
+const TAX_PROFILE_KEY = 'mtf_tax_profile';
+
+function loadTaxProfile() {
+  const p = JSON.parse(localStorage.getItem(TAX_PROFILE_KEY) || '{}');
+  const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+  set('tp-ein', p.ein); set('tp-address', p.address); set('tp-city', p.city);
+  set('tp-inc-date', p.incDate); set('tp-activity', p.activity); set('tp-country', p.country);
+  set('tp-sh-name', p.shName); set('tp-sh-country', p.shCountry);
+  set('tp-sh-ftin', p.shFtin); set('tp-sh-res', p.shRes);
+  if (p.ein) {
+    const warn = document.querySelector('#tax-profile-section .form-group')?.closest('[style*="f6ad55"]');
+    // hide warning if EIN present
+  }
+}
+
+function saveTaxProfile() {
+  const g = id => document.getElementById(id)?.value?.trim() || '';
+  const p = {
+    ein: g('tp-ein'), address: g('tp-address'), city: g('tp-city'),
+    incDate: g('tp-inc-date'), activity: g('tp-activity'), country: g('tp-country'),
+    shName: g('tp-sh-name'), shCountry: g('tp-sh-country'),
+    shFtin: g('tp-sh-ftin'), shRes: g('tp-sh-res')
+  };
+  localStorage.setItem(TAX_PROFILE_KEY, JSON.stringify(p));
+  const s = document.getElementById('tp-saved');
+  if (s) { s.style.display = 'inline'; setTimeout(() => s.style.display = 'none', 2500); }
+}
+
+function getTaxProfile() {
+  return JSON.parse(localStorage.getItem(TAX_PROFILE_KEY) || '{}');
+}
+
+function exportTaxForms() {
+  const p = getTaxProfile();
+  if (!p.ein) { alert('Please complete your LLC profile first (EIN is required).'); return; }
+  const filtered = getFilteredTx();
+  const inc = filtered.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+  const exp = filtered.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+  const profit = inc - exp;
+  const taxYear = new Date().getFullYear() - 1;
+  const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+  // Group expenses by broad IRS 1120 categories
+  const cats = {};
+  filtered.filter(t => t.type === 'expense').forEach(t => { cats[t.category] = (cats[t.category] || 0) + t.amount; });
+  const advertising = Object.entries(cats).filter(([k]) => k.toLowerCase().includes('marketing') || k.toLowerCase().includes('advertis')).reduce((s, [, v]) => s + v, 0);
+  const otherDed = exp - advertising;
+  const txList = filtered.map(t => `${t.date} | ${t.type === 'income' ? '+' : '-'}$${t.amount.toFixed(2)} | ${t.vendor} | ${t.category}`).join('\n');
+
+  const css = `body{font-family:Arial,sans-serif;max-width:820px;margin:32px auto;color:#1a1a1a;padding:0 24px;font-size:12px}
+h1{font-size:18px;font-weight:800;border-bottom:3px solid #00c896;padding-bottom:8px;margin-bottom:4px}
+.subtitle{font-size:11px;color:#777;margin-bottom:24px}.section{margin-bottom:20px}
+.section-title{font-size:13px;font-weight:700;background:#f5f5f5;padding:6px 10px;border-left:3px solid #00c896;margin-bottom:8px}
+table{width:100%;border-collapse:collapse;margin-bottom:12px}
+th{background:#f5f5f5;padding:6px 10px;text-align:left;font-size:11px;font-weight:700;border-bottom:1px solid #ddd;text-transform:uppercase}
+td{padding:6px 10px;border-bottom:1px solid #eee;font-size:11px}.amount{text-align:right;font-weight:600}
+.green{color:#00c896}.red{color:#e53e3e}.total-row td{font-weight:700;border-top:2px solid #aaa;background:#f9f9f9}
+.highlight{background:#f0fdf4;border:2px solid #00c896;border-radius:8px;padding:16px;margin:16px 0;text-align:center}
+.field-row{display:flex;gap:8px;margin-bottom:6px}
+.field{flex:1;border:1px solid #ddd;padding:5px 8px;border-radius:4px;min-height:22px;font-size:11px}
+.field-label{font-size:10px;color:#777;margin-bottom:2px}
+.disclaimer{margin-top:24px;padding:10px 14px;background:#fff8f0;border:1px solid #f6ad55;border-radius:6px;font-size:10px;color:#744210;line-height:1.5}
+.footer{margin-top:16px;text-align:center;font-size:10px;color:#bbb;border-top:1px solid #eee;padding-top:12px}
+.brand{color:#00c896;font-weight:800}@media print{@page{margin:15mm}}`;
+
+  const formHTML = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>IRS Tax Package — ${llcName} — ${taxYear}</title><style>${css}</style></head><body>
+<div style="text-align:center;margin-bottom:24px">
+  <div style="font-size:22px;font-weight:800;color:#00c896">MyTaxFly</div>
+  <div style="font-size:14px;font-weight:700;margin-top:4px">IRS Tax Filing Package — Tax Year ${taxYear}</div>
+  <div style="font-size:11px;color:#777">Generated: ${today} · Review with your CPA before filing</div>
+</div>
+
+<h1>FORM 5472 — Information Return (Foreign-Owned U.S. LLC)</h1>
+<div class="subtitle">Rev. December 2023 · Sections 6038A and 6038C · Pre-filled from MyTaxFly data</div>
+
+<div class="section">
+<div class="section-title">Part I — Reporting Corporation</div>
+<table><tbody>
+<tr><td class="field-label" style="width:220px">1a Name of Reporting Corporation</td><td><div class="field">${llcName}</div></td><td class="field-label" style="width:160px">1b Employer ID (EIN)</td><td><div class="field">${p.ein}</div></td></tr>
+<tr><td class="field-label">Street Address</td><td><div class="field">${p.address || '___________________________'}</div></td><td class="field-label">1c Total Assets</td><td><div class="field">$${inc.toFixed(2)}</div></td></tr>
+<tr><td class="field-label">City, State, ZIP</td><td><div class="field">${p.city || '___________________________'}</div></td><td></td><td></td></tr>
+<tr><td class="field-label">1d Principal Business Activity</td><td><div class="field">${p.activity || '___________________________'}</div></td><td class="field-label">1l Country of Incorporation</td><td><div class="field">${p.country || 'United States'}</div></td></tr>
+<tr><td class="field-label">1f Total Gross Payments</td><td><div class="field">$${(inc + exp).toFixed(2)}</div></td><td class="field-label">1m Date of Incorporation</td><td><div class="field">${p.incDate || '___________'}</div></td></tr>
+<tr><td class="field-label">1g Total # of Forms 5472</td><td><div class="field">1</div></td><td class="field-label">1j Initial Year Filing?</td><td><div class="field">☐ Check if yes</div></td></tr>
+</tbody></table>
+<div style="font-size:11px;color:#555;margin:6px 0 2px"><strong>Check 3:</strong> ☑ This is a foreign-owned domestic disregarded entity (foreign-owned U.S. DE) treated as a corporation for purposes of section 6038A.</div>
+</div>
+
+<div class="section">
+<div class="section-title">Part II — 25% Foreign Shareholder (You)</div>
+<table><tbody>
+<tr><td class="field-label" style="width:220px">4a Name &amp; Address</td><td><div class="field">${p.shName || '___________________________'}</div></td><td class="field-label" style="width:160px">4d Country of Citizenship</td><td><div class="field">${p.shCountry || '___________'}</div></td></tr>
+<tr><td class="field-label">4b(3) Foreign Tax ID (FTIN)</td><td><div class="field">${p.shFtin || '___________________________'}</div></td><td class="field-label">4e Country of Tax Residence</td><td><div class="field">${p.shRes || '___________'}</div></td></tr>
+</tbody></table>
+</div>
+
+<div class="section">
+<div class="section-title">Part IV — Monetary Transactions (Auto-filled from your transactions)</div>
+<table><thead><tr><th>Line</th><th>Description</th><th class="amount">Amount (USD)</th></tr></thead><tbody>
+${filtered.filter(t => t.type === 'income').map((t, i) => `<tr><td>${i === 0 ? '15/21' : ''}</td><td>${t.vendor} — ${t.category}</td><td class="amount green">$${t.amount.toFixed(2)}</td></tr>`).join('')}
+<tr class="total-row"><td>22</td><td>Total Received (Lines 9–21)</td><td class="amount green">$${inc.toFixed(2)}</td></tr>
+${filtered.filter(t => t.type === 'expense').map((t, i) => `<tr><td>${i === 0 ? '29/35' : ''}</td><td>${t.vendor} — ${t.category}</td><td class="amount red">$${t.amount.toFixed(2)}</td></tr>`).join('')}
+<tr class="total-row"><td>36</td><td>Total Paid (Lines 23–35)</td><td class="amount red">$${exp.toFixed(2)}</td></tr>
+</tbody></table>
+</div>
+
+<div style="page-break-before:always"></div>
+
+<h1>PRO FORMA FORM 1120 — U.S. Corporation Income Tax Return</h1>
+<div class="subtitle">Tax Year ${taxYear} · Foreign-Owned Single-Member LLC (Disregarded Entity) · Pre-filled from MyTaxFly data</div>
+
+<div class="section">
+<div class="section-title">Header Information</div>
+<table><tbody>
+<tr><td class="field-label" style="width:180px">Name</td><td><div class="field">${llcName}</div></td><td class="field-label" style="width:160px">B Employer ID (EIN)</td><td><div class="field">${p.ein}</div></td></tr>
+<tr><td class="field-label">Address</td><td><div class="field">${p.address || '___________________________'}</div></td><td class="field-label">C Date Incorporated</td><td><div class="field">${p.incDate || '___________'}</div></td></tr>
+<tr><td class="field-label">City / State / ZIP</td><td><div class="field">${p.city || '___________________________'}</div></td><td class="field-label">D Total Assets</td><td><div class="field">$${inc.toFixed(2)}</div></td></tr>
+<tr><td class="field-label">E Check if Initial Return</td><td><div class="field">☐ Initial return</div></td><td class="field-label">Tax Year</td><td><div class="field">${taxYear}</div></td></tr>
+</tbody></table>
+</div>
+
+<div class="section">
+<div class="section-title">Income (Page 1)</div>
+<table><thead><tr><th>Line</th><th>Description</th><th class="amount">Amount</th></tr></thead><tbody>
+<tr><td>1a</td><td>Gross receipts or sales</td><td class="amount green">$${inc.toFixed(2)}</td></tr>
+<tr><td>1c</td><td>Balance (gross receipts)</td><td class="amount green">$${inc.toFixed(2)}</td></tr>
+<tr class="total-row"><td>11</td><td>Total Income</td><td class="amount green">$${inc.toFixed(2)}</td></tr>
+</tbody></table>
+</div>
+
+<div class="section">
+<div class="section-title">Deductions (Page 1)</div>
+<table><thead><tr><th>Line</th><th>IRS Category</th><th class="amount">Amount</th></tr></thead><tbody>
+${advertising > 0 ? `<tr><td>22</td><td>Advertising</td><td class="amount">$${advertising.toFixed(2)}</td></tr>` : ''}
+<tr><td>26</td><td>Other deductions (see attached transaction list)</td><td class="amount">$${otherDed.toFixed(2)}</td></tr>
+<tr class="total-row"><td>27</td><td>Total Deductions</td><td class="amount">$${exp.toFixed(2)}</td></tr>
+<tr class="total-row"><td>28</td><td>Taxable Income before NOL</td><td class="amount ${profit >= 0 ? 'green' : 'red'}">${profit >= 0 ? '+' : ''}$${profit.toFixed(2)}</td></tr>
+</tbody></table>
+</div>
+
+<div class="highlight">
+  <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Net Profit / Loss — Tax Year ${taxYear}</div>
+  <div style="font-size:32px;font-weight:800;color:${profit >= 0 ? '#00c896' : '#e53e3e'}">${profit >= 0 ? '+' : ''}$${profit.toFixed(2)}</div>
+  <div style="font-size:11px;color:#777;margin-top:6px">Gross Receipts $${inc.toFixed(2)} · Total Deductions $${exp.toFixed(2)}</div>
+</div>
+
+<div class="section">
+<div class="section-title">Attached: Transaction List (${filtered.length} transactions)</div>
+<table><thead><tr><th>Date</th><th>Vendor</th><th>Type</th><th>Category</th><th class="amount">Amount</th></tr></thead><tbody>
+${filtered.map(t => `<tr><td>${t.date}</td><td>${t.vendor}</td><td>${t.type}</td><td>${t.category}</td><td class="amount ${t.type === 'income' ? 'green' : 'red'}">${t.type === 'income' ? '+' : '-'}$${t.amount.toFixed(2)}</td></tr>`).join('')}
+</tbody></table>
+</div>
+
+<div class="disclaimer">
+  <strong>⚠️ Important:</strong> This document is a pre-filled working draft generated by <span class="brand">MyTaxFly</span> to assist in preparing your IRS filings. It is NOT a substitute for professional tax advice. You MUST review this with a qualified CPA or tax professional before filing with the IRS. MyTaxFly is not a licensed tax advisor. The actual Form 5472 and Pro Forma Form 1120 must be filed by the tax deadline (typically April 15). Forms 5472 must be attached to your Pro Forma 1120 and mailed to: Internal Revenue Service, P.O. Box 409101, Ogden, UT 84409.
+</div>
+<div class="footer">Generated by <span class="brand">MyTaxFly</span> · mytaxfly.com · ${today} · Tax Year ${taxYear}</div>
+</body></html>`;
+
+  const win = window.open('', '_blank');
+  win.document.write(formHTML);
+  win.document.close();
+  setTimeout(() => win.print(), 700);
 }
 
 // ── COOKIE BANNER ─────────────────────────────────────────
