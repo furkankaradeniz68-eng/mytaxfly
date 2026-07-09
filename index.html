@@ -1843,8 +1843,10 @@ window.addEventListener('resize', ()=>{
       // "Start free trial" green CTA → Dashboard (right, green)
       const ctaBtn = document.querySelector('a[href="#pricing"].btn-nav');
       if (ctaBtn) {
-        ctaBtn.href = '/dashboard';
+        ctaBtn.removeAttribute('href');
         ctaBtn.innerHTML = '<span>Dashboard →</span>';
+        ctaBtn.style.cursor = 'pointer';
+        ctaBtn.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/dashboard'; });
       }
       // Mobile menu
       const mobSignin = document.querySelector('#mobile-menu a[href="./dashboard.html"]');
