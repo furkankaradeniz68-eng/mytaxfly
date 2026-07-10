@@ -396,7 +396,18 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
   .mobile-header { display:flex; }
   .mobile-burger { display:flex; }
 }
-</style>
+
+    /* ── GEAR DROPDOWN ─────────────────────────────────── */
+    #topbar-actions .gear-dropdown{display:none;position:absolute;top:calc(100% + 8px);right:0;background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;min-width:210px;z-index:300;box-shadow:0 8px 32px rgba(0,0,0,0.55)}
+    .gdrop-label{padding:14px 16px 4px;font-size:10px;color:var(--text3);font-weight:700;letter-spacing:.6px;text-transform:uppercase}
+    .gdrop-email{padding:2px 16px 12px;font-size:11px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .gdrop-sep{height:1px;background:var(--border);margin:0 12px 4px}
+    .gdrop-item{display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:13px;font-weight:600;color:var(--text);text-decoration:none;cursor:pointer;transition:background 0.12s;font-family:'Montserrat',sans-serif;width:100%;margin-bottom:2px}
+    .gdrop-item:last-child{margin-bottom:8px}
+    .gdrop-item:hover{background:var(--bg3)}
+    .gdrop-btn{background:none;border:none}
+    /* ───────────────────────────────────────────────────── */
+    </style>
 </head>
 <body>
 
@@ -532,15 +543,22 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
       <!-- Gear dropdown -->
       <div class="gear-wrap" id="gear-wrap" style="position:relative">
         <button class="gear-btn" onclick="toggleGearMenu()" title="Settings" style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all 0.15s;color:var(--text2)">⚙️</button>
-        <div class="gear-dropdown" id="gear-dropdown" style="position:absolute;top:calc(100% + 8px);right:0;background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;min-width:200px;z-index:300;box-shadow:0 8px 24px rgba(0,0,0,0.5)">
-          <div style="padding:12px 16px 4px;font-size:11px;color:var(--text3);font-weight:700;letter-spacing:0.5px;text-transform:uppercase">Account</div>
-          <div style="padding:4px 12px 8px;font-size:11px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="topbar-user-email">user@example.com</div>
-          <div style="height:1px;background:var(--border);margin:0 12px"></div>
-          <div style="padding:4px 0 8px">
-            <a href="https://billing.stripe.com/p/login/test_9B65kvcrcfGI6yE2iDbAs00" target="_blank" onclick="closeGearMenu()" style="display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:13px;font-weight:600;color:var(--accent);text-decoration:none;transition:background 0.15s;font-family:'Montserrat',sans-serif" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">💳 Manage Subscription</a>
-            <button onclick="handle2FASetup();closeGearMenu()" id="btn-2fa-setup" style="display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:13px;font-weight:600;color:#7c6fe0;background:none;border:none;cursor:pointer;width:100%;font-family:'Montserrat',sans-serif;transition:background 0.15s" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">🔐 Enable 2FA</button>
-            <button onclick="openAccountModal();closeGearMenu()" style="display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:13px;font-weight:600;color:var(--text);background:none;border:none;cursor:pointer;width:100%;font-family:'Montserrat',sans-serif;transition:background 0.15s" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">👤 Edit Account</button>
-          </div>
+        <div class="gear-dropdown" id="gear-dropdown">
+          <div class="gdrop-label">Account</div>
+          <div class="gdrop-email" id="topbar-user-email">user@example.com</div>
+          <div class="gdrop-sep"></div>
+          <a href="https://billing.stripe.com/p/login/test_9B65kvcrcfGI6yE2iDbAs00" target="_blank" onclick="closeGearMenu()" class="gdrop-item">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            <span>Manage Subscription</span>
+          </a>
+          <button onclick="handle2FASetup();closeGearMenu()" id="btn-2fa-setup" class="gdrop-item gdrop-btn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+            <span>Enable 2FA</span>
+          </button>
+          <button onclick="openAccountModal();closeGearMenu()" class="gdrop-item gdrop-btn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            <span>Edit Account</span>
+          </button>
         </div>
       </div>
       <!-- Sign Out -->
@@ -715,23 +733,31 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
           <button class="btn-primary" style="width:auto;padding:12px 24px;margin-right:8px" onclick="saveTaxProfile()">💾 Save Profile</button>
           <div id="tp-saved" style="display:inline;font-size:12px;color:#00c896;display:none">✓ Saved</div>
         </div>
-        <div id="tax-export-btn-wrap" style="margin-top:16px">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px">
-            <div style="position:relative">
-              <button class="btn-primary" style="width:100%;padding:14px;font-size:13px;background:linear-gradient(135deg,#00c896,#00a87a)" onclick="gatedAction(exportForm1120,'pro')">📄 Export Form 1120 →</button>
-              <div id="irs-lock-1120" style="display:none;position:absolute;inset:0;background:rgba(13,15,20,0.85);border-radius:10px;align-items:center;justify-content:center;gap:8px;cursor:pointer;backdrop-filter:blur(2px)" onclick="showUpgradeModal('pro')">
-                <span style="font-size:16px">🔒</span><span style="font-size:12px;font-weight:700;color:var(--text)">Pro — <span style="color:#00c896">Upgrade →</span></span>
-              </div>
-            </div>
-            <div style="position:relative">
-              <button class="btn-primary" style="width:100%;padding:14px;font-size:13px;background:linear-gradient(135deg,#00c896,#00a87a)" onclick="gatedAction(exportForm5472,'pro')">📄 Export Form 5472 →</button>
-              <div id="irs-lock-5472" style="display:none;position:absolute;inset:0;background:rgba(13,15,20,0.85);border-radius:10px;align-items:center;justify-content:center;gap:8px;cursor:pointer;backdrop-filter:blur(2px)" onclick="showUpgradeModal('pro')">
-                <span style="font-size:16px">🔒</span><span style="font-size:12px;font-weight:700;color:var(--text)">Pro — <span style="color:#00c896">Upgrade →</span></span>
-              </div>
+      </div>
+      <!-- IRS EXPORT BUTTONS — own card -->
+      <div class="card" style="border-color:rgba(0,200,150,0.2);margin-top:0">
+        <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:14px;letter-spacing:.3px">Download Pre-Filled IRS Forms</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+          <div style="position:relative">
+            <button class="btn-primary" style="width:100%;padding:15px 10px;font-size:13px;font-weight:700;background:linear-gradient(135deg,#00c896,#00a87a)" onclick="gatedAction(exportForm1120,'pro')">
+              <svg style="display:inline;vertical-align:-3px;margin-right:6px" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Pro Forma 1120
+            </button>
+            <div id="irs-lock-1120" style="display:none;position:absolute;inset:0;background:rgba(13,15,20,0.85);border-radius:10px;align-items:center;justify-content:center;gap:8px;cursor:pointer;backdrop-filter:blur(2px)" onclick="showUpgradeModal('pro')">
+              <span style="font-size:16px">🔒</span><span style="font-size:12px;font-weight:700;color:var(--text)">Pro — <span style="color:#00c896">Upgrade →</span></span>
             </div>
           </div>
-          <div style="font-size:11px;color:var(--text3);text-align:center;margin-top:4px">⚠️ Review with your CPA before filing to the IRS. Signature required.</div>
+          <div style="position:relative">
+            <button class="btn-primary" style="width:100%;padding:15px 10px;font-size:13px;font-weight:700;background:linear-gradient(135deg,#00c896,#00a87a)" onclick="gatedAction(exportForm5472,'pro')">
+              <svg style="display:inline;vertical-align:-3px;margin-right:6px" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Form 5472
+            </button>
+            <div id="irs-lock-5472" style="display:none;position:absolute;inset:0;background:rgba(13,15,20,0.85);border-radius:10px;align-items:center;justify-content:center;gap:8px;cursor:pointer;backdrop-filter:blur(2px)" onclick="showUpgradeModal('pro')">
+              <span style="font-size:16px">🔒</span><span style="font-size:12px;font-weight:700;color:var(--text)">Pro — <span style="color:#00c896">Upgrade →</span></span>
+            </div>
+          </div>
         </div>
+        <div style="font-size:11px;color:var(--text3);text-align:center">⚠️ Review with your CPA before filing. Signature required.</div>
       </div>
 
       <div class="card">
@@ -1051,10 +1077,8 @@ async function handle2FASetup(){
   const qrUrl=data.totp.qr_code;
   const secret=data.totp.secret;
   const factorId=data.id;
-  const isUrl = qrUrl.startsWith('http');
-  const qrImgHtml = isUrl
-    ? `<img src="${qrUrl}" style="width:160px;height:160px;border-radius:8px;background:white;padding:6px;margin-bottom:12px">`
-    : `<div style="width:160px;height:160px;background:white;border-radius:8px;padding:6px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center">${qrUrl}</div>`;
+  // Supabase returns a data URL (data:image/svg+xml or https URL) — img handles both
+  const qrImgHtml = `<img src="${qrUrl}" style="width:160px;height:160px;border-radius:8px;background:white;padding:6px;margin:0 auto 12px;display:block">`;
   const modal=document.createElement('div');
   modal.id='modal-2fa-setup';
   modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
