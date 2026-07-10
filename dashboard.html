@@ -465,7 +465,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
     <!-- 2FA FORM -->
     <div id="form-2fa" style="display:none">
       <div style="text-align:center;margin-bottom:20px">
-        <div style="font-size:32px;margin-bottom:8px">🔐</div>
+        <div style="margin-bottom:10px"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
         <div style="font-size:15px;font-weight:700;color:var(--text1);margin-bottom:6px">Two-Factor Authentication</div>
         <div style="font-size:12px;color:var(--text2);line-height:1.6">Enter the 6-digit code from your<br>authenticator app (e.g. Google Authenticator)</div>
       </div>
@@ -507,7 +507,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
     <div class="nav-item" id="nav-ai-item" onclick="gatedNav('chat',this,'pro')"><span class="nav-icon">◎</span> <span id="t-nav-ai">AI Advisor</span><span id="nav-ai-lock" style="display:none;margin-left:auto;font-size:10px;opacity:0.5">🔒</span></div>
     <div class="nav-item" onclick="showPage('reports',this)"><span class="nav-icon">☰</span> <span id="t-nav-reports">Reports</span></div>
     <a href="/forms/IRS-Forms-MyTaxFly.zip" download style="display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--text2);font-size:12px;font-weight:500;padding:7px 24px 7px 20px;margin-top:2px;transition:color 0.2s;border-left:2px solid transparent" onmouseover="this.style.color='#00c896'" onmouseout="this.style.color=''">
-      <span style="font-size:13px">⬇</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
       <span>Download IRS Forms (ZIP)</span>
     </a>
     <div style="font-size:10px;color:var(--text3);padding:0 24px 8px 44px;line-height:1.4">Form 1120 (2025) + Form 5472 (Rev. 12-2023)</div>
@@ -542,7 +542,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
     <div id="topbar-actions" style="position:fixed;top:16px;right:24px;display:flex;align-items:center;gap:10px;z-index:200">
       <!-- Gear dropdown -->
       <div class="gear-wrap" id="gear-wrap" style="position:relative">
-        <button class="gear-btn" onclick="toggleGearMenu()" title="Settings" style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all 0.15s;color:var(--text2)">⚙️</button>
+        <button class="gear-btn" onclick="toggleGearMenu()" title="Settings" style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all 0.15s;color:var(--text2)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
         <div class="gear-dropdown" id="gear-dropdown">
           <div class="gdrop-label">Account</div>
           <div class="gdrop-email" id="topbar-user-email">user@example.com</div>
@@ -567,7 +567,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
 
     <!-- DASHBOARD -->
     <div class="page active" id="page-dashboard">
-      <div class="page-title" id="dash-title">Welcome 👋</div>
+      <div class="page-title" id="dash-title">Welcome</div>
       <div class="page-sub" id="dash-llc"><span id="t-dash-sub">Your LLC Overview · 2026</span></div>
       <!-- PERIOD FILTER -->
       <div class="period-bar">
@@ -597,7 +597,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
       </div>
       <div class="two-col">
         <div class="card"><div class="card-title" id="t-recent-tx">Recent Transactions</div><div id="tx-list"><div class="empty-state" style="padding:30px 0"><div class="empty-icon">📂</div><div class="empty-title">No transactions yet</div><div class="empty-sub">Add your first transaction</div></div></div></div>
-        <div class="card"><div class="card-title" id="t-by-cat">Expenses by Category</div><div id="cat-list"><div class="empty-state" style="padding:30px 0"><div class="empty-icon">📊</div><div class="empty-title">No data yet</div><div class="empty-sub">Appears after first entry</div></div></div></div>
+        <div class="card"><div class="card-title" id="t-by-cat">Expenses by Category</div><div id="cat-list"><div class="empty-state" style="padding:30px 0"><div class="empty-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><div class="empty-title">No data yet</div><div class="empty-sub">Appears after first entry</div></div></div></div>
       </div>
       <div class="card">
         <div class="card-title" id="t-deadlines">⚠️ Upcoming IRS Deadlines</div>
@@ -616,8 +616,8 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
       <div class="page-sub" id="t-add-sub">Enter manually or upload a receipt — AI categorizes automatically</div>
       <div class="entry-tabs">
         <div class="entry-tab active" id="tab-manual" onclick="switchTab('manual')"><span id="t-tab-manual">✏️ Manual Entry</span></div>
-        <div class="entry-tab" id="tab-upload" onclick="switchTab('upload')"><span id="t-tab-upload">📄 Upload Receipt</span></div>
-        <div class="entry-tab" id="tab-csv" onclick="switchTab('csv')">📥 Import CSV</div>
+        <div class="entry-tab" id="tab-upload" onclick="switchTab('upload')"><svg style="display:inline;vertical-align:-2px;margin-right:5px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span id="t-tab-upload">Upload Receipt</span></div>
+        <div class="entry-tab" id="tab-csv" onclick="switchTab('csv')"><svg style="display:inline;vertical-align:-2px;margin-right:5px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 19 19 12"/></svg>Import CSV</div>
       </div>
       <div id="panel-manual">
         <div class="entry-form">
@@ -625,8 +625,8 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
           <div class="form-group" style="margin-bottom:16px">
             <div class="f-label" id="t-tx-type">Transaction Type</div>
             <div class="type-toggle">
-              <div class="type-btn active-expense" id="btn-expense" onclick="setType('expense')"><span id="t-expense-btn">📤 Expense</span></div>
-              <div class="type-btn" id="btn-income" onclick="setType('income')"><span id="t-income-btn">📥 Income</span></div>
+              <div class="type-btn active-expense" id="btn-expense" onclick="setType('expense')"><svg style="display:inline;vertical-align:-2px;margin-right:5px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg><span id="t-expense-btn">Expense</span></div>
+              <div class="type-btn" id="btn-income" onclick="setType('income')"><svg style="display:inline;vertical-align:-2px;margin-right:5px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg><span id="t-income-btn">Income</span></div>
             </div>
           </div>
           <div class="form-row">
@@ -643,7 +643,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
       </div>
       <div id="panel-upload" style="display:none">
         <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)">
-          <div class="empty-icon">📄</div>
+          <div class="empty-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
           <div class="upload-title" id="t-drop-title">Drop receipt here or click</div>
           <div class="upload-sub" id="t-drop-sub">PDF, JPG, PNG · Invoices, receipts, statements</div>
           <br><button class="btn-sec" onclick="event.stopPropagation();document.getElementById('file-input').click()"><span id="t-select-file">Select File</span></button>
@@ -661,7 +661,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
       <!-- CSV IMPORT PANEL -->
       <div id="panel-csv" style="display:none">
         <div class="upload-zone" id="csv-drop-zone" onclick="document.getElementById('csv-file-input').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleCSVDrop(event)">
-          <div class="empty-icon">📥</div>
+          <div class="empty-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 19 19 12"/></svg></div>
           <div class="upload-title">Drop bank statement CSV here or click</div>
           <div class="upload-sub">Supports Chase, Mercury, Wise, Bank of America, and most banks · .csv files</div>
           <br><button class="btn-sec" onclick="event.stopPropagation();document.getElementById('csv-file-input').click()">Select CSV File</button>
@@ -677,7 +677,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
       <div class="page-sub" id="t-chat-sub">Ask anything about your LLC, taxes, and bookkeeping</div>
       <div class="chat-container">
         <div class="chat-messages" id="chat-messages">
-          <div class="msg"><div class="msg-avatar">🤖</div><div class="msg-bubble">Hi! I'm your AI bookkeeping assistant. Ask me anything about US LLC taxes, deductible expenses, IRS deadlines, and bookkeeping.<br><br><strong>⚠️</strong> I'm not a licensed tax advisor. For complex decisions, always consult a CPA.</div></div>
+          <div class="msg"><div class="msg-avatar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M12 11V5"/><circle cx="12" cy="3" r="2"/><line x1="7" y1="15" x2="7" y2="15.01"/><line x1="12" y1="15" x2="12" y2="15.01"/><line x1="17" y1="15" x2="17" y2="15.01"/></svg></div><div class="msg-bubble">Hi! I'm your AI bookkeeping assistant. Ask me anything about US LLC taxes, deductible expenses, IRS deadlines, and bookkeeping.<br><br><strong>⚠️</strong> I'm not a licensed tax advisor. For complex decisions, always consult a CPA.</div></div>
         </div>
         <div class="quick-btns">
           <div class="quick-btn" onclick="sendQuick('What expenses can I deduct as an LLC?')">What can I deduct?</div>
@@ -699,13 +699,13 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
       <div class="page-sub" id="t-reports-sub">Export your bookkeeping for your accountant</div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px">
         <div class="stat-card" style="cursor:pointer" onclick="generateReport('pl')"><div style="font-size:28px;margin-bottom:10px">📊</div><div style="font-weight:700;margin-bottom:4px">Profit & Loss</div><div style="font-size:12px;color:var(--text3)"><span id="t-rep1-sub">Revenue and expenses overview</span></div><div style="margin-top:12px"><span class="badge blue">PDF Export</span></div></div>
-        <div class="stat-card" style="cursor:pointer" onclick="generateReport('summary')"><div style="font-size:28px;margin-bottom:10px">📋</div><div style="font-weight:700;margin-bottom:4px"><span id="t-rep2">Tax Summary</span></div><div style="font-size:12px;color:var(--text3)"><span id="t-rep2-sub">Deductible expenses by IRS category</span></div><div style="margin-top:12px"><span class="badge green">PDF Export</span></div></div>
-        <div class="stat-card" style="cursor:pointer" onclick="exportCSV()"><div style="font-size:28px;margin-bottom:10px">📑</div><div style="font-weight:700;margin-bottom:4px"><span id="t-rep3">All Transactions</span></div><div style="font-size:12px;color:var(--text3)"><span id="t-rep3-sub">Complete list as CSV</span></div><div style="margin-top:12px"><span class="badge orange">CSV Export</span></div></div>
+        <div class="stat-card" style="cursor:pointer" onclick="generateReport('summary')"><div style="margin-bottom:12px"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg></div><div style="font-weight:700;margin-bottom:4px"><span id="t-rep2">Tax Summary</span></div><div style="font-size:12px;color:var(--text3)"><span id="t-rep2-sub">Deductible expenses by IRS category</span></div><div style="margin-top:12px"><span class="badge green">PDF Export</span></div></div>
+        <div class="stat-card" style="cursor:pointer" onclick="exportCSV()"><div style="margin-bottom:12px"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="9" x2="9" y2="21"/></svg></div><div style="font-weight:700;margin-bottom:4px"><span id="t-rep3">All Transactions</span></div><div style="font-size:12px;color:var(--text3)"><span id="t-rep3-sub">Complete list as CSV</span></div><div style="margin-top:12px"><span class="badge orange">CSV Export</span></div></div>
       </div>
       <!-- IRS TAX FORM EXPORT -->
       <div class="card" style="border-color:rgba(0,200,150,0.3);background:linear-gradient(135deg,rgba(0,200,150,0.05) 0%,var(--card) 60%)">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
-          <span style="font-size:22px">🗂️</span>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
           <div class="card-title" style="color:#00c896;margin:0">IRS Tax Form Export</div>
           <span style="font-size:11px;font-weight:700;padding:2px 9px;background:rgba(0,200,150,0.15);color:#00c896;border-radius:20px;border:1px solid rgba(0,200,150,0.3)">Unique Feature</span>
         </div>
@@ -761,7 +761,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
       </div>
 
       <div class="card">
-        <div class="card-title" id="t-ai-report">⚡ Generate AI Report</div>
+        <div class="card-title" id="t-ai-report"><svg style="display:inline;vertical-align:-3px;margin-right:6px" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Generate AI Report</div>
         <div style="font-size:13px;color:var(--text2);margin-bottom:16px" id="t-ai-report-sub">AI creates a professional report from all your transactions</div>
         <button class="btn-primary" style="width:auto;padding:12px 28px" onclick="generateAIReport()"><span id="t-ai-report-btn">Generate AI Report →</span></button>
         <div id="report-output" style="margin-top:20px"></div>
@@ -1077,14 +1077,14 @@ async function handle2FASetup(){
   const qrUrl=data.totp.qr_code;
   const secret=data.totp.secret;
   const factorId=data.id;
-  // Supabase returns a data URL (data:image/svg+xml or https URL) — img handles both
-  const qrImgHtml = `<img src="${qrUrl}" style="width:160px;height:160px;border-radius:8px;background:white;padding:6px;margin:0 auto 12px;display:block">`;
+  // Supabase returns a data URL — set src via JS to avoid template literal issues with SVG data URLs
+  const qrImgHtml = '<img id="setup-qr-img" style="width:160px;height:160px;border-radius:8px;background:white;padding:6px;margin:0 auto 12px;display:block" alt="QR Code">';
   const modal=document.createElement('div');
   modal.id='modal-2fa-setup';
   modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
   modal.innerHTML=`
     <div style="background:#13161e;border:1px solid #252a38;border-radius:14px;padding:24px 20px;max-width:320px;width:100%;text-align:center">
-      <div style="font-size:22px;margin-bottom:6px">🔐</div>
+      <div style="margin-bottom:8px"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
       <div style="font-size:14px;font-weight:700;color:#e8eaf2;margin-bottom:4px">Set Up 2FA</div>
       <div style="font-size:11px;color:#7a8099;margin-bottom:16px;line-height:1.5">Scan with <strong style="color:#e8eaf2">Google Authenticator</strong> or <strong style="color:#e8eaf2">Authy</strong></div>
       ${qrImgHtml}
@@ -1097,6 +1097,7 @@ async function handle2FASetup(){
       <button onclick="document.getElementById('modal-2fa-setup').remove();sb.auth.mfa.unenroll({factorId:'${factorId}'})" style="width:100%;background:transparent;border:1px solid #252a38;border-radius:8px;padding:8px;color:#7a8099;font-family:Montserrat,sans-serif;font-size:12px;cursor:pointer">Cancel</button>
     </div>`;
   document.body.appendChild(modal);
+  document.getElementById('setup-qr-img').src = qrUrl;
   setTimeout(()=>document.getElementById('setup-totp-code')?.focus(),100);
 }
 
@@ -1156,7 +1157,7 @@ async function launchApp(user){
   userName=meta.name||user.email.split('@')[0];
   llcName=meta.llc_name||'My LLC';
   userEmail=user.email;
-  document.getElementById('dash-title').textContent=`Welcome, ${userName} 👋`;
+  document.getElementById('dash-title').textContent=`Welcome, ${userName}`;
   document.getElementById('dash-llc').textContent=`${llcName} · Overview ${new Date().getFullYear()}`;
   document.getElementById('sidebar-user').textContent=user.email;
   const tbe=document.getElementById('topbar-user-email');if(tbe)tbe.textContent=user.email;
@@ -1244,7 +1245,7 @@ function refreshDashboard(){
   const cls=['','b2','b3','b4'];
   const catList=document.getElementById('cat-list');
   if(Object.keys(cats).length===0){
-    catList.innerHTML='<div class="empty-state" style="padding:30px 0"><div class="empty-icon">📊</div><div class="empty-title">No expenses in this period</div></div>';
+    catList.innerHTML='<div class="empty-state" style="padding:30px 0"><div class="empty-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><div class="empty-title">No expenses in this period</div></div>';
   } else {
     catList.innerHTML=Object.entries(cats).map(([k,v],i)=>`<div class="cat-item"><div class="cat-header"><span class="cat-name">${k}</span><span class="cat-val">${fmt(v)}</span></div><div class="bar-bg"><div class="bar-fill ${cls[i%4]}" style="width:${(v/tot*100).toFixed(0)}%"></div></div></div>`).join('');
   }
@@ -1488,50 +1489,7 @@ function generateReport(type){
 <div class="disclaimer">⚠️ For informational purposes only. This is not tax advice. Always consult a qualified CPA before filing your taxes.</div>
 <div class="footer">Generated by MyTaxFly · mytaxfly.com · ${date}</div>
 
-  <!-- ACCOUNT MODAL -->
-  <div id="account-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;width:min(560px,92vw);max-height:85vh;overflow-y:auto;position:relative">
-      <button onclick="closeAccountModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;line-height:1">✕</button>
-      <div style="font-size:18px;font-weight:800;color:var(--text);margin-bottom:4px">👤 Account Settings</div>
-      <div style="font-size:12px;color:var(--text3);margin-bottom:20px">Edit your profile, IRS data and payment settings</div>
 
-      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Profile</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-        <div class="form-group"><div class="f-label">Full Name</div><input class="f-input" id="acc-name" placeholder="Your Name"></div>
-        <div class="form-group"><div class="f-label">Email</div><input class="f-input" id="acc-email" placeholder="email@example.com" disabled style="opacity:0.5;cursor:not-allowed"></div>
-      </div>
-
-      <div style="height:1px;background:var(--border);margin:16px 0"></div>
-      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">IRS / LLC Data</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
-        <div class="form-group"><div class="f-label">EIN</div><input class="f-input" id="acc-ein" placeholder="12-3456789" maxlength="10"></div>
-        <div class="form-group"><div class="f-label">LLC Address (Street)</div><input class="f-input" id="acc-address" placeholder="123 Main St, Suite 100"></div>
-        <div class="form-group"><div class="f-label">City, State, ZIP</div><input class="f-input" id="acc-city" placeholder="New York, NY 10001"></div>
-        <div class="form-group"><div class="f-label">Date of Incorporation</div><input class="f-input" id="acc-inc-date" type="date"></div>
-        <div class="form-group"><div class="f-label">Principal Business Activity</div><input class="f-input" id="acc-activity" placeholder="e.g. Software / Consulting"></div>
-        <div class="form-group"><div class="f-label">Country of Incorporation</div><input class="f-input" id="acc-country" placeholder="United States (Delaware)"></div>
-      </div>
-      <div style="font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin:12px 0 10px">Foreign Shareholder (You)</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-        <div class="form-group"><div class="f-label">Full Name &amp; Address</div><input class="f-input" id="acc-sh-name" placeholder="Your Name, Street, City, Country"></div>
-        <div class="form-group"><div class="f-label">Country of Citizenship</div><input class="f-input" id="acc-sh-country" placeholder="Germany"></div>
-        <div class="form-group"><div class="f-label">Foreign Tax ID (FTIN)</div><input class="f-input" id="acc-sh-ftin" placeholder="e.g. German Steuer-ID"></div>
-        <div class="form-group"><div class="f-label">Country of Tax Residence</div><input class="f-input" id="acc-sh-res" placeholder="Germany"></div>
-      </div>
-
-      <div style="height:1px;background:var(--border);margin:16px 0"></div>
-      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Payment</div>
-      <a href="https://billing.stripe.com/p/login/test_9B65kvcrcfGI6yE2iDbAs00" target="_blank" style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;text-decoration:none;color:var(--accent);font-size:13px;font-weight:600;margin-bottom:16px">
-        💳 Manage Payment Method &amp; Subscription <span style="margin-left:auto;font-size:11px;color:var(--text3)">via Stripe →</span>
-      </a>
-
-      <div style="display:flex;align-items:center;gap:10px">
-        <button class="btn-primary" style="flex:1;padding:12px" onclick="saveAccountModal()">💾 Save Changes</button>
-        <button onclick="closeAccountModal()" style="padding:12px 20px;background:none;border:1px solid var(--border);border-radius:10px;color:var(--text2);font-family:'Montserrat',sans-serif;font-weight:600;cursor:pointer">Cancel</button>
-      </div>
-      <div id="acc-saved" style="display:none;font-size:12px;color:#00c896;text-align:center;margin-top:8px">✓ Saved successfully</div>
-    </div>
-  </div>
 </body></html>`;
   }
 
@@ -2250,5 +2208,51 @@ document.addEventListener('click', e => {
   </div>
 </div>
 
+
+  <!-- ACCOUNT MODAL -->
+  <div id="account-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:2000;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;width:min(560px,92vw);max-height:85vh;overflow-y:auto;position:relative">
+      <button onclick="closeAccountModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;line-height:1">✕</button>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        <div style="font-size:18px;font-weight:800;color:var(--text)">Account Settings</div>
+      </div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:20px">Edit your profile, IRS data and payment settings</div>
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Profile</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+        <div class="form-group"><div class="f-label">Full Name</div><input class="f-input" id="acc-name" placeholder="Your Name"></div>
+        <div class="form-group"><div class="f-label">Email</div><input class="f-input" id="acc-email" placeholder="email@example.com" disabled style="opacity:0.5;cursor:not-allowed"></div>
+      </div>
+      <div style="height:1px;background:var(--border);margin:16px 0"></div>
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">IRS / LLC Data</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div class="form-group"><div class="f-label">EIN</div><input class="f-input" id="acc-ein" placeholder="12-3456789" maxlength="10"></div>
+        <div class="form-group"><div class="f-label">LLC Address (Street)</div><input class="f-input" id="acc-address" placeholder="123 Main St, Suite 100"></div>
+        <div class="form-group"><div class="f-label">City, State, ZIP</div><input class="f-input" id="acc-city" placeholder="New York, NY 10001"></div>
+        <div class="form-group"><div class="f-label">Date of Incorporation</div><input class="f-input" id="acc-inc-date" type="date"></div>
+        <div class="form-group"><div class="f-label">Principal Business Activity</div><input class="f-input" id="acc-activity" placeholder="e.g. Software / Consulting"></div>
+        <div class="form-group"><div class="f-label">Country of Incorporation</div><input class="f-input" id="acc-country" placeholder="United States (Delaware)"></div>
+      </div>
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin:12px 0 10px">Foreign Shareholder</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+        <div class="form-group"><div class="f-label">Full Name &amp; Address</div><input class="f-input" id="acc-sh-name" placeholder="Your Name, Street, City, Country"></div>
+        <div class="form-group"><div class="f-label">Country of Citizenship</div><input class="f-input" id="acc-sh-country" placeholder="Germany"></div>
+        <div class="form-group"><div class="f-label">Foreign Tax ID (FTIN)</div><input class="f-input" id="acc-sh-ftin" placeholder="e.g. German Steuer-ID"></div>
+        <div class="form-group"><div class="f-label">Country of Tax Residence</div><input class="f-input" id="acc-sh-res" placeholder="Germany"></div>
+      </div>
+      <div style="height:1px;background:var(--border);margin:16px 0"></div>
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Payment</div>
+      <a href="https://billing.stripe.com/p/login/test_9B65kvcrcfGI6yE2iDbAs00" target="_blank" style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;text-decoration:none;color:var(--accent);font-size:13px;font-weight:600;margin-bottom:16px">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        Manage Payment Method &amp; Subscription
+        <span style="margin-left:auto;font-size:11px;color:var(--text3)">via Stripe →</span>
+      </a>
+      <div style="display:flex;align-items:center;gap:10px">
+        <button class="btn-primary" style="flex:1;padding:12px" onclick="saveAccountModal()">Save Changes</button>
+        <button onclick="closeAccountModal()" style="padding:12px 20px;background:none;border:1px solid var(--border);border-radius:10px;color:var(--text2);font-family:'Montserrat',sans-serif;font-weight:600;cursor:pointer">Cancel</button>
+      </div>
+      <div id="acc-saved" style="display:none;font-size:12px;color:#00c896;text-align:center;margin-top:8px">✓ Saved successfully</div>
+    </div>
+  </div>
 </body>
 </html>
