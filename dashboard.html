@@ -1173,10 +1173,10 @@ function refreshDashboard(){
   const inc=filtered.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
   const exp=filtered.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
   const prf=inc-exp;
-  document.getElementById('stat-income').textContent='$'+inc.toFixed(2);
-  document.getElementById('stat-expense').textContent='$'+exp.toFixed(2);
+  document.getElementById('stat-income').textContent=fmt(inc);
+  document.getElementById('stat-expense').textContent=fmt(exp);
   const pe=document.getElementById('stat-profit');
-  pe.textContent='$'+prf.toFixed(2); pe.style.color=prf>=0?'var(--accent)':'var(--warn)';
+  pe.textContent=fmt(prf); pe.style.color=prf>=0?'var(--accent)':'var(--warn)';
   document.getElementById('beleg-count').textContent=filtered.length;
   const pc=document.getElementById('period-count');
   if(pc) pc.textContent=filtered.length===transactions.length?'':'('+filtered.length+' of '+transactions.length+')';
@@ -1185,7 +1185,7 @@ function refreshDashboard(){
   if(filtered.length===0){
     txList.innerHTML='<div class="empty-state" style="padding:30px 0"><div class="empty-icon">📂</div><div class="empty-title">No transactions in this period</div><div class="empty-sub">Try a different time range</div></div>';
   } else {
-    txList.innerHTML=filtered.slice(0,5).map(t=>`<div class="tx-item"><div class="tx-left"><div class="tx-icon">${icons[t.category]||'📄'}</div><div><div class="tx-name">${t.vendor}</div><div class="tx-cat">${t.category}</div></div></div><div class="tx-amount ${t.type==='income'?'in':'out'}">${t.type==='income'?'+':'-'}$${t.amount.toFixed(2)}</div></div>`).join('');
+    txList.innerHTML=filtered.slice(0,5).map(t=>`<div class="tx-item"><div class="tx-left"><div class="tx-icon">${icons[t.category]||'📄'}</div><div><div class="tx-name">${t.vendor}</div><div class="tx-cat">${t.category}</div></div></div><div class="tx-amount ${t.type==='income'?'in':'out'}">${t.type==='income'?'+':'-'}${fmt(t.amount)}</div></div>`).join('');
   }
   const cats={};
   filtered.filter(t=>t.type==='expense').forEach(t=>{cats[t.category]=(cats[t.category]||0)+t.amount;});
@@ -1195,7 +1195,7 @@ function refreshDashboard(){
   if(Object.keys(cats).length===0){
     catList.innerHTML='<div class="empty-state" style="padding:30px 0"><div class="empty-icon">📊</div><div class="empty-title">No expenses in this period</div></div>';
   } else {
-    catList.innerHTML=Object.entries(cats).map(([k,v],i)=>`<div class="cat-item"><div class="cat-header"><span class="cat-name">${k}</span><span class="cat-val">$${v.toFixed(2)}</span></div><div class="bar-bg"><div class="bar-fill ${cls[i%4]}" style="width:${(v/tot*100).toFixed(0)}%"></div></div></div>`).join('');
+    catList.innerHTML=Object.entries(cats).map(([k,v],i)=>`<div class="cat-item"><div class="cat-header"><span class="cat-name">${k}</span><span class="cat-val">${fmt(v)}</span></div><div class="bar-bg"><div class="bar-fill ${cls[i%4]}" style="width:${(v/tot*100).toFixed(0)}%"></div></div></div>`).join('');
   }
 }
 
@@ -1228,7 +1228,7 @@ Transaction: ${currentType} of $${amount} — "${vendor}"${notes?' — '+notes:'
     res.innerHTML='';
     const rc=document.createElement('div'); rc.className='result-card';
     const iI=result.type==='income';
-    rc.innerHTML=`<div class="result-header"><div><div class="result-file">✏️ Manual Entry</div><div class="result-title">${result.vendor}</div></div><span class="badge ${result.deductible?'green':'orange'}">${result.deductible?result.deductible_percent+'% deductible':'not deductible'}</span></div><div class="result-grid"><div class="result-field"><div class="result-field-label">Amount</div><div class="result-field-val" style="color:${iI?'var(--accent)':'var(--warn)'}">${iI?'+':'-'}$${result.amount.toFixed(2)}</div></div><div class="result-field"><div class="result-field-label">Category</div><div class="result-field-val">${result.category}</div></div><div class="result-field"><div class="result-field-label">Date</div><div class="result-field-val">${result.date}</div></div></div><div class="result-note">💡 ${result.note}</div><div class="success-banner" id="sb2" style="opacity:0;transform:translateY(8px)"><div class="success-icon">✓</div><div><div class="success-title">Added to dashboard</div><div class="success-sub">Saved to your account · <span style="cursor:pointer;text-decoration:underline;color:var(--accent)" onclick="showPage('dashboard',document.querySelectorAll('.nav-item')[0])">View →</span></div></div></div>`;
+    rc.innerHTML=`<div class="result-header"><div><div class="result-file">✏️ Manual Entry</div><div class="result-title">${result.vendor}</div></div><span class="badge ${result.deductible?'green':'orange'}">${result.deductible?result.deductible_percent+'% deductible':'not deductible'}</span></div><div class="result-grid"><div class="result-field"><div class="result-field-label">Amount</div><div class="result-field-val" style="color:${iI?'var(--accent)':'var(--warn)'}">${iI?'+':'-'}${fmt(result.amount)}</div></div><div class="result-field"><div class="result-field-label">Category</div><div class="result-field-val">${result.category}</div></div><div class="result-field"><div class="result-field-label">Date</div><div class="result-field-val">${result.date}</div></div></div><div class="result-note">💡 ${result.note}</div><div class="success-banner" id="sb2" style="opacity:0;transform:translateY(8px)"><div class="success-icon">✓</div><div><div class="success-title">Added to dashboard</div><div class="success-sub">Saved to your account · <span style="cursor:pointer;text-decoration:underline;color:var(--accent)" onclick="showPage('dashboard',document.querySelectorAll('.nav-item')[0])">View →</span></div></div></div>`;
     res.appendChild(rc);
     setTimeout(()=>{const b=document.getElementById('sb2');if(b){b.style.transition='all 0.5s ease';b.style.opacity='1';b.style.transform='translateY(0)';}},300);
     await addTransaction(result);
@@ -1342,7 +1342,7 @@ async function analyzeText(fn,txt,loaderId){
 function renderResult(fn,r,loaderId){
   const iI=r.type==='income';
   const bannerId='success-banner-'+Date.now();
-  const card=`<div class="result-card"><div class="result-header"><div><div class="result-file">📄 ${fn}</div><div class="result-title">${r.vendor}</div></div><span class="badge ${r.deductible?'green':'orange'}">${r.deductible?r.deductible_percent+'% deductible':'not deductible'}</span></div><div class="result-grid"><div class="result-field"><div class="result-field-label">Amount</div><div class="result-field-val" style="color:${iI?'var(--accent)':'var(--warn)'}">${iI?'+':'-'}$${r.amount.toFixed(2)}</div></div><div class="result-field"><div class="result-field-label">Category</div><div class="result-field-val">${r.category}</div></div><div class="result-field"><div class="result-field-label">Date</div><div class="result-field-val">${r.date}</div></div></div><div class="result-note">💡 ${r.note}</div><div class="success-banner" id="${bannerId}" style="opacity:0;transform:translateY(8px)"><div class="success-icon">✓</div><div><div class="success-title">Successfully added to dashboard</div><div class="success-sub">Saved to your account · <span style="cursor:pointer;text-decoration:underline;color:var(--accent)" onclick="showPage('dashboard',document.querySelectorAll('.nav-item')[0])">View Dashboard →</span></div></div></div></div>`;
+  const card=`<div class="result-card"><div class="result-header"><div><div class="result-file">📄 ${fn}</div><div class="result-title">${r.vendor}</div></div><span class="badge ${r.deductible?'green':'orange'}">${r.deductible?r.deductible_percent+'% deductible':'not deductible'}</span></div><div class="result-grid"><div class="result-field"><div class="result-field-label">Amount</div><div class="result-field-val" style="color:${iI?'var(--accent)':'var(--warn)'}">${iI?'+':'-'}${fmt(r.amount)}</div></div><div class="result-field"><div class="result-field-label">Category</div><div class="result-field-val">${r.category}</div></div><div class="result-field"><div class="result-field-label">Date</div><div class="result-field-val">${r.date}</div></div></div><div class="result-note">💡 ${r.note}</div><div class="success-banner" id="${bannerId}" style="opacity:0;transform:translateY(8px)"><div class="success-icon">✓</div><div><div class="success-title">Successfully added to dashboard</div><div class="success-sub">Saved to your account · <span style="cursor:pointer;text-decoration:underline;color:var(--accent)" onclick="showPage('dashboard',document.querySelectorAll('.nav-item')[0])">View Dashboard →</span></div></div></div></div>`;
   const el=document.getElementById(loaderId);
   if(el) el.outerHTML=card;
   setTimeout(()=>{const b=document.getElementById(bannerId);if(b){b.style.transition='all 0.5s ease';b.style.opacity='1';b.style.transform='translateY(0)';}},300);
@@ -1418,21 +1418,21 @@ function generateReport(type){
   let html='';
 
   if(type==='pl'){
-    const incRows=filtered.filter(t=>t.type==='income').map(t=>`<tr><td>${t.vendor}</td><td>${t.category||'—'}</td><td>${t.date}</td><td class="amount green">+$${t.amount.toFixed(2)}</td></tr>`).join('');
-    const expRows=filtered.filter(t=>t.type==='expense').map(t=>`<tr><td>${t.vendor}</td><td>${t.category||'—'}</td><td>${t.date}</td><td class="amount red">−$${t.amount.toFixed(2)}</td></tr>`).join('');
+    const incRows=filtered.filter(t=>t.type==='income').map(t=>`<tr><td>${t.vendor}</td><td>${t.category||'—'}</td><td>${t.date}</td><td class="amount green">+${fmt(t.amount)}</td></tr>`).join('');
+    const expRows=filtered.filter(t=>t.type==='expense').map(t=>`<tr><td>${t.vendor}</td><td>${t.category||'—'}</td><td>${t.date}</td><td class="amount red">−${fmt(t.amount)}</td></tr>`).join('');
     html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>P&L — ${llcName}</title><style>${reportCSS()}</style></head><body>
 <h1>Profit &amp; Loss Statement</h1>
 <div style="font-size:19px;font-weight:700;margin-bottom:2px">${llcName}</div>
 <div style="font-size:13px;color:#777;margin-bottom:28px">Generated: ${date}</div>
 <h2>Income</h2>
 <table><thead><tr><th>Vendor</th><th>Category</th><th>Date</th><th class="amount">Amount</th></tr></thead>
-<tbody>${incRows}<tr class="total-row"><td colspan="3">Total Revenue</td><td class="amount green">$${inc.toFixed(2)}</td></tr></tbody></table>
+<tbody>${incRows}<tr class="total-row"><td colspan="3">Total Revenue</td><td class="amount green">${fmt(inc)}</td></tr></tbody></table>
 <h2>Expenses</h2>
 <table><thead><tr><th>Vendor</th><th>Category</th><th>Date</th><th class="amount">Amount</th></tr></thead>
-<tbody>${expRows}<tr class="total-row"><td colspan="3">Total Expenses</td><td class="amount red">$${exp.toFixed(2)}</td></tr></tbody></table>
+<tbody>${expRows}<tr class="total-row"><td colspan="3">Total Expenses</td><td class="amount red">${fmt(exp)}</td></tr></tbody></table>
 <div class="profit-box">
   <div style="font-size:12px;color:#555;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Net Profit / Loss</div>
-  <div style="font-size:42px;font-weight:800;color:${profit>=0?'#00c896':'#e53e3e'}">${profit>=0?'+':''}$${profit.toFixed(2)}</div>
+  <div style="font-size:42px;font-weight:800;color:${profit>=0?'#00c896':'#e53e3e'}">${profit>=0?'+':''}${fmt(profit)}</div>
 </div>
 <div class="disclaimer">⚠️ For informational purposes only. This is not tax advice. Always consult a qualified CPA before filing your taxes.</div>
 <div class="footer">Generated by MyTaxFly · mytaxfly.com · ${date}</div>
@@ -1440,19 +1440,19 @@ function generateReport(type){
   }
 
   if(type==='summary'){
-    const catRows=Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<tr><td>${k}</td><td class="amount">$${v.toFixed(2)}</td></tr>`).join('');
+    const catRows=Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<tr><td>${k}</td><td class="amount">${fmt(v)}</td></tr>`).join('');
     html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Tax Summary — ${llcName}</title><style>${reportCSS()}</style></head><body>
 <h1>Tax Summary Report</h1>
 <div style="font-size:19px;font-weight:700;margin-bottom:2px">${llcName}</div>
 <div style="font-size:13px;color:#777;margin-bottom:28px">Generated: ${date}</div>
 <h2>Deductible Expenses by IRS Schedule C Category</h2>
 <table><thead><tr><th>IRS Category</th><th class="amount">Amount</th></tr></thead>
-<tbody>${catRows}<tr class="total-row"><td>Total Deductible Expenses</td><td class="amount">$${deductible.toFixed(2)}</td></tr></tbody></table>
+<tbody>${catRows}<tr class="total-row"><td>Total Deductible Expenses</td><td class="amount">${fmt(deductible)}</td></tr></tbody></table>
 <div class="profit-box">
   <div class="summary-grid">
-    <div><div class="stat-label">Revenue</div><div class="stat-val green">$${inc.toFixed(2)}</div></div>
-    <div><div class="stat-label">Expenses</div><div class="stat-val red">$${exp.toFixed(2)}</div></div>
-    <div><div class="stat-label">Net Profit</div><div class="stat-val" style="color:${profit>=0?'#00c896':'#e53e3e'}">${profit>=0?'+':''}$${profit.toFixed(2)}</div></div>
+    <div><div class="stat-label">Revenue</div><div class="stat-val green">${fmt(inc)}</div></div>
+    <div><div class="stat-label">Expenses</div><div class="stat-val red">${fmt(exp)}</div></div>
+    <div><div class="stat-label">Net Profit</div><div class="stat-val" style="color:${profit>=0?'#00c896':'#e53e3e'}">${profit>=0?'+':''}${fmt(profit)}</div></div>
   </div>
 </div>
 <div class="disclaimer">⚠️ For informational purposes only. This is not tax advice. Always consult a qualified CPA before filing your taxes.</div>
@@ -1577,7 +1577,7 @@ Respond ONLY with a JSON array, one object per transaction:
 [{"vendor":"cleaned name","category":"category","deductible":true,"deductible_percent":100,"note":"short IRS note"}]
 
 Transactions:
-${batch.map((r,j)=>`${j+1}. ${r.type.toUpperCase()} $${r.amount.toFixed(2)} — ${r.desc}`).join('\n')}`;
+${batch.map((r,j)=>`${j+1}. ${r.type.toUpperCase()} ${fmt(r.amount)} — ${r.desc}`).join('\n')}`;
     try{
       const raw=await callClaude([{role:'user',content:prompt}],null,2000);
       const results=JSON.parse(raw.replace(/```json|```/g,'').trim());
@@ -1677,7 +1677,7 @@ function exportTaxForms() {
   filtered.filter(t => t.type === 'expense').forEach(t => { cats[t.category] = (cats[t.category] || 0) + t.amount; });
   const advertising = Object.entries(cats).filter(([k]) => k.toLowerCase().includes('marketing') || k.toLowerCase().includes('advertis')).reduce((s, [, v]) => s + v, 0);
   const otherDed = exp - advertising;
-  const txList = filtered.map(t => `${t.date} | ${t.type === 'income' ? '+' : '-'}$${t.amount.toFixed(2)} | ${t.vendor} | ${t.category}`).join('\n');
+  const txList = filtered.map(t => `${t.date} | ${t.type === 'income' ? '+' : '-'}${fmt(t.amount)} | ${t.vendor} | ${t.category}`).join('\n');
 
   const css = `body{font-family:Arial,sans-serif;max-width:820px;margin:32px auto;color:#1a1a1a;padding:0 24px;font-size:12px}
 h1{font-size:18px;font-weight:800;border-bottom:3px solid #00c896;padding-bottom:8px;margin-bottom:4px}
@@ -1709,10 +1709,10 @@ td{padding:6px 10px;border-bottom:1px solid #eee;font-size:11px}.amount{text-ali
 <div class="section-title">Part I — Reporting Corporation</div>
 <table><tbody>
 <tr><td class="field-label" style="width:220px">1a Name of Reporting Corporation</td><td><div class="field">${llcName}</div></td><td class="field-label" style="width:160px">1b Employer ID (EIN)</td><td><div class="field">${p.ein}</div></td></tr>
-<tr><td class="field-label">Street Address</td><td><div class="field">${p.address || '___________________________'}</div></td><td class="field-label">1c Total Assets</td><td><div class="field">$${inc.toFixed(2)}</div></td></tr>
+<tr><td class="field-label">Street Address</td><td><div class="field">${p.address || '___________________________'}</div></td><td class="field-label">1c Total Assets</td><td><div class="field">${fmt(inc)}</div></td></tr>
 <tr><td class="field-label">City, State, ZIP</td><td><div class="field">${p.city || '___________________________'}</div></td><td></td><td></td></tr>
 <tr><td class="field-label">1d Principal Business Activity</td><td><div class="field">${p.activity || '___________________________'}</div></td><td class="field-label">1l Country of Incorporation</td><td><div class="field">${p.country || 'United States'}</div></td></tr>
-<tr><td class="field-label">1f Total Gross Payments</td><td><div class="field">$${(inc + exp).toFixed(2)}</div></td><td class="field-label">1m Date of Incorporation</td><td><div class="field">${p.incDate || '___________'}</div></td></tr>
+<tr><td class="field-label">1f Total Gross Payments</td><td><div class="field">${fmt(inc + exp)}</div></td><td class="field-label">1m Date of Incorporation</td><td><div class="field">${p.incDate || '___________'}</div></td></tr>
 <tr><td class="field-label">1g Total # of Forms 5472</td><td><div class="field">1</div></td><td class="field-label">1j Initial Year Filing?</td><td><div class="field">☐ Check if yes</div></td></tr>
 </tbody></table>
 <div style="font-size:11px;color:#555;margin:6px 0 2px"><strong>Check 3:</strong> ☑ This is a foreign-owned domestic disregarded entity (foreign-owned U.S. DE) treated as a corporation for purposes of section 6038A.</div>
@@ -1729,10 +1729,10 @@ td{padding:6px 10px;border-bottom:1px solid #eee;font-size:11px}.amount{text-ali
 <div class="section">
 <div class="section-title">Part IV — Monetary Transactions (Auto-filled from your transactions)</div>
 <table><thead><tr><th>Line</th><th>Description</th><th class="amount">Amount (USD)</th></tr></thead><tbody>
-${filtered.filter(t => t.type === 'income').map((t, i) => `<tr><td>${i === 0 ? '15/21' : ''}</td><td>${t.vendor} — ${t.category}</td><td class="amount green">$${t.amount.toFixed(2)}</td></tr>`).join('')}
-<tr class="total-row"><td>22</td><td>Total Received (Lines 9–21)</td><td class="amount green">$${inc.toFixed(2)}</td></tr>
-${filtered.filter(t => t.type === 'expense').map((t, i) => `<tr><td>${i === 0 ? '29/35' : ''}</td><td>${t.vendor} — ${t.category}</td><td class="amount red">$${t.amount.toFixed(2)}</td></tr>`).join('')}
-<tr class="total-row"><td>36</td><td>Total Paid (Lines 23–35)</td><td class="amount red">$${exp.toFixed(2)}</td></tr>
+${filtered.filter(t => t.type === 'income').map((t, i) => `<tr><td>${i === 0 ? '15/21' : ''}</td><td>${t.vendor} — ${t.category}</td><td class="amount green">${fmt(t.amount)}</td></tr>`).join('')}
+<tr class="total-row"><td>22</td><td>Total Received (Lines 9–21)</td><td class="amount green">${fmt(inc)}</td></tr>
+${filtered.filter(t => t.type === 'expense').map((t, i) => `<tr><td>${i === 0 ? '29/35' : ''}</td><td>${t.vendor} — ${t.category}</td><td class="amount red">${fmt(t.amount)}</td></tr>`).join('')}
+<tr class="total-row"><td>36</td><td>Total Paid (Lines 23–35)</td><td class="amount red">${fmt(exp)}</td></tr>
 </tbody></table>
 </div>
 
@@ -1746,7 +1746,7 @@ ${filtered.filter(t => t.type === 'expense').map((t, i) => `<tr><td>${i === 0 ? 
 <table><tbody>
 <tr><td class="field-label" style="width:180px">Name</td><td><div class="field">${llcName}</div></td><td class="field-label" style="width:160px">B Employer ID (EIN)</td><td><div class="field">${p.ein}</div></td></tr>
 <tr><td class="field-label">Address</td><td><div class="field">${p.address || '___________________________'}</div></td><td class="field-label">C Date Incorporated</td><td><div class="field">${p.incDate || '___________'}</div></td></tr>
-<tr><td class="field-label">City / State / ZIP</td><td><div class="field">${p.city || '___________________________'}</div></td><td class="field-label">D Total Assets</td><td><div class="field">$${inc.toFixed(2)}</div></td></tr>
+<tr><td class="field-label">City / State / ZIP</td><td><div class="field">${p.city || '___________________________'}</div></td><td class="field-label">D Total Assets</td><td><div class="field">${fmt(inc)}</div></td></tr>
 <tr><td class="field-label">E Check if Initial Return</td><td><div class="field">☐ Initial return</div></td><td class="field-label">Tax Year</td><td><div class="field">${taxYear}</div></td></tr>
 </tbody></table>
 </div>
@@ -1754,32 +1754,32 @@ ${filtered.filter(t => t.type === 'expense').map((t, i) => `<tr><td>${i === 0 ? 
 <div class="section">
 <div class="section-title">Income (Page 1)</div>
 <table><thead><tr><th>Line</th><th>Description</th><th class="amount">Amount</th></tr></thead><tbody>
-<tr><td>1a</td><td>Gross receipts or sales</td><td class="amount green">$${inc.toFixed(2)}</td></tr>
-<tr><td>1c</td><td>Balance (gross receipts)</td><td class="amount green">$${inc.toFixed(2)}</td></tr>
-<tr class="total-row"><td>11</td><td>Total Income</td><td class="amount green">$${inc.toFixed(2)}</td></tr>
+<tr><td>1a</td><td>Gross receipts or sales</td><td class="amount green">${fmt(inc)}</td></tr>
+<tr><td>1c</td><td>Balance (gross receipts)</td><td class="amount green">${fmt(inc)}</td></tr>
+<tr class="total-row"><td>11</td><td>Total Income</td><td class="amount green">${fmt(inc)}</td></tr>
 </tbody></table>
 </div>
 
 <div class="section">
 <div class="section-title">Deductions (Page 1)</div>
 <table><thead><tr><th>Line</th><th>IRS Category</th><th class="amount">Amount</th></tr></thead><tbody>
-${advertising > 0 ? `<tr><td>22</td><td>Advertising</td><td class="amount">$${advertising.toFixed(2)}</td></tr>` : ''}
-<tr><td>26</td><td>Other deductions (see attached transaction list)</td><td class="amount">$${otherDed.toFixed(2)}</td></tr>
-<tr class="total-row"><td>27</td><td>Total Deductions</td><td class="amount">$${exp.toFixed(2)}</td></tr>
-<tr class="total-row"><td>28</td><td>Taxable Income before NOL</td><td class="amount ${profit >= 0 ? 'green' : 'red'}">${profit >= 0 ? '+' : ''}$${profit.toFixed(2)}</td></tr>
+${advertising > 0 ? `<tr><td>22</td><td>Advertising</td><td class="amount">${fmt(advertising)}</td></tr>` : ''}
+<tr><td>26</td><td>Other deductions (see attached transaction list)</td><td class="amount">${fmt(otherDed)}</td></tr>
+<tr class="total-row"><td>27</td><td>Total Deductions</td><td class="amount">${fmt(exp)}</td></tr>
+<tr class="total-row"><td>28</td><td>Taxable Income before NOL</td><td class="amount ${profit >= 0 ? 'green' : 'red'}">${profit>=0?'+':''}${fmt(profit)}</td></tr>
 </tbody></table>
 </div>
 
 <div class="highlight">
   <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Net Profit / Loss — Tax Year ${taxYear}</div>
-  <div style="font-size:32px;font-weight:800;color:${profit >= 0 ? '#00c896' : '#e53e3e'}">${profit >= 0 ? '+' : ''}$${profit.toFixed(2)}</div>
-  <div style="font-size:11px;color:#777;margin-top:6px">Gross Receipts $${inc.toFixed(2)} · Total Deductions $${exp.toFixed(2)}</div>
+  <div style="font-size:32px;font-weight:800;color:${profit >= 0 ? '#00c896' : '#e53e3e'}">${profit>=0?'+':''}${fmt(profit)}</div>
+  <div style="font-size:11px;color:#777;margin-top:6px">Gross Receipts ${fmt(inc)} · Total Deductions ${fmt(exp)}</div>
 </div>
 
 <div class="section">
 <div class="section-title">Attached: Transaction List (${filtered.length} transactions)</div>
 <table><thead><tr><th>Date</th><th>Vendor</th><th>Type</th><th>Category</th><th class="amount">Amount</th></tr></thead><tbody>
-${filtered.map(t => `<tr><td>${t.date}</td><td>${t.vendor}</td><td>${t.type}</td><td>${t.category}</td><td class="amount ${t.type === 'income' ? 'green' : 'red'}">${t.type === 'income' ? '+' : '-'}$${t.amount.toFixed(2)}</td></tr>`).join('')}
+${filtered.map(t => `<tr><td>${t.date}</td><td>${t.vendor}</td><td>${t.type}</td><td>${t.category}</td><td class="amount ${t.type === 'income' ? 'green' : 'red'}">${t.type === 'income' ? '+' : '-'}${fmt(t.amount)}</td></tr>`).join('')}
 </tbody></table>
 </div>
 
@@ -1828,6 +1828,10 @@ document.addEventListener('click', e=>{
 
 // ── APP LANGUAGE ──────────────────────────────────────────
 // ── PLAN GATING ──────────────────────────────────────────────────────────────
+// ── NUMBER FORMAT ─────────────────────────────────────────
+// Format: 3.500,00$ (German locale, $ after number)
+function fmt(n){ return n.toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2})+'$'; }
+
 let currentPlan = 'basic'; // default, overwritten after login
 const PLAN_LEVEL = {basic:1, pro:2, business:3};
 
