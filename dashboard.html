@@ -1232,7 +1232,19 @@ function refreshDashboard(){
   document.getElementById('beleg-count').textContent=filtered.length;
   const pc=document.getElementById('period-count');
   if(pc) pc.textContent=filtered.length===transactions.length?'':'('+filtered.length+' of '+transactions.length+')';
-  const icons={'Software & Tools':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x='2' y='3' width='20' height='14' rx='2'/><line x1='8' y1='21' x2='16' y2='21'/><line x1='12' y1='17' x2='12' y2='21'/></svg>','Marketing':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d='M22 12h-4l-3 9L9 3l-3 9H2'/></svg>','Travel':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>','Meals':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d='M18 8h1a4 4 0 0 1 0 8h-1'/><path d='M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z'/><line x1='6' y1='1' x2='6' y2='4'/><line x1='10' y1='1' x2='10' y2='4'/><line x1='14' y1='1' x2='14' y2='4'/></svg>','Professional Services':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d='M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z'/><path d='M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16'/></svg>','Shipping':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x='1' y='3' width='15' height='13'/><polygon points='16 8 20 8 23 11 23 16 16 16 16 8'/><circle cx='5.5' cy='18.5' r='2.5'/><circle cx='18.5' cy='18.5' r='2.5'/></svg>','Other':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx='12' cy='12' r='10'/><line x1='12' y1='8' x2='12' y2='12'/><line x1='12' y1='16' x2='12.01' y2='16'/></svg>'};
+  const icons=(()=>{
+  const s=(p,c='#00c896')=>`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+  return {
+    'Software & Tools': s('<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>'),
+    'Marketing':        s('<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>'),
+    'Travel':           s('<path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>'),
+    'Meals':            s('<path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>'),
+    'Professional Services': s('<path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>'),
+    'Shipping':         s('<rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>'),
+    'Office & Supplies':s('<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>'),
+    'Other':            s('<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'),
+  };
+})();
   const txList=document.getElementById('tx-list');
   if(filtered.length===0){
     txList.innerHTML='<div class="empty-state" style="padding:30px 0"><div class="empty-icon">📂</div><div class="empty-title">No transactions in this period</div><div class="empty-sub">Try a different time range</div></div>';
@@ -1426,14 +1438,14 @@ async function sendChat(){
 function appendMsg(role,text){
   const msgs=document.getElementById('chat-messages');
   const d=document.createElement('div'); d.className=`msg ${role==='user'?'user':''}`;
-  d.innerHTML=`<div class="msg-avatar">${role==='user'?userName[0].toUpperCase():'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x=\'3\' y=\'11\' width=\'18\' height=\'10\' rx=\'2\'/><path d=\'M12 11V5\'/><circle cx=\'12\' cy=\'3\' r=\'2\'/><line x1=\'7\' y1=\'15\' x2=\'7\' y2=\'15.01\'/><line x1=\'17\' y1=\'15\' x2=\'17\' y2=\'15.01\'/></svg>'}</div><div class="msg-bubble">${text.replace(/\n/g,'<br>')}</div>`;
+  d.innerHTML=`<div class="msg-avatar">${role==='user'?userName[0].toUpperCase():`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M12 11V5"/><circle cx="12" cy="3" r="2"/><line x1="7" y1="15" x2="7" y2="15.01"/><line x1="17" y1="15" x2="17" y2="15.01"/></svg>`3\' y=\'11\' width=\'18\' height=\'10\' rx=\'2\'/><path d=\'M12 11V5\'/><circle cx=\'12\' cy=\'3\' r=\'2\'/><line x1=\'7\' y1=\'15\' x2=\'7\' y2=\'15.01\'/><line x1=\'17\' y1=\'15\' x2=\'17\' y2=\'15.01\'/></svg>'}</div><div class="msg-bubble">${text.replace(/\n/g,'<br>')}</div>`;
   msgs.appendChild(d); msgs.scrollTop=msgs.scrollHeight; return d;
 }
 
 function appendTyping(){
   const msgs=document.getElementById('chat-messages');
   const d=document.createElement('div'); d.className='msg';
-  d.innerHTML='<div class="msg-avatar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x='3' y='11' width='18' height='10' rx='2'/><path d='M12 11V5'/><circle cx='12' cy='3' r='2'/><line x1='7' y1='15' x2='7' y2='15.01'/><line x1='17' y1='15' x2='17' y2='15.01'/></svg></div><div class="msg-bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>';
+  d.innerHTML=`<div class="msg-avatar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x='3' y='11' width='18' height='10' rx='2'/><path d='M12 11V5'/><circle cx='12' cy='3' r='2'/><line x1='7' y1='15' x2='7' y2='15.01'/><line x1='17' y1='15' x2='17' y2='15.01'/></svg></div><div class="msg-bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
   msgs.appendChild(d); msgs.scrollTop=msgs.scrollHeight; return d;
 }
 
