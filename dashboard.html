@@ -41,15 +41,15 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
 
 /* APP */
 #app{display:none;min-height:100vh;}
-.sidebar{position:fixed;left:0;top:0;bottom:0;width:220px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:24px 0;z-index:100;overflow-y:auto;}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:220px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:16px 0 0;z-index:100;overflow:hidden;}
 .s-logo{font-size:16px;font-weight:800;color:var(--accent);padding:0 24px 4px;letter-spacing:-0.5px;}
 .s-sub{font-size:10px;color:var(--text3);padding:0 24px 20px;letter-spacing:0.3px;border-bottom:1px solid var(--border);margin-bottom:16px;}
-.nav-item{display:flex;align-items:center;gap:10px;padding:10px 24px;color:var(--text2);font-size:13px;cursor:pointer;transition:all 0.15s;border-left:2px solid transparent;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 20px;color:var(--text2);font-size:13px;cursor:pointer;transition:all 0.15s;border-left:2px solid transparent;}
 .nav-item:hover{color:var(--text);background:var(--bg3);}
 .nav-item.active{color:var(--accent);border-left-color:var(--accent);background:rgba(0,200,150,0.05);}
 .nav-icon{font-size:15px;width:20px;text-align:center;}
 .nav-divider{height:1px;background:var(--border);margin:10px 24px;}
-.sidebar-bottom{margin-top:auto;padding:16px 24px;border-top:1px solid var(--border);}
+.sidebar-bottom{margin-top:auto;padding:12px 16px;border-top:1px solid var(--border);}
 .user-info{font-size:12px;color:var(--text2);margin-bottom:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .btn-logout{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px;font-family:'Montserrat',sans-serif;font-size:12px;color:var(--text2);cursor:pointer;transition:all 0.2s;}
 .btn-logout:hover{border-color:var(--warn);color:var(--warn);}
@@ -532,7 +532,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
       <!-- Gear dropdown -->
       <div class="gear-wrap" id="gear-wrap" style="position:relative">
         <button class="gear-btn" onclick="toggleGearMenu()" title="Settings" style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all 0.15s;color:var(--text2)">⚙️</button>
-        <div class="gear-dropdown" id="gear-dropdown" style="display:none;position:absolute;top:calc(100% + 8px);right:0;background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;min-width:200px;z-index:300;box-shadow:0 8px 24px rgba(0,0,0,0.5)">
+        <div class="gear-dropdown" id="gear-dropdown" style="position:absolute;top:calc(100% + 8px);right:0;background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;min-width:200px;z-index:300;box-shadow:0 8px 24px rgba(0,0,0,0.5)">
           <div style="padding:12px 16px 4px;font-size:11px;color:var(--text3);font-weight:700;letter-spacing:0.5px;text-transform:uppercase">Account</div>
           <div style="padding:4px 12px 8px;font-size:11px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="topbar-user-email">user@example.com</div>
           <div style="height:1px;background:var(--border);margin:0 12px"></div>
@@ -1929,16 +1929,17 @@ function toggleLangMenu(){
 }
 
 function toggleGearMenu(){
-  document.getElementById('gear-dropdown').classList.toggle('open');
+  const d=document.getElementById('gear-dropdown');
+  d.style.display = d.style.display==='block' ? 'none' : 'block';
 }
 function closeGearMenu(){
-  document.getElementById('gear-dropdown').classList.remove('open');
+  document.getElementById('gear-dropdown').style.display='none';
 }
 document.addEventListener('click', e => {
   // Close lang dropdown
   const gw = document.getElementById('gear-wrap');
   if(gw && !gw.contains(e.target))
-    document.getElementById('gear-dropdown').classList.remove('open');
+    document.getElementById('gear-dropdown').style.display='none';
   // Close period dropdown
   const psw = document.getElementById('period-switcher');
   if(psw && !psw.contains(e.target))
