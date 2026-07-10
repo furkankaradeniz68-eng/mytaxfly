@@ -105,11 +105,23 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
 .type-btn.active-expense{background:rgba(255,107,53,0.15);border-color:var(--warn);color:var(--warn);}
 .type-btn.active-income{background:rgba(0,200,150,0.15);border-color:var(--accent);color:var(--accent);}
 .ai-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(0,200,150,0.1);border:1px solid rgba(0,200,150,0.2);border-radius:20px;padding:4px 12px;font-size:11px;color:var(--accent);margin-bottom:16px;}
-.upload-zone{border:2px dashed var(--border);border-radius:16px;padding:60px;text-align:center;cursor:pointer;transition:all 0.2s;margin-bottom:24px;background:var(--card);}
+.upload-zone{border:2px dashed var(--border);border-radius:16px;padding:60px;text-align:center;cursor:pointer;transition:all 0.2s;margin-bottom:16px;background:var(--card);}
 .upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:rgba(0,200,150,0.03);}
 .upload-title{font-size:18px;font-weight:700;margin-bottom:8px;}
 .upload-sub{font-size:13px;color:var(--text2);}
 #file-input{display:none;}
+/* Upload queue */
+#upload-queue{margin-bottom:16px;}
+.queue-item{display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:8px;animation:fadeIn 0.2s ease;}
+.queue-item.duplicate{border-color:rgba(246,173,85,0.5);background:rgba(246,173,85,0.06);}
+.queue-item-icon{font-size:16px;flex-shrink:0;}
+.queue-item-name{flex:1;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.queue-item-warn{font-size:11px;color:#f6ad55;font-weight:600;white-space:nowrap;}
+.queue-item-remove{background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;line-height:1;padding:0 4px;transition:color 0.15s;flex-shrink:0;}
+.queue-item-remove:hover{color:var(--warn);}
+#upload-queue-btn{width:100%;padding:14px;font-size:15px;font-weight:700;border-radius:10px;background:var(--accent);color:#0d0f14;border:none;cursor:pointer;margin-bottom:20px;transition:opacity 0.2s;display:none;}
+#upload-queue-btn:hover{opacity:0.85;}
+#upload-queue-btn:disabled{opacity:0.5;cursor:not-allowed;}
 .btn-sec{background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:10px 20px;font-family:'Montserrat',sans-serif;font-size:13px;cursor:pointer;transition:all 0.2s;}
 .btn-sec:hover{border-color:var(--accent);color:var(--accent);}
 .result-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px;animation:fadeIn 0.4s ease;}
@@ -599,7 +611,9 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
           <div class="upload-sub" id="t-drop-sub">PDF, JPG, PNG · Invoices, receipts, statements</div>
           <br><button class="btn-sec" onclick="event.stopPropagation();document.getElementById('file-input').click()"><span id="t-select-file">Select File</span></button>
         </div>
-        <input type="file" id="file-input" accept=".pdf,.jpg,.jpeg,.png,.txt" onchange="handleFileUpload(event)">
+        <input type="file" id="file-input" accept=".pdf,.jpg,.jpeg,.png,.txt" multiple onchange="handleFileUpload(event)">
+        <div id="upload-queue"></div>
+        <button id="upload-queue-btn" onclick="uploadQueue()">📤 Upload <span id="upload-queue-count">0</span> Document(s) →</button>
         <div id="upload-results"></div>
         <div style="text-align:center;margin-top:12px">
           <div style="font-size:12px;color:var(--text3);margin-bottom:8px" id="t-demo-or">Or test with a demo receipt:</div>
@@ -1225,14 +1239,74 @@ Transaction: ${currentType} of $${amount} — "${vendor}"${notes?' — '+notes:'
 }
 
 // ── FILE UPLOAD ───────────────────────────────────────────
-function handleDrop(e){e.preventDefault();document.getElementById('upload-zone').classList.remove('drag');const f=e.dataTransfer.files[0];if(f)processFile(f);}
-function handleFileUpload(e){const f=e.target.files[0];if(f)processFile(f);}
+let pendingFiles = [];
+
+function handleDrop(e){
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.remove('drag');
+  addToQueue(Array.from(e.dataTransfer.files));
+}
+function handleFileUpload(e){
+  addToQueue(Array.from(e.target.files));
+  e.target.value = ''; // reset so same file can be re-added after removal
+}
+
+function addToQueue(files){
+  files.forEach(f => {
+    if(pendingFiles.length >= 10){ alert('Max 10 files per upload.'); return; }
+    pendingFiles.push(f);
+  });
+  renderQueue();
+}
+
+function removeFromQueue(idx){
+  pendingFiles.splice(idx, 1);
+  renderQueue();
+}
+
+function renderQueue(){
+  const container = document.getElementById('upload-queue');
+  const btn = document.getElementById('upload-queue-btn');
+  const countEl = document.getElementById('upload-queue-count');
+  if(!pendingFiles.length){ container.innerHTML=''; btn.style.display='none'; return; }
+
+  const names = pendingFiles.map(f => f.name);
+  container.innerHTML = pendingFiles.map((f, i) => {
+    const isDup = names.indexOf(f.name) !== i; // same name appeared earlier
+    return `<div class="queue-item${isDup?' duplicate':''}">
+      <span class="queue-item-icon">📄</span>
+      <span class="queue-item-name">${f.name}</span>
+      ${isDup ? '<span class="queue-item-warn">⚠️ Duplicate</span>' : ''}
+      <button class="queue-item-remove" onclick="removeFromQueue(${i})" title="Remove">✕</button>
+    </div>`;
+  }).join('');
+
+  countEl.textContent = pendingFiles.length;
+  btn.style.display = 'block';
+}
+
+async function uploadQueue(){
+  if(!pendingFiles.length) return;
+  const btn = document.getElementById('upload-queue-btn');
+  btn.disabled = true;
+  const files = [...pendingFiles];
+  pendingFiles = [];
+  renderQueue();
+  document.getElementById('upload-results').innerHTML = '';
+  for(const f of files){
+    await processFile(f);
+  }
+  btn.disabled = false;
+}
 
 async function processFile(file){
-  document.getElementById('upload-results').innerHTML=`<div class="loading"><div class="spinner"></div> Analyzing "${file.name}"...</div>`;
-  if(file.type.startsWith('image/'))await analyzeWithClaude(file.name,await readB64(file),file.type);
-  else if(file.type==='application/pdf')await analyzeWithClaude(file.name,await readB64(file),'application/pdf');
-  else await analyzeText(file.name,await readTxt(file));
+  const results = document.getElementById('upload-results');
+  const loaderId = 'loader-' + Date.now();
+  results.insertAdjacentHTML('beforeend', `<div id="${loaderId}" class="loading"><div class="spinner"></div> Analyzing "${file.name}"...</div>`);
+  results.scrollIntoView({behavior:'smooth',block:'nearest'});
+  if(file.type.startsWith('image/'))await analyzeWithClaude(file.name,await readB64(file),file.type, loaderId);
+  else if(file.type==='application/pdf')await analyzeWithClaude(file.name,await readB64(file),'application/pdf', loaderId);
+  else await analyzeText(file.name,await readTxt(file), loaderId);
 }
 
 function readB64(f){return new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(fr.result.split(',')[1]);fr.readAsDataURL(f);});}
@@ -1241,33 +1315,44 @@ function readTxt(f){return new Promise(r=>{const fr=new FileReader();fr.onload=(
 const PROMPT=`Analyze this receipt for a US LLC. Respond ONLY with JSON:
 {"vendor":"name","amount":0.00,"currency":"USD","date":"YYYY-MM-DD","category":"Software & Tools / Marketing / Office & Supplies / Travel / Meals / Professional Services / Other","type":"expense or income","deductible":true,"deductible_percent":100,"note":"Brief IRS deductibility explanation"}`;
 
-async function analyzeWithClaude(fn,b64,mt){
+async function analyzeWithClaude(fn,b64,mt,loaderId){
   const isImg=mt.startsWith('image/');
   const ca=isImg?[{type:'image',source:{type:'base64',media_type:mt,data:b64}},{type:'text',text:PROMPT}]:[{type:'document',source:{type:'base64',media_type:'application/pdf',data:b64}},{type:'text',text:PROMPT}];
   try{
     const text=await callClaude([{role:'user',content:ca}],null,1000);
     const res=JSON.parse(text.replace(/```json|```/g,'').trim());
-    renderResult(fn,res); await addTransaction(res);
-  }catch(e){document.getElementById('upload-results').innerHTML=`<div class="result-card"><div style="color:var(--warn)">❌ Error: ${e.message}</div></div>`;}
+    renderResult(fn,res,loaderId); await addTransaction(res);
+  }catch(e){
+    const el=document.getElementById(loaderId);
+    if(el) el.outerHTML=`<div class="result-card"><div style="color:var(--warn)">❌ ${fn}: ${e.message}</div></div>`;
+  }
 }
 
-async function analyzeText(fn,txt){
+async function analyzeText(fn,txt,loaderId){
   try{
     const text=await callClaude([{role:'user',content:`Receipt from "${fn}":\n\n${txt}\n\n${PROMPT}`}],null,1000);
     const res=JSON.parse(text.replace(/```json|```/g,'').trim());
-    renderResult(fn,res); await addTransaction(res);
-  }catch(e){document.getElementById('upload-results').innerHTML=`<div class="result-card"><div style="color:var(--warn)">❌ Error: ${e.message}</div></div>`;}
+    renderResult(fn,res,loaderId); await addTransaction(res);
+  }catch(e){
+    const el=document.getElementById(loaderId);
+    if(el) el.outerHTML=`<div class="result-card"><div style="color:var(--warn)">❌ ${fn}: ${e.message}</div></div>`;
+  }
 }
 
-function renderResult(fn,r){
+function renderResult(fn,r,loaderId){
   const iI=r.type==='income';
-  document.getElementById('upload-results').innerHTML=`<div class="result-card"><div class="result-header"><div><div class="result-file">📄 ${fn}</div><div class="result-title">${r.vendor}</div></div><span class="badge ${r.deductible?'green':'orange'}">${r.deductible?r.deductible_percent+'% deductible':'not deductible'}</span></div><div class="result-grid"><div class="result-field"><div class="result-field-label">Amount</div><div class="result-field-val" style="color:${iI?'var(--accent)':'var(--warn)'}">${iI?'+':'-'}$${r.amount.toFixed(2)}</div></div><div class="result-field"><div class="result-field-label">Category</div><div class="result-field-val">${r.category}</div></div><div class="result-field"><div class="result-field-label">Date</div><div class="result-field-val">${r.date}</div></div></div><div class="result-note">💡 ${r.note}</div><div class="success-banner" id="success-banner" style="opacity:0;transform:translateY(8px)"><div class="success-icon">✓</div><div><div class="success-title">Successfully added to dashboard</div><div class="success-sub">Saved to your account · <span style="cursor:pointer;text-decoration:underline;color:var(--accent)" onclick="showPage('dashboard',document.querySelectorAll('.nav-item')[0])">View Dashboard →</span></div></div></div></div>`;
-  setTimeout(()=>{const b=document.getElementById('success-banner');if(b){b.style.transition='all 0.5s ease';b.style.opacity='1';b.style.transform='translateY(0)';}},300);
+  const bannerId='success-banner-'+Date.now();
+  const card=`<div class="result-card"><div class="result-header"><div><div class="result-file">📄 ${fn}</div><div class="result-title">${r.vendor}</div></div><span class="badge ${r.deductible?'green':'orange'}">${r.deductible?r.deductible_percent+'% deductible':'not deductible'}</span></div><div class="result-grid"><div class="result-field"><div class="result-field-label">Amount</div><div class="result-field-val" style="color:${iI?'var(--accent)':'var(--warn)'}">${iI?'+':'-'}$${r.amount.toFixed(2)}</div></div><div class="result-field"><div class="result-field-label">Category</div><div class="result-field-val">${r.category}</div></div><div class="result-field"><div class="result-field-label">Date</div><div class="result-field-val">${r.date}</div></div></div><div class="result-note">💡 ${r.note}</div><div class="success-banner" id="${bannerId}" style="opacity:0;transform:translateY(8px)"><div class="success-icon">✓</div><div><div class="success-title">Successfully added to dashboard</div><div class="success-sub">Saved to your account · <span style="cursor:pointer;text-decoration:underline;color:var(--accent)" onclick="showPage('dashboard',document.querySelectorAll('.nav-item')[0])">View Dashboard →</span></div></div></div></div>`;
+  const el=document.getElementById(loaderId);
+  if(el) el.outerHTML=card;
+  setTimeout(()=>{const b=document.getElementById(bannerId);if(b){b.style.transition='all 0.5s ease';b.style.opacity='1';b.style.transform='translateY(0)';}},300);
 }
 
 async function runDemo(){
-  document.getElementById('upload-results').innerHTML='<div class="loading"><div class="spinner"></div> Analyzing demo receipt...</div>';
-  await analyzeText('notion-invoice.txt','INVOICE\nDate: 2026-05-22\nVendor: Notion Labs Inc.\nDescription: Notion Pro Plan Monthly\nAmount: $16.00 USD\nPurpose: Project management for LLC');
+  const results = document.getElementById('upload-results');
+  const loaderId = 'loader-demo-' + Date.now();
+  results.innerHTML = `<div id="${loaderId}" class="loading"><div class="spinner"></div> Analyzing demo receipt...</div>`;
+  await analyzeText('notion-invoice.txt','INVOICE\nDate: 2026-05-22\nVendor: Notion Labs Inc.\nDescription: Notion Pro Plan Monthly\nAmount: $16.00 USD\nPurpose: Project management for LLC', loaderId);
 }
 
 // ── CHAT ──────────────────────────────────────────────────
