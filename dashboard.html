@@ -503,37 +503,48 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
     <div class="nav-divider"></div>
     <div class="nav-item" onclick="showPage('legal',this)"><span class="nav-icon">⚖</span> <span id="t-nav-legal">Legal</span></div>
     <a href="/" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:#00c896;font-size:12px;font-weight:600;padding:10px 24px;margin-top:4px;transition:opacity 0.2s" onmouseover="this.style.opacity='0.75'" onmouseout="this.style.opacity='1'">← Back to mytaxfly.com</a>
-    <!-- SIDEBAR FOOTER: plan badge + lang + gear + signout -->
-    <div class="sidebar-footer">
-      <!-- Plan badge -->
-      <div id="plan-badge" style="flex:1;display:inline-flex;align-items:center;gap:4px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:10px;font-weight:700;letter-spacing:0.5px;color:var(--text3);justify-content:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">— BASIC —</div>
-      <!-- Gear icon with dropdown -->
-      <div class="gear-wrap" id="gear-wrap">
-        <button class="gear-btn" onclick="toggleGearMenu()" title="Settings">⚙️</button>
-        <div class="gear-dropdown" id="gear-dropdown">
-          <!-- Lang switcher inside gear -->
-          <div style="padding:8px 12px 4px;font-size:10px;color:var(--text3);font-weight:700;letter-spacing:0.5px;text-transform:uppercase">Language</div>
-          <div style="display:flex;gap:4px;padding:4px 12px 8px;flex-wrap:wrap">
-            <button class="lang-option" style="flex:1;padding:5px 4px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);font-size:11px;cursor:pointer;color:var(--text2)" onclick="setAppLang('en');closeGearMenu()">🇬🇧 EN</button>
-            <button class="lang-option" style="flex:1;padding:5px 4px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);font-size:11px;cursor:pointer;color:var(--text2)" onclick="setAppLang('de');closeGearMenu()">🇩🇪 DE</button>
-            <button class="lang-option" style="flex:1;padding:5px 4px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);font-size:11px;cursor:pointer;color:var(--text2)" onclick="setAppLang('es');closeGearMenu()">🇪🇸 ES</button>
-            <button class="lang-option" style="flex:1;padding:5px 4px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);font-size:11px;cursor:pointer;color:var(--text2)" onclick="setAppLang('fr');closeGearMenu()">🇫🇷 FR</button>
-            <button class="lang-option" style="flex:1;padding:5px 4px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);font-size:11px;cursor:pointer;color:var(--text2)" onclick="setAppLang('pt');closeGearMenu()">🇵🇹 PT</button>
-          </div>
-          <div class="gear-divider"></div>
-          <div style="padding:4px 0">
-            <div style="padding:8px 16px;font-size:11px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="sidebar-user">user@example.com</div>
-            <a href="https://billing.stripe.com/p/login/test_9B65kvcrcfGI6yE2iDbAs00" target="_blank" class="gear-option" onclick="closeGearMenu()">💳 Manage Subscription</a>
-            <button class="gear-option" onclick="handle2FASetup();closeGearMenu()" id="btn-2fa-setup">🔐 Enable 2FA</button>
-          </div>
+    <!-- SIDEBAR FOOTER: plan badge + lang + email -->
+    <div class="sidebar-bottom" style="margin-top:auto;padding:12px 16px;border-top:1px solid var(--border)">
+      <!-- Lang switcher -->
+      <div class="lang-switcher" id="lang-switcher" style="margin-bottom:10px">
+        <button class="lang-btn" onclick="toggleLangMenu()">
+          <span id="app-current-flag">🇬🇧</span>
+          <span id="app-current-lang">EN</span>
+          <span>▾</span>
+        </button>
+        <div class="lang-dropdown" id="app-lang-dropdown">
+          <div class="lang-option active" onclick="setAppLang('en')"><span>🇬🇧</span><span>EN</span></div>
+          <div class="lang-option" onclick="setAppLang('de')"><span>🇩🇪</span><span>DE</span></div>
+          <div class="lang-option" onclick="setAppLang('es')"><span>🇪🇸</span><span>ES</span></div>
+          <div class="lang-option" onclick="setAppLang('fr')"><span>🇫🇷</span><span>FR</span></div>
+          <div class="lang-option" onclick="setAppLang('pt')"><span>🇵🇹</span><span>POR</span></div>
         </div>
       </div>
-      <!-- Sign Out -->
-      <button class="signout-btn" onclick="handleLogout()" title="Sign Out"><span id="t-nav-signout">Sign Out</span></button>
+      <div id="plan-badge" style="display:inline-flex;align-items:center;gap:5px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:10px;font-weight:700;letter-spacing:0.5px;color:var(--text3);margin-bottom:6px;width:100%;justify-content:center">— BASIC —</div>
+      <div class="user-info" id="sidebar-user">user@example.com</div>
     </div>
   </div>
 
   <div class="main">
+
+    <!-- TOP RIGHT TOOLBAR -->
+    <div id="topbar-actions" style="position:fixed;top:16px;right:24px;display:flex;align-items:center;gap:10px;z-index:200">
+      <!-- Gear dropdown -->
+      <div class="gear-wrap" id="gear-wrap" style="position:relative">
+        <button class="gear-btn" onclick="toggleGearMenu()" title="Settings" style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all 0.15s;color:var(--text2)">⚙️</button>
+        <div class="gear-dropdown" id="gear-dropdown" style="display:none;position:absolute;top:calc(100% + 8px);right:0;background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;min-width:200px;z-index:300;box-shadow:0 8px 24px rgba(0,0,0,0.5)">
+          <div style="padding:12px 16px 4px;font-size:11px;color:var(--text3);font-weight:700;letter-spacing:0.5px;text-transform:uppercase">Account</div>
+          <div style="padding:4px 12px 8px;font-size:11px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="topbar-user-email">user@example.com</div>
+          <div style="height:1px;background:var(--border);margin:0 12px"></div>
+          <div style="padding:4px 0 8px">
+            <a href="https://billing.stripe.com/p/login/test_9B65kvcrcfGI6yE2iDbAs00" target="_blank" onclick="closeGearMenu()" style="display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:13px;font-weight:600;color:var(--accent);text-decoration:none;transition:background 0.15s;font-family:'Montserrat',sans-serif" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">💳 Manage Subscription</a>
+            <button onclick="handle2FASetup();closeGearMenu()" id="btn-2fa-setup" style="display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:13px;font-weight:600;color:#7c6fe0;background:none;border:none;cursor:pointer;width:100%;font-family:'Montserrat',sans-serif;transition:background 0.15s" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">🔐 Enable 2FA</button>
+          </div>
+        </div>
+      </div>
+      <!-- Sign Out -->
+      <button onclick="handleLogout()" style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;height:36px;padding:0 14px;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;color:var(--text2);cursor:pointer;transition:all 0.15s;white-space:nowrap" onmouseover="this.style.borderColor='var(--warn)';this.style.color='var(--warn)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'"><span id="t-nav-signout">Sign Out</span></button>
+    </div>
 
     <!-- DASHBOARD -->
     <div class="page active" id="page-dashboard">
@@ -1116,6 +1127,7 @@ async function launchApp(user){
   document.getElementById('dash-title').textContent=`Welcome, ${userName} 👋`;
   document.getElementById('dash-llc').textContent=`${llcName} · Overview ${new Date().getFullYear()}`;
   document.getElementById('sidebar-user').textContent=user.email;
+  const tbe=document.getElementById('topbar-user-email');if(tbe)tbe.textContent=user.email;
   document.getElementById('m-date').value=new Date().toISOString().split('T')[0];
   buildPeriodMenu();
   const [pFrom,pTo]=getPeriodRange('month');
