@@ -1273,13 +1273,13 @@ footer {
       <div class="preview-inner">
         <div class="preview-sidebar">
           <div class="preview-logo">MyTaxFly</div>
-          <div class="preview-nav-item active">▦ Dashboard</div>
-          <div class="preview-nav-item">✚ Add Transaction</div>
-          <div class="preview-nav-item">◎ AI Advisor</div>
-          <div class="preview-nav-item">☰ Reports</div>
+          <div class="preview-nav-item active"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x='3' y='3' width='7' height='7'/><rect x='14' y='3' width='7' height='7'/><rect x='14' y='14' width='7' height='7'/><rect x='3' y='14' width='7' height='7'/></svg> Dashboard</div>
+          <div class="preview-nav-item"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1='12' y1='5' x2='12' y2='19'/><line x1='5' y1='12' x2='19' y2='12'/></svg> Add Transaction</div>
+          <div class="preview-nav-item"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d='M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z'/></svg> AI Advisor</div>
+          <div class="preview-nav-item"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1='18' y1='20' x2='18' y2='10'/><line x1='12' y1='20' x2='12' y2='4'/><line x1='6' y1='20' x2='6' y2='14'/></svg> Reports</div>
         </div>
         <div class="preview-content">
-          <div class="preview-title">Welcome, User 👋</div>
+          <div class="preview-title">Welcome, User</div>
           <div class="preview-stats">
             <div class="preview-stat">
               <div class="preview-stat-label">Revenue</div>
@@ -1359,7 +1359,7 @@ footer {
         </div>
         <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between">
           <div style="display:flex;align-items:center;gap:10px">
-            <span style="font-size:20px">🏢</span>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d='M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z'/><polyline points='9 22 9 12 15 12 15 22'/></svg>
             <div><div style="font-size:13px;font-weight:700">Pro Forma Form 1120</div><div style="font-size:11px;color:var(--text3)">2025 · Income &amp; Deductions mapped</div></div>
           </div>
           <span style="font-size:11px;font-weight:700;padding:3px 10px;background:rgba(0,200,150,0.12);color:#00c896;border-radius:20px">Ready</span>
@@ -1645,7 +1645,7 @@ footer {
   </div>
   <div class="footer-bottom">
     <div><span id="t-footer-copy">© 2026 MyTaxFly. All rights reserved.</span></div>
-    <div><span id="t-footer-tagline">Made for LLC founders worldwide 🌍</span></div>
+    <div><span id="t-footer-tagline">Made for LLC founders worldwide</span></div>
   </div>
   <div class="footer-disclaimer">
     ⚠️ Disclaimer: MyTaxFly is a software tool and is not a licensed tax advisor, accountant, or legal consultant. Nothing on this website or within the MyTaxFly application constitutes tax advice, legal advice, or financial advice. Always consult a qualified Certified Public Accountant (CPA) or tax professional for advice specific to your situation. MyTaxFly is not responsible for any tax penalties or regulatory consequences arising from use of the service.
@@ -1811,7 +1811,7 @@ window.addEventListener('DOMContentLoaded', () => {
 <!-- COOKIE BANNER -->
 <div id="cookie-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#0d1117;border-top:1px solid #1e2633;padding:16px 48px;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;">
   <div style="flex:1;min-width:260px">
-    <div style="font-size:14px;font-weight:600;color:#e8edf5;margin-bottom:4px">🍪 We use cookies</div>
+    <div style="font-size:14px;font-weight:600;color:#e8edf5;margin-bottom:4px;display:flex;align-items:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e8edf5" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx='12' cy='12' r='10'/><line x1='12' y1='8' x2='12' y2='12'/><line x1='12' y1='16' x2='12.01' y2='16'/></svg> We use cookies</div>
     <div style="font-size:12px;color:#8a95a8;line-height:1.6">We use essential cookies for functionality and analytics cookies to improve our service. See our <a href="./dashboard.html" style="color:#00c896;text-decoration:none">Privacy Policy</a> for details.</div>
   </div>
   <div style="display:flex;gap:10px;flex-shrink:0">
@@ -1946,7 +1946,7 @@ window.addEventListener('resize', ()=>{
       const mobSignin = document.querySelector('#mobile-menu a[href="./dashboard.html"]');
       if (mobSignin) {
         mobSignin.href = '/dashboard';
-        mobSignin.textContent = '⚡ Go to Dashboard';
+        mobSignin.textContent = '→ Go to Dashboard';
         mobSignin.style.color = '#00c896';
         mobSignin.style.fontWeight = '700';
       }
