@@ -1042,7 +1042,7 @@ async function sendPasswordReset(){
   const btn=document.getElementById('btn-forgot');
   btn.disabled=true; btn.querySelector('span').textContent='Sending...';
   const {error}=await sb.auth.resetPasswordForEmail(email,{
-    redirectTo:'https://mytaxfly.vercel.app/dashboard'
+    redirectTo:'https://mytaxfly.com/dashboard'
   });
   btn.disabled=false;
   if(error){showError(error.message);btn.querySelector('span').textContent='Send Reset Link →';return;}
@@ -1274,10 +1274,58 @@ async function launchApp(user){
 
 // Auth state listener
 sb.auth.onAuthStateChange(async (event, session)=>{
+  if(event === 'PASSWORD_RECOVERY'){
+    // Show "set new password" form instead of launching the app
+    showSetNewPasswordForm();
+    return;
+  }
   if(session?.user){
     await launchApp(session.user);
   }
 });
+
+function showSetNewPasswordForm(){
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('app').style.display='none';
+  document.getElementById('form-login').style.display='none';
+  document.getElementById('form-register').style.display='none';
+  document.getElementById('form-forgot').style.display='none';
+  const container = document.getElementById('form-login').parentElement;
+  let f = document.getElementById('form-new-password');
+  if(!f){
+    f = document.createElement('div');
+    f.id = 'form-new-password';
+    f.innerHTML = `
+      <h2 style="text-align:center;font-size:18px;font-weight:700;color:var(--text1);margin-bottom:6px">Set New Password</h2>
+      <div style="font-size:12px;color:var(--text2);text-align:center;margin-bottom:20px">Enter your new password below.</div>
+      <div class="form-group"><label class="form-label">New Password</label>
+        <input class="form-input" id="new-password-input" type="password" placeholder="Min. 8 characters" autocomplete="new-password">
+      </div>
+      <div class="form-group"><label class="form-label">Confirm Password</label>
+        <input class="form-input" id="new-password-confirm" type="password" placeholder="Repeat password">
+      </div>
+      <button class="btn-primary" id="btn-set-password" onclick="submitNewPassword()"><span>Save New Password →</span></button>
+      <div id="new-password-msg" style="margin-top:12px;font-size:13px;text-align:center"></div>
+    `;
+    container.appendChild(f);
+  }
+  f.style.display='block';
+}
+
+async function submitNewPassword(){
+  const pw = document.getElementById('new-password-input').value;
+  const pw2 = document.getElementById('new-password-confirm').value;
+  const msg = document.getElementById('new-password-msg');
+  if(pw.length < 8){ msg.style.color='#e53e3e'; msg.textContent='Password must be at least 8 characters.'; return; }
+  if(pw !== pw2){ msg.style.color='#e53e3e'; msg.textContent='Passwords do not match.'; return; }
+  const btn = document.getElementById('btn-set-password');
+  btn.disabled=true; btn.querySelector('span').textContent='Saving...';
+  const {error} = await sb.auth.updateUser({password: pw});
+  btn.disabled=false;
+  if(error){ msg.style.color='#e53e3e'; msg.textContent=error.message; btn.querySelector('span').textContent='Save New Password →'; return; }
+  msg.style.color='var(--accent)'; msg.textContent='✅ Password updated! Signing you in...';
+  setTimeout(()=>{ document.getElementById('form-new-password').style.display='none'; }, 1500);
+}
 
 // ── NAVIGATION ────────────────────────────────────────────
 function openLegal(doc){
