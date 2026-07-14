@@ -629,9 +629,10 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
               <div class="type-btn" id="btn-income" onclick="setType('income')"><svg style="display:inline;vertical-align:-2px;margin-right:5px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg><span id="t-income-btn">Income</span></div>
             </div>
           </div>
+          <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(0,200,150,0.08);border:1px solid rgba(0,200,150,0.2);border-radius:20px;padding:5px 12px;font-size:11px;font-weight:600;color:var(--accent);margin-bottom:14px">✦ Any currency accepted — MyTaxFly converts to USD at live rates</div>
           <div class="form-row">
             <div class="form-group"><div class="f-label" id="t-label-vendor">Vendor / Description *</div><input class="f-input" id="m-vendor" type="text" placeholder="e.g. Notion, AWS, Client payment"></div>
-            <div class="form-group"><div class="f-label" id="t-label-amount">Amount (USD) *</div><input class="f-input" id="m-amount" type="number" placeholder="0.00" step="0.01" min="0"></div>
+            <div class="form-group"><div class="f-label" id="t-label-amount">Amount *</div><input class="f-input" id="m-amount" type="text" placeholder="e.g. $120 · €85 · £70 · CHF 100" oninput="handleAmountInput(this.value)"><div id="currency-hint" style="font-size:11px;color:var(--accent);margin-top:5px;min-height:16px"></div></div>
           </div>
           <div class="form-row">
             <div class="form-group"><div class="f-label" id="t-label-date">Date</div><input class="f-input" id="m-date" type="date"></div>
@@ -1274,21 +1275,93 @@ async function callClaude(messages, system, maxTokens=1000){
 }
 
 // ── MANUAL ENTRY ──────────────────────────────────────────
+// ── CURRENCY CONVERSION ───────────────────────────────────
+let _rateCache = {};
+let _rateCacheTime = 0;
+
+function detectCurrency(str) {
+  const s = str.trim();
+  if (/^€|EUR$/i.test(s)) return {code:'EUR', symbol:'€'};
+  if (/^£|GBP$/i.test(s)) return {code:'GBP', symbol:'£'};
+  if (/CHF/i.test(s)) return {code:'CHF', symbol:'CHF'};
+  if (/^¥|JPY$/i.test(s)) return {code:'JPY', symbol:'¥'};
+  if (/AED/i.test(s)) return {code:'AED', symbol:'AED'};
+  if (/CAD|C\$/i.test(s)) return {code:'CAD', symbol:'CAD'};
+  if (/AUD|AU\$/i.test(s)) return {code:'AUD', symbol:'AUD'};
+  if (/SEK/i.test(s)) return {code:'SEK', symbol:'SEK'};
+  if (/NOK/i.test(s)) return {code:'NOK', symbol:'NOK'};
+  if (/DKK/i.test(s)) return {code:'DKK', symbol:'DKK'};
+  if (/TRY/i.test(s)) return {code:'TRY', symbol:'TRY'};
+  if (/SAR/i.test(s)) return {code:'SAR', symbol:'SAR'};
+  return {code:'USD', symbol:'$'};
+}
+
+function parseAmountStr(str) {
+  return parseFloat(str.replace(/[^0-9.]/g, '')) || 0;
+}
+
+async function getUSDRate(currency) {
+  if (currency === 'USD') return 1;
+  const now = Date.now();
+  if (now - _rateCacheTime < 3600000 && _rateCache[currency]) return _rateCache[currency];
+  try {
+    const r = await fetch('https://open.er-api.com/v6/latest/USD');
+    const data = await r.json();
+    _rateCache = data.rates;
+    _rateCacheTime = now;
+    return data.rates[currency] || null;
+  } catch(e) { return null; }
+}
+
+let _amountDebounce = null;
+function handleAmountInput(val) {
+  clearTimeout(_amountDebounce);
+  _amountDebounce = setTimeout(async () => {
+    const hint = document.getElementById('currency-hint');
+    if (!hint) return;
+    const cur = detectCurrency(val);
+    const amt = parseAmountStr(val);
+    if (!amt || cur.code === 'USD') { hint.textContent = ''; return; }
+    hint.textContent = 'Fetching live rate...';
+    const rate = await getUSDRate(cur.code);
+    if (!rate) { hint.textContent = 'Could not fetch rate — enter USD amount manually.'; return; }
+    const usd = (amt / rate).toFixed(2);
+    hint.innerHTML = `= <strong>$${usd} USD</strong> · Live rate · No fees`;
+  }, 400);
+}
+
+async function convertToUSD(amountStr) {
+  const cur = detectCurrency(amountStr);
+  const amt = parseAmountStr(amountStr);
+  if (!amt) return {usdAmount: 0, note: null};
+  if (cur.code === 'USD') return {usdAmount: amt, note: null};
+  const rate = await getUSDRate(cur.code);
+  if (!rate) return {usdAmount: amt, note: `Original: ${cur.symbol}${amt} (rate unavailable)`};
+  const usd = parseFloat((amt / rate).toFixed(2));
+  const today = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  const note = `Converted from ${cur.symbol}${amt} at rate ${rate.toFixed(4)} (${today}) · MyTaxFly live rate, no fees`;
+  return {usdAmount: usd, originalAmount: amt, originalCurrency: cur.code, originalSymbol: cur.symbol, rate, note};
+}
+
 async function submitManual(){
   const vendor=document.getElementById('m-vendor').value.trim();
-  const amount=parseFloat(document.getElementById('m-amount').value);
+  const amountRaw=document.getElementById('m-amount').value.trim();
   const date=document.getElementById('m-date').value||new Date().toISOString().split('T')[0];
   const notes=document.getElementById('m-notes').value.trim();
   if(!vendor){alert('Please enter a vendor or description.');return;}
-  if(!amount||amount<=0){alert('Please enter a valid amount.');return;}
+  if(!parseAmountStr(amountRaw)){alert('Please enter a valid amount.');return;}
   const res=document.getElementById('manual-result');
   res.innerHTML='<div class="loading"><div class="spinner"></div> AI is categorizing your transaction...</div>';
+  const conv = await convertToUSD(amountRaw);
+  const amount = conv.usdAmount;
+  const convNote = conv.note ? (notes ? notes + ' · ' + conv.note : conv.note) : notes;
   const prompt=`Categorize this US LLC transaction. Respond ONLY with JSON:
 {"vendor":"${vendor}","amount":${amount},"currency":"USD","date":"${date}","category":"Software & Tools / Marketing / Office & Supplies / Travel / Meals / Professional Services / Other","type":"${currentType}","deductible":true,"deductible_percent":100,"note":"Brief IRS deductibility explanation"}
-Transaction: ${currentType} of $${amount} — "${vendor}"${notes?' — '+notes:''}`;
+Transaction: ${currentType} of $${amount} — "${vendor}"${convNote?' — '+convNote:''}`;
   try{
     const text=await callClaude([{role:'user',content:prompt}],null,500);
     const result=JSON.parse(text.replace(/```json|```/g,'').trim());
+    if(conv.note) result.note = (result.note ? result.note + '<br><span style="color:var(--accent);font-size:11px">✦ ' + conv.note + '</span>' : '<span style="color:var(--accent);font-size:11px">✦ ' + conv.note + '</span>');
     res.innerHTML='';
     const rc=document.createElement('div'); rc.className='result-card';
     const iI=result.type==='income';
@@ -1299,6 +1372,7 @@ Transaction: ${currentType} of $${amount} — "${vendor}"${notes?' — '+notes:'
     document.getElementById('m-vendor').value='';
     document.getElementById('m-amount').value='';
     document.getElementById('m-notes').value='';
+    const h=document.getElementById('currency-hint');if(h)h.textContent='';
   }catch(e){res.innerHTML=`<div class="result-card"><div style="color:var(--warn)">❌ Error: ${e.message}</div></div>`;}
 }
 
@@ -1363,6 +1437,19 @@ async function uploadQueue(){
   btn.disabled = false;
 }
 
+async function autoConvertResult(res) {
+  const cur = (res.currency || 'USD').toUpperCase();
+  if (cur === 'USD' || !res.amount) return;
+  const rate = await getUSDRate(cur);
+  if (!rate) return;
+  const originalAmt = res.amount;
+  res.amount = parseFloat((originalAmt / rate).toFixed(2));
+  const today = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  const convNote = `Converted from ${cur} ${originalAmt} at rate ${rate.toFixed(4)} (${today}) · MyTaxFly live rate, no fees`;
+  res.note = (res.note ? res.note + '<br><span style=\"color:#00c896;font-size:11px\">✦ ' + convNote + '</span>' : '<span style=\"color:#00c896;font-size:11px\">✦ ' + convNote + '</span>');
+  res.currency = 'USD';
+}
+
 async function processFile(file){
   const results = document.getElementById('upload-results');
   const loaderId = 'loader-' + Date.now();
@@ -1385,6 +1472,7 @@ async function analyzeWithClaude(fn,b64,mt,loaderId){
   try{
     const text=await callClaude([{role:'user',content:ca}],null,1000);
     const res=JSON.parse(text.replace(/```json|```/g,'').trim());
+    await autoConvertResult(res);
     renderResult(fn,res,loaderId); await addTransaction(res);
   }catch(e){
     const el=document.getElementById(loaderId);
@@ -1396,6 +1484,7 @@ async function analyzeText(fn,txt,loaderId){
   try{
     const text=await callClaude([{role:'user',content:`Receipt from "${fn}":\n\n${txt}\n\n${PROMPT}`}],null,1000);
     const res=JSON.parse(text.replace(/```json|```/g,'').trim());
+    await autoConvertResult(res);
     renderResult(fn,res,loaderId); await addTransaction(res);
   }catch(e){
     const el=document.getElementById(loaderId);
