@@ -1206,10 +1206,10 @@ async function handleLogout(){
 }
 
 // ── SUPABASE TRANSACTIONS ─────────────────────────────────
-async function loadTransactions(){
-  const {data:{user}}=await sb.auth.getUser();
-  if(!user) return;
-  const {data}=await sb.from('transactions').select('*').eq('user_id',user.id).order('date',{ascending:false});
+async function loadTransactions(userId){
+  const uid = userId || (await sb.auth.getUser()).data?.user?.id;
+  if(!uid) return;
+  const {data}=await sb.from('transactions').select('*').eq('user_id',uid).order('date',{ascending:false});
   if(data) transactions=data.map(t=>{
     const rawNote = t.note||'';
     const fileMatch = rawNote.match(/^\[File: (.+?)\] /);
@@ -1252,12 +1252,13 @@ async function launchApp(user){
   buildPeriodMenu();
   const [pFrom,pTo]=getPeriodRange('month');
   periodFrom=pFrom; periodTo=pTo;
-  await loadTransactions();
+  const [, plan] = await Promise.all([
+    loadTransactions(user.id),
+    fetchUserPlan(user.email)
+  ]);
   loadTaxProfile();
   loadChatSessions();
   initCookieBanner();
-  // Load plan and apply gating
-  const plan = await fetchUserPlan(user.email);
   applyPlanGating(plan);
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='block';
