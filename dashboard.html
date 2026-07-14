@@ -569,8 +569,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
           <div class="lang-option" onclick="setAppLang('pt')"><span>🇵🇹</span><span>POR</span></div>
         </div>
       </div>
-      <div id="plan-badge" style="display:inline-flex;align-items:center;gap:5px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:10px;font-weight:700;letter-spacing:0.5px;color:var(--text3);margin-bottom:6px;width:100%;justify-content:center">— BASIC —</div>
-      <div class="user-info" id="sidebar-user">user@example.com</div>
+      <div id="plan-badge" style="display:inline-flex;align-items:center;gap:5px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:10px;font-weight:700;letter-spacing:0.5px;color:var(--text3);width:100%;justify-content:center">Basic Plan</div>
     </div>
   </div>
 
@@ -1252,8 +1251,7 @@ async function launchApp(user){
     userEmail=user.email;
     document.getElementById('dash-title').textContent=`Welcome, ${userName}`;
     document.getElementById('dash-llc').textContent=`${llcName} · Overview ${new Date().getFullYear()}`;
-    document.getElementById('sidebar-user').textContent=user.email;
-    const tbe=document.getElementById('topbar-user-email');if(tbe)tbe.textContent=user.email;
+      const tbe=document.getElementById('topbar-user-email');if(tbe)tbe.textContent=user.email;
     document.getElementById('m-date').value=new Date().toISOString().split('T')[0];
     buildPeriodMenu();
     const [pFrom,pTo]=getPeriodRange('month');
@@ -2302,10 +2300,10 @@ function applyPlanGating(plan){
   // ── Sidebar badge ──
   const badge = document.getElementById('plan-badge');
   if(badge){
-    const labels = {basic:'— BASIC —', pro:'◈ PRO', business:'◈ BUSINESS'};
+    const labels = {basic:'Basic Plan', pro:'Pro Plan', business:'Business Plan'};
     const colors = {basic:'var(--text3)', pro:'#f59e0b', business:'var(--accent)'};
     const borders = {basic:'var(--border)', pro:'rgba(245,158,11,0.4)', business:'rgba(0,200,150,0.4)'};
-    badge.textContent = labels[plan] || '— BASIC —';
+    badge.textContent = labels[plan] || 'Basic Plan';
     badge.style.color = colors[plan] || 'var(--text3)';
     badge.style.borderColor = borders[plan] || 'var(--border)';
   }
