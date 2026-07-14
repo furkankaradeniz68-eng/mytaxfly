@@ -1240,28 +1240,37 @@ async function addTransaction(r){
 
 // ── LAUNCH APP ────────────────────────────────────────────
 async function launchApp(user){
-  const meta=user.user_metadata||{};
-  userName=meta.name||user.email.split('@')[0];
-  llcName=meta.llc_name||'My LLC';
-  userEmail=user.email;
-  document.getElementById('dash-title').textContent=`Welcome, ${userName}`;
-  document.getElementById('dash-llc').textContent=`${llcName} · Overview ${new Date().getFullYear()}`;
-  document.getElementById('sidebar-user').textContent=user.email;
-  const tbe=document.getElementById('topbar-user-email');if(tbe)tbe.textContent=user.email;
-  document.getElementById('m-date').value=new Date().toISOString().split('T')[0];
-  buildPeriodMenu();
-  const [pFrom,pTo]=getPeriodRange('month');
-  periodFrom=pFrom; periodTo=pTo;
-  const [, plan] = await Promise.all([
-    loadTransactions(user.id),
-    fetchUserPlan(user.email)
-  ]);
-  loadTaxProfile();
-  loadChatSessions();
-  initCookieBanner();
-  applyPlanGating(plan);
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('app').style.display='block';
+  // Reset login button in case it's still showing "Signing in..."
+  const btnLogin = document.getElementById('btn-login');
+  if(btnLogin){ btnLogin.disabled=false; const s=btnLogin.querySelector('span'); if(s) s.textContent='Sign In →'; }
+
+  try {
+    const meta=user.user_metadata||{};
+    userName=meta.name||user.email.split('@')[0];
+    llcName=meta.llc_name||'My LLC';
+    userEmail=user.email;
+    document.getElementById('dash-title').textContent=`Welcome, ${userName}`;
+    document.getElementById('dash-llc').textContent=`${llcName} · Overview ${new Date().getFullYear()}`;
+    document.getElementById('sidebar-user').textContent=user.email;
+    const tbe=document.getElementById('topbar-user-email');if(tbe)tbe.textContent=user.email;
+    document.getElementById('m-date').value=new Date().toISOString().split('T')[0];
+    buildPeriodMenu();
+    const [pFrom,pTo]=getPeriodRange('month');
+    periodFrom=pFrom; periodTo=pTo;
+    const [, plan] = await Promise.all([
+      loadTransactions(user.id),
+      fetchUserPlan(user.email)
+    ]);
+    loadTaxProfile();
+    loadChatSessions();
+    initCookieBanner();
+    applyPlanGating(plan);
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('app').style.display='block';
+  } catch(err) {
+    console.error('launchApp error:', err);
+    showError('Something went wrong loading your account. Please try again.');
+  }
 }
 
 // Auth state listener
