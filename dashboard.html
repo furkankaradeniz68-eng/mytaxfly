@@ -1765,7 +1765,8 @@ function renderChatMessages(){
   // History
   chatHistory.forEach(m=>{
     const d=document.createElement('div'); d.className=`msg${m.role==='user'?' user':''}`;
-    d.innerHTML=`<div class="msg-avatar">${m.role==='user'?userName[0].toUpperCase():`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M12 11V5"/><circle cx="12" cy="3" r="2"/><line x1="7" y1="15" x2="7" y2="15.01"/><line x1="17" y1="15" x2="17" y2="15.01"/></svg>`}</div><div class="msg-bubble">${m.content.replace(/\n/g,'<br>')}</div>`;
+    const mc = m.role==='user' ? m.content.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>') : mdToHtml(m.content);
+    d.innerHTML=`<div class="msg-avatar">${m.role==='user'?userName[0].toUpperCase():`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M12 11V5"/><circle cx="12" cy="3" r="2"/><line x1="7" y1="15" x2="7" y2="15.01"/><line x1="17" y1="15" x2="17" y2="15.01"/></svg>`}</div><div class="msg-bubble">${mc}</div>`;
     msgs.appendChild(d);
   });
   msgs.scrollTop = msgs.scrollHeight;
@@ -1800,10 +1801,21 @@ async function sendChat(){
   btn.disabled=false;
 }
 
+function mdToHtml(t){
+  return t
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/^#{1,3}\s+(.+)$/gm,'<strong>$1</strong>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/^[-•]\s+(.+)$/gm,'• $1')
+    .replace(/\n/g,'<br>');
+}
+
 function appendMsg(role,text){
   const msgs=document.getElementById('chat-messages');
   const d=document.createElement('div'); d.className=`msg ${role==='user'?'user':''}`;
-  d.innerHTML=`<div class="msg-avatar">${role==='user'?userName[0].toUpperCase():`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M12 11V5"/><circle cx="12" cy="3" r="2"/><line x1="7" y1="15" x2="7" y2="15.01"/><line x1="17" y1="15" x2="17" y2="15.01"/></svg>`}</div><div class="msg-bubble">${text.replace(/\n/g,'<br>')}</div>`;
+  const content = role==='user' ? text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>') : mdToHtml(text);
+  d.innerHTML=`<div class="msg-avatar">${role==='user'?userName[0].toUpperCase():`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M12 11V5"/><circle cx="12" cy="3" r="2"/><line x1="7" y1="15" x2="7" y2="15.01"/><line x1="17" y1="15" x2="17" y2="15.01"/></svg>`}</div><div class="msg-bubble">${content}</div>`;
   msgs.appendChild(d); msgs.scrollTop=msgs.scrollHeight; return d;
 }
 
