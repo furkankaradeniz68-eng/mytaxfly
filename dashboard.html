@@ -1433,28 +1433,43 @@ Transaction: ${currentType} of $${amount} — "${vendor}"${convNote?' — '+conv
 
 
 // ── DELETE TRANSACTION ────────────────────────────────────
-async function deleteTransaction(id){
-  if(!id){return;}
+function deleteTransaction(id){
+  if(!id) return;
   const idx = transactions.findIndex(t=>String(t._id)===String(id));
   if(idx===-1) return;
   const t = transactions[idx];
-  // Optimistic remove
-  transactions.splice(idx,1);
-  refreshDashboard();
-  renderDocumentsPage();
-  // Delete from Supabase
-  try{
-    const {data:{user}}=await sb.auth.getUser();
-    if(user && id && !String(id).startsWith('tmp_')){
-      await sb.from('transactions').delete().eq('id',id).eq('user_id',user.id);
-    }
-  }catch(e){console.warn('Delete error',e);}
-  // Show undo toast
-  const toast=document.createElement('div');
-  toast.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 18px;font-size:12px;color:var(--text);z-index:9999;display:flex;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(0,0,0,0.3)';
-  toast.innerHTML='Transaction deleted';
-  document.body.appendChild(toast);
-  setTimeout(()=>toast.remove(),2500);
+  // Show confirmation modal
+  const modal = document.createElement('div');
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:3000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)';
+  modal.innerHTML=`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;max-width:360px;width:90%;text-align:center">
+    <div style="width:44px;height:44px;background:rgba(229,62,62,0.1);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e53e3e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></div>
+    <div style="font-size:16px;font-weight:700;margin-bottom:8px">Delete Transaction?</div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:24px">«${t.vendor}» · ${t.date}<br>This action cannot be undone.</div>
+    <div style="display:flex;gap:10px">
+      <button id="del-cancel-btn" style="flex:1;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-weight:600;cursor:pointer">Cancel</button>
+      <button id="del-confirm-btn" style="flex:1;padding:10px;background:#e53e3e;border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:600;cursor:pointer">Delete</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+  document.getElementById('del-cancel-btn').onclick=()=>modal.remove();
+  modal.addEventListener('click',e=>{if(e.target===modal)modal.remove();});
+  document.getElementById('del-confirm-btn').onclick=async()=>{
+    modal.remove();
+    transactions.splice(idx,1);
+    refreshDashboard();
+    renderDocumentsPage();
+    try{
+      const {data:{user}}=await sb.auth.getUser();
+      if(user && id && !String(id).startsWith('tmp_')){
+        await sb.from('transactions').delete().eq('id',id).eq('user_id',user.id);
+      }
+    }catch(e){console.warn('Delete error',e);}
+    const toast=document.createElement('div');
+    toast.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 18px;font-size:12px;color:var(--text);z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.3)';
+    toast.textContent='Transaction deleted';
+    document.body.appendChild(toast);
+    setTimeout(()=>toast.remove(),2000);
+  };
 }
 
 // ── DOCUMENTS PAGE ─────────────────────────────────────────
