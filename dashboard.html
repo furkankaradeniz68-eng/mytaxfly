@@ -1213,7 +1213,14 @@ async function loadTransactions(userId){
   if(data) transactions=data.map(t=>{
     const rawNote = t.note||'';
     const fileMatch = rawNote.match(/^\[File: (.+?)\] /);
-    return {vendor:t.vendor,amount:parseFloat(t.amount),currency:t.currency||'USD',date:t.date,category:t.category,type:t.type,deductible:t.deductible,deductible_percent:t.deductible_percent||100,note:fileMatch?rawNote.slice(fileMatch[0].length):rawNote,filename:fileMatch?fileMatch[1]:null,_id:t.id};
+    let filename = null, fileUrl = null;
+    if(fileMatch){
+      const meta = fileMatch[1]; // "name.pdf" or "name.pdf|https://..."
+      const pipeIdx = meta.indexOf('|');
+      filename = pipeIdx > -1 ? meta.slice(0, pipeIdx) : meta;
+      fileUrl = pipeIdx > -1 ? meta.slice(pipeIdx+1) : null;
+    }
+    return {vendor:t.vendor,amount:parseFloat(t.amount),currency:t.currency||'USD',date:t.date,category:t.category,type:t.type,deductible:t.deductible,deductible_percent:t.deductible_percent||100,note:fileMatch?rawNote.slice(fileMatch[0].length):rawNote,filename,fileUrl,_id:t.id};
   });
   refreshDashboard();
 }
@@ -1221,8 +1228,12 @@ async function loadTransactions(userId){
 async function saveTransaction(r){
   const {data:{user}}=await sb.auth.getUser();
   if(!user) return;
-  // Embed filename in note if present (persists to Supabase)
-  const noteWithFile = r.filename ? '[File: '+r.filename+'] '+(r.note||'') : (r.note||'');
+  // Embed filename + optional fileUrl in note for persistence
+  let noteWithFile = r.note||'';
+  if(r.filename){
+    const meta = r.fileUrl ? '[File: '+r.filename+'|'+r.fileUrl+'] ' : '[File: '+r.filename+'] ';
+    noteWithFile = meta + noteWithFile;
+  }
   const {data} = await sb.from('transactions').insert({
     user_id:user.id, vendor:r.vendor, amount:r.amount,
     currency:r.currency||'USD', date:r.date||new Date().toISOString().split('T')[0],
@@ -1395,7 +1406,9 @@ function refreshDashboard(){
   if(filtered.length===0){
     txList.innerHTML='<div class="empty-state" style="padding:30px 0"><div class="empty-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div><div class="empty-title">No transactions in this period</div><div class="empty-sub">Try a different time range</div></div>';
   } else {
-    txList.innerHTML=filtered.slice(0,5).map(t=>`<div class="tx-item"><div class="tx-left"><div class="tx-icon">${icons[t.category]||''}</div><div><div class="tx-name">${t.vendor}</div><div class="tx-cat">${t.category}</div></div></div><div style="display:flex;align-items:center;gap:6px"><div class="tx-amount ${t.type==='income'?'in':'out'}">${t.type==='income'?'+':'-'}${fmt(t.amount)}</div><button class="tx-delete" onclick="event.stopPropagation();deleteTransaction('${t._id}')" title="Delete transaction"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button></div></div>`).join('')+'<div class="tx-view-all"><button onclick="showPage(\'documents\',document.getElementById(\'nav-docs-item\'))">View All →</button></div>';
+    const eyeSvg='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+    const trashSvgSm='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>';
+    txList.innerHTML=filtered.slice(0,5).map(t=>`<div class="tx-item"><div class="tx-left"><div class="tx-icon">${icons[t.category]||''}</div><div><div class="tx-name">${t.vendor}</div><div class="tx-cat">${t.category}</div></div></div><div style="display:flex;align-items:center;gap:6px"><div class="tx-amount ${t.type==='income'?'in':'out'}">${t.type==='income'?'+':'-'}${fmt(t.amount)}</div>${t.fileUrl?`<button class="tx-delete" style="color:var(--accent)" onclick="event.stopPropagation();window.open('${t.fileUrl}','_blank')" title="View document">${eyeSvg}</button>`:''}<button class="tx-delete" onclick="event.stopPropagation();deleteTransaction('${t._id}')" title="Delete transaction">${trashSvgSm}</button></div></div>`).join('')+'<div class="tx-view-all"><button onclick="showPage(\'documents\',document.getElementById(\'nav-docs-item\'))">View All →</button></div>';
   }
   const cats={};
   filtered.filter(t=>t.type==='expense').forEach(t=>{cats[t.category]=(cats[t.category]||0)+t.amount;});
@@ -1445,8 +1458,25 @@ function parseAmountStr(str) {
   return parseFloat(str.replace(/[^0-9.]/g, '')) || 0;
 }
 
-async function getUSDRate(currency) {
+let _historicalRateCache = {};
+
+async function getUSDRate(currency, date) {
   if (currency === 'USD') return 1;
+  // Use historical rate if date provided and not today
+  const today = new Date().toISOString().split('T')[0];
+  const useDate = date && date !== today ? date : null;
+  if (useDate) {
+    const cacheKey = `${currency}_${useDate}`;
+    if (_historicalRateCache[cacheKey]) return _historicalRateCache[cacheKey];
+    try {
+      const r = await fetch(`https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@${useDate}/v1/currencies/usd.json`);
+      const data = await r.json();
+      const rate = data.usd ? (1 / data.usd[currency.toLowerCase()]) : null;
+      if (rate) _historicalRateCache[cacheKey] = rate;
+      return rate;
+    } catch(e) { /* fall through to today's rate */ }
+  }
+  // Today's rate (cached 1h)
   const now = Date.now();
   if (now - _rateCacheTime < 3600000 && _rateCache[currency]) return _rateCache[currency];
   try {
@@ -1475,16 +1505,17 @@ function handleAmountInput(val) {
   }, 400);
 }
 
-async function convertToUSD(amountStr) {
+async function convertToUSD(amountStr, txDate) {
   const cur = detectCurrency(amountStr);
   const amt = parseAmountStr(amountStr);
   if (!amt) return {usdAmount: 0, note: null};
   if (cur.code === 'USD') return {usdAmount: amt, note: null};
-  const rate = await getUSDRate(cur.code);
+  const rate = await getUSDRate(cur.code, txDate);
   if (!rate) return {usdAmount: amt, note: `Original: ${cur.symbol}${amt} (rate unavailable)`};
   const usd = parseFloat((amt / rate).toFixed(2));
-  const today = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-  const note = `Converted from ${cur.symbol}${amt} at rate ${rate.toFixed(4)} (${today}) · MyTaxFly live rate, no fees`;
+  const rateDate = txDate || new Date().toISOString().split('T')[0];
+  const rateDateFmt = new Date(rateDate+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  const note = `Converted from ${cur.symbol}${amt} at rate ${rate.toFixed(4)} (${rateDateFmt}) · MyTaxFly historical rate`;
   return {usdAmount: usd, originalAmount: amt, originalCurrency: cur.code, originalSymbol: cur.symbol, rate, note};
 }
 
@@ -1497,7 +1528,7 @@ async function submitManual(){
   if(!parseAmountStr(amountRaw)){alert('Please enter a valid amount.');return;}
   const res=document.getElementById('manual-result');
   res.innerHTML='<div class="loading"><div class="spinner"></div> AI is categorizing your transaction...</div>';
-  const conv = await convertToUSD(amountRaw);
+  const conv = await convertToUSD(amountRaw, date);
   const amount = conv.usdAmount;
   const convNote = conv.note ? (notes ? notes + ' · ' + conv.note : conv.note) : notes;
   const prompt=`Categorize this US LLC transaction. Respond ONLY with JSON:
@@ -1585,6 +1616,7 @@ function renderDocumentsPage(){
   const fileIcon='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
   const pencilIcon='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
   const trashSvg='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>';
+  const eyeSvgDoc='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
 
   if(!items.length){
     list.innerHTML='<div class="empty-state" style="padding:40px 0"><div class="empty-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="empty-title">No documents found</div><div class="empty-sub">Upload a receipt or add a transaction</div></div>';
@@ -1601,6 +1633,7 @@ function renderDocumentsPage(){
       </div>
       <div class="doc-right">
         <div class="doc-amount ${t.type==='income'?'in':'out'}" style="color:${t.type==='income'?'var(--accent)':'var(--warn)'}">${t.type==='income'?'+':'-'}${fmt(t.amount)}</div>
+        ${t.fileUrl?`<button class="tx-delete" style="color:var(--accent)" onclick="window.open('${t.fileUrl}','_blank')" title="View document">${eyeSvgDoc}</button>`:''}
         <button class="tx-delete" onclick="deleteTransaction('${t._id}')" title="Delete">${trashSvg}</button>
       </div>
     </div>`).join('');
@@ -1672,12 +1705,13 @@ async function uploadQueue(){
 async function autoConvertResult(res) {
   const cur = (res.currency || 'USD').toUpperCase();
   if (cur === 'USD' || !res.amount) return;
-  const rate = await getUSDRate(cur);
+  const txDate = res.date || null;
+  const rate = await getUSDRate(cur, txDate);
   if (!rate) return;
   const originalAmt = res.amount;
   res.amount = parseFloat((originalAmt / rate).toFixed(2));
-  const today = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-  const convNote = `Converted from ${cur} ${originalAmt} at rate ${rate.toFixed(4)} (${today}) · MyTaxFly live rate, no fees`;
+  const rateDateFmt = txDate ? new Date(txDate+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  const convNote = `Converted from ${cur} ${originalAmt} at rate ${rate.toFixed(4)} (${rateDateFmt}) · MyTaxFly historical rate`;
   res.note = (res.note ? res.note + '<br><span style=\"color:#00c896;font-size:11px\">✦ ' + convNote + '</span>' : '<span style=\"color:#00c896;font-size:11px\">✦ ' + convNote + '</span>');
   res.currency = 'USD';
 }
@@ -1687,9 +1721,22 @@ async function processFile(file){
   const loaderId = 'loader-' + Date.now();
   results.insertAdjacentHTML('beforeend', `<div id="${loaderId}" class="loading"><div class="spinner"></div> Analyzing "${file.name}"...</div>`);
   results.scrollIntoView({behavior:'smooth',block:'nearest'});
-  if(file.type.startsWith('image/'))await analyzeWithClaude(file.name,await readB64(file),file.type, loaderId);
-  else if(file.type==='application/pdf')await analyzeWithClaude(file.name,await readB64(file),'application/pdf', loaderId);
-  else await analyzeText(file.name,await readTxt(file), loaderId);
+  // Upload file to Supabase Storage so it can be viewed later
+  let fileUrl = null;
+  try {
+    const {data:{user}} = await sb.auth.getUser();
+    if(user){
+      const path = `${user.id}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;
+      const {data:upData} = await sb.storage.from('receipts').upload(path, file, {upsert:true});
+      if(upData?.path){
+        const {data:urlData} = sb.storage.from('receipts').getPublicUrl(upData.path);
+        fileUrl = urlData?.publicUrl || null;
+      }
+    }
+  } catch(e){ /* storage optional — continue without */ }
+  if(file.type.startsWith('image/'))await analyzeWithClaude(file.name,await readB64(file),file.type,loaderId,fileUrl);
+  else if(file.type==='application/pdf')await analyzeWithClaude(file.name,await readB64(file),'application/pdf',loaderId,fileUrl);
+  else await analyzeText(file.name,await readTxt(file),loaderId,fileUrl);
 }
 
 function readB64(f){return new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(fr.result.split(',')[1]);fr.readAsDataURL(f);});}
@@ -1698,13 +1745,13 @@ function readTxt(f){return new Promise(r=>{const fr=new FileReader();fr.onload=(
 const PROMPT=`Analyze this receipt for a US LLC. Respond ONLY with JSON:
 {"vendor":"name","amount":0.00,"currency":"USD","date":"YYYY-MM-DD","category":"Software & Tools / Marketing / Office & Supplies / Travel / Meals / Professional Services / Other","type":"expense or income","deductible":true,"deductible_percent":100,"note":"Brief IRS deductibility explanation"}`;
 
-async function analyzeWithClaude(fn,b64,mt,loaderId){
+async function analyzeWithClaude(fn,b64,mt,loaderId,fileUrl){
   const isImg=mt.startsWith('image/');
   const ca=isImg?[{type:'image',source:{type:'base64',media_type:mt,data:b64}},{type:'text',text:PROMPT}]:[{type:'document',source:{type:'base64',media_type:'application/pdf',data:b64}},{type:'text',text:PROMPT}];
   try{
     const text=await callClaude([{role:'user',content:ca}],null,1000);
     const res=JSON.parse(text.replace(/```json|```/g,'').trim());
-    res.filename=fn;
+    res.filename=fn; if(fileUrl) res.fileUrl=fileUrl;
     await autoConvertResult(res);
     renderResult(fn,res,loaderId); await addTransaction(res);
   }catch(e){
@@ -1713,11 +1760,11 @@ async function analyzeWithClaude(fn,b64,mt,loaderId){
   }
 }
 
-async function analyzeText(fn,txt,loaderId){
+async function analyzeText(fn,txt,loaderId,fileUrl){
   try{
     const text=await callClaude([{role:'user',content:`Receipt from "${fn}":\n\n${txt}\n\n${PROMPT}`}],null,1000);
     const res=JSON.parse(text.replace(/```json|```/g,'').trim());
-    res.filename=fn;
+    res.filename=fn; if(fileUrl) res.fileUrl=fileUrl;
     await autoConvertResult(res);
     renderResult(fn,res,loaderId); await addTransaction(res);
   }catch(e){
@@ -2158,11 +2205,12 @@ function getTaxProfile() {
 function exportTaxForms(formType) {
   const p = getTaxProfile();
   if (!p.ein) { alert('Please complete your LLC profile first (EIN is required).'); return; }
-  const filtered = getFilteredTx();
+  const taxYear = new Date().getFullYear() - 1;
+  // IRS export always uses ALL transactions from the tax year, not the dashboard period filter
+  const filtered = transactions.filter(t => t.date && t.date.startsWith(String(taxYear)));
   const inc = filtered.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
   const exp = filtered.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
   const profit = inc - exp;
-  const taxYear = new Date().getFullYear() - 1;
   const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
   // Group expenses by broad IRS 1120 categories
