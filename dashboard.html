@@ -2684,12 +2684,36 @@ document.addEventListener('click', e => {
 <div id="upgrade-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(4px)" onclick="if(event.target===this)closeUpgradeModal()">
   <div style="background:var(--bg2);border:1px solid rgba(0,200,150,0.3);border-radius:20px;padding:40px;max-width:400px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.5)">
     <div style="margin-bottom:16px"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d='M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z'/><path d='M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z'/><path d='M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0'/><path d='M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5'/></svg></div>
-    <div id="upgrade-modal-title" style="font-size:20px;font-weight:800;margin-bottom:12px">Upgrade to Pro</div>
-    <p id="upgrade-modal-text" style="font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:28px"></p>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
-      <a id="upgrade-modal-link" href="https://buy.stripe.com/3cI6oJ71p0WH7audCc9IQ02" target="_blank" style="display:block;background:var(--accent);color:#0d0f14;border-radius:10px;padding:13px 10px;font-weight:700;font-size:13px;text-decoration:none;text-align:center;transition:opacity 0.2s" onmouseover="this.style.opacity=0.9" onmouseout="this.style.opacity=1">⭐ Pro Monthly<br><span style="font-size:11px;font-weight:600">$29/mo</span></a>
-      <a href="https://buy.stripe.com/aFa4gBgBZ9tdgL4bu49IQ03" target="_blank" style="display:block;background:rgba(0,200,150,0.12);color:var(--accent);border:1px solid rgba(0,200,150,0.3);border-radius:10px;padding:13px 10px;font-weight:700;font-size:13px;text-decoration:none;text-align:center;transition:opacity 0.2s" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">⭐ Pro Yearly<br><span style="font-size:11px;font-weight:600">Save 2 months</span></a>
+    <div id="upgrade-modal-title" style="font-size:20px;font-weight:800;margin-bottom:8px">Choose Your Plan</div>
+    <p id="upgrade-modal-text" style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:20px"></p>
+
+    <!-- Basic -->
+    <div style="text-align:left;margin-bottom:10px">
+      <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Basic</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <a href="https://buy.stripe.com/4gM28t71peNx9iCfKk9IQ00" target="_blank" style="display:block;background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:11px 10px;font-weight:700;font-size:12px;text-decoration:none;text-align:center;transition:opacity 0.2s" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">Monthly<br><span style="font-size:11px;color:var(--text2);font-weight:600">$9/mo</span></a>
+        <a href="https://buy.stripe.com/8x214pclJcFpdySgOo9IQ01" target="_blank" style="display:block;background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:11px 10px;font-weight:700;font-size:12px;text-decoration:none;text-align:center;transition:opacity 0.2s" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">Yearly<br><span style="font-size:11px;color:var(--text2);font-weight:600">Save 2 months</span></a>
+      </div>
     </div>
+
+    <!-- Pro -->
+    <div style="text-align:left;margin-bottom:10px">
+      <div style="font-size:10px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">⭐ Pro — Most Popular</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <a id="upgrade-modal-link" href="https://buy.stripe.com/3cI6oJ71p0WH7audCc9IQ02" target="_blank" style="display:block;background:var(--accent);color:#0d0f14;border-radius:10px;padding:11px 10px;font-weight:700;font-size:12px;text-decoration:none;text-align:center;transition:opacity 0.2s" onmouseover="this.style.opacity=0.9" onmouseout="this.style.opacity=1">Monthly<br><span style="font-size:11px;font-weight:600">$29/mo</span></a>
+        <a href="https://buy.stripe.com/aFa4gBgBZ9tdgL4bu49IQ03" target="_blank" style="display:block;background:rgba(0,200,150,0.12);color:var(--accent);border:1px solid rgba(0,200,150,0.3);border-radius:10px;padding:11px 10px;font-weight:700;font-size:12px;text-decoration:none;text-align:center;transition:opacity 0.2s" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">Yearly<br><span style="font-size:11px;font-weight:600">Save 2 months</span></a>
+      </div>
+    </div>
+
+    <!-- Business -->
+    <div style="text-align:left;margin-bottom:16px">
+      <div style="font-size:10px;font-weight:700;color:#f59e0b;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">◈ Business</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <a href="https://buy.stripe.com/aFa3cxbhF5cXbqKdCc9IQ04" target="_blank" style="display:block;background:rgba(245,158,11,0.08);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:11px 10px;font-weight:700;font-size:12px;text-decoration:none;text-align:center;transition:opacity 0.2s" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">Monthly<br><span style="font-size:11px;font-weight:600">$49/mo</span></a>
+        <a href="https://buy.stripe.com/cNi5kFbhFdJt1Qa7dO9IQ05" target="_blank" style="display:block;background:rgba(245,158,11,0.08);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:11px 10px;font-weight:700;font-size:12px;text-decoration:none;text-align:center;transition:opacity 0.2s" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">Yearly<br><span style="font-size:11px;font-weight:600">Save 2 months</span></a>
+      </div>
+    </div>
+
     <button onclick="closeUpgradeModal()" style="background:none;border:1px solid var(--border);border-radius:10px;padding:10px 20px;color:var(--text3);font-family:'Montserrat',sans-serif;font-size:13px;cursor:pointer;width:100%">Maybe later</button>
   </div>
 </div>
