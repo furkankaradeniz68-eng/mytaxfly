@@ -2596,15 +2596,28 @@ function openAccountModal() {
   set('acc-inc-date', p.incDate); set('acc-activity', p.activity); set('acc-country', p.country);
   set('acc-sh-name', p.shName); set('acc-sh-country', p.shCountry);
   set('acc-sh-ftin', p.shFtin); set('acc-sh-res', p.shRes);
-  // Pre-fill name/email from Supabase session
-  const session = supabase?.auth?.getSession ? null : null;
-  const email = document.getElementById('sidebar-user')?.textContent || '';
+  // Pre-fill email from global userEmail
   const emailEl = document.getElementById('acc-email');
-  if (emailEl) emailEl.value = email;
+  if (emailEl) emailEl.value = userEmail || '';
   const nameEl = document.getElementById('acc-name');
-  if (nameEl && !nameEl.value) nameEl.value = email.split('@')[0];
+  if (nameEl && !nameEl.value) nameEl.value = userName || '';
+  // Reset email change form
+  document.getElementById('email-change-form').style.display = 'none';
+  document.getElementById('email-change-msg').style.display = 'none';
   const modal = document.getElementById('account-modal');
   modal.style.display = 'flex';
+}
+function showEmailChange() {
+  const f = document.getElementById('email-change-form');
+  f.style.display = f.style.display === 'none' ? 'block' : 'none';
+}
+async function changeEmail() {
+  const newEmail = document.getElementById('acc-new-email').value.trim();
+  if (!newEmail) return;
+  const { error } = await sb.auth.updateUser({ email: newEmail });
+  if (error) { alert('Error: ' + error.message); return; }
+  document.getElementById('email-change-msg').style.display = 'block';
+  document.getElementById('acc-new-email').value = '';
 }
 function closeAccountModal() {
   document.getElementById('account-modal').style.display = 'none';
@@ -2717,7 +2730,18 @@ document.addEventListener('click', e => {
       <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Profile</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
         <div class="form-group"><div class="f-label">Full Name</div><input class="f-input" id="acc-name" placeholder="Your Name"></div>
-        <div class="form-group"><div class="f-label">Email</div><input class="f-input" id="acc-email" placeholder="email@example.com" disabled style="opacity:0.5;cursor:not-allowed"></div>
+        <div class="form-group">
+          <div class="f-label">Email</div>
+          <div style="display:flex;gap:8px">
+            <input class="f-input" id="acc-email" placeholder="email@example.com" disabled style="opacity:0.5;cursor:not-allowed;flex:1">
+            <button onclick="showEmailChange()" style="padding:0 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--accent);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">Change</button>
+          </div>
+          <div id="email-change-form" style="display:none;margin-top:8px">
+            <input class="f-input" id="acc-new-email" placeholder="New email address" type="email" style="margin-bottom:6px">
+            <button onclick="changeEmail()" style="width:100%;padding:9px;background:var(--accent);border:none;border-radius:8px;color:#000;font-weight:700;font-size:12px;cursor:pointer">Send confirmation link →</button>
+            <div id="email-change-msg" style="display:none;font-size:11px;color:#00c896;margin-top:6px;text-align:center">✓ Confirmation email sent! Check your inbox.</div>
+          </div>
+        </div>
       </div>
       <div style="height:1px;background:var(--border);margin:16px 0"></div>
       <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">IRS / LLC Data</div>
