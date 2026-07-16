@@ -1246,21 +1246,25 @@ async function launchApp(user){
     userEmail=user.email;
     document.getElementById('dash-title').textContent=`Welcome, ${userName}`;
     document.getElementById('dash-llc').textContent=`${llcName} · Overview ${new Date().getFullYear()}`;
-      const tbe=document.getElementById('topbar-user-email');if(tbe)tbe.textContent=user.email;
+    const tbe=document.getElementById('topbar-user-email');if(tbe)tbe.textContent=user.email;
     document.getElementById('m-date').value=new Date().toISOString().split('T')[0];
     buildPeriodMenu();
     const [pFrom,pTo]=getPeriodRange('month');
     periodFrom=pFrom; periodTo=pTo;
+    loadTaxProfile();
+    loadChatSessions();
+    initCookieBanner();
+
+    // Show app immediately — don't wait for data
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('app').style.display='block';
+
+    // Load data in background
     const [, plan] = await Promise.all([
       loadTransactions(user.id),
       fetchUserPlan(user.email)
     ]);
-    loadTaxProfile();
-    loadChatSessions();
-    initCookieBanner();
     applyPlanGating(plan);
-    document.getElementById('login-screen').style.display='none';
-    document.getElementById('app').style.display='block';
   } catch(err) {
     console.error('launchApp error:', err);
     showError('Error: ' + (err?.message || String(err)));
