@@ -2334,6 +2334,8 @@ function exportTaxForms(formType) {
   if (!p.ein) { alert('Please complete your LLC profile first (EIN is required).'); return; }
   // Use the Reports page period filter
   const filtered = getReportFilteredTx();
+  // Derive tax year label from the selected report period
+  const taxYear = reportPeriodFrom ? reportPeriodFrom.getFullYear() : new Date().getFullYear() - 1;
   const inc = filtered.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
   const exp = filtered.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
   const profit = inc - exp;
