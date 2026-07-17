@@ -796,6 +796,26 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
     <div class="page" id="page-reports">
       <div class="page-title" id="t-reports-title">Reports</div>
       <div class="page-sub" id="t-reports-sub">Export your bookkeeping for your accountant</div>
+
+      <!-- REPORTS PERIOD FILTER -->
+      <div class="period-bar" style="margin-bottom:20px">
+        <div class="period-switcher" id="report-period-switcher">
+          <button class="period-btn" onclick="toggleReportPeriodMenu()" id="report-period-btn-main">
+            <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x='3' y='4' width='18' height='18' rx='2'/><line x1='16' y1='2' x2='16' y2='6'/><line x1='8' y1='2' x2='8' y2='6'/><line x1='3' y1='10' x2='21' y2='10'/></svg></span>
+            <span id="report-period-label-text">Full Year 2026</span>
+            <span style="font-size:9px;margin-left:1px">▾</span>
+          </button>
+          <div class="period-dropdown" id="report-period-dropdown"></div>
+        </div>
+        <div class="period-custom" id="report-custom-range">
+          <input type="date" class="period-date" id="report-custom-from">
+          <span class="period-sep">→</span>
+          <input type="date" class="period-date" id="report-custom-to">
+          <button class="btn-sec" style="padding:7px 12px;font-size:12px" onclick="applyReportCustomRange()">Apply</button>
+        </div>
+        <span style="font-size:12px;font-weight:600;color:var(--accent)">✦ Wähle Zeitspanne aus</span>
+      </div>
+
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px">
         <div class="stat-card" style="cursor:pointer" onclick="generateReport('pl')"><div style="margin-bottom:12px"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg></div><div style="font-weight:700;margin-bottom:4px">Profit & Loss</div><div style="font-size:12px;color:var(--text3)"><span id="t-rep1-sub">Revenue and expenses overview</span></div><div style="margin-top:12px"><span class="badge blue">PDF Export</span></div></div>
         <div class="stat-card" style="cursor:pointer" onclick="generateReport('summary')"><div style="margin-bottom:12px"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg></div><div style="font-weight:700;margin-bottom:4px"><span id="t-rep2">Tax Summary</span></div><div style="font-size:12px;color:var(--text3)"><span id="t-rep2-sub">Deductible expenses by IRS category</span></div><div style="margin-top:12px"><span class="badge green">PDF Export</span></div></div>
@@ -967,6 +987,9 @@ let userName='', llcName='', userEmail='', transactions=[], chatHistory=[];
 let chatSessions=[], currentChatId=null;
 let currentType='expense';
 let periodFrom=null, periodTo=null;
+// Reports page has its own independent period filter (defaults to full current year)
+const _ry=new Date().getFullYear();
+let reportPeriodFrom=new Date(_ry,0,1), reportPeriodTo=new Date(_ry,11,31);
 
 // ── PERIOD FILTER ─────────────────────────────────────────
 function getPeriodRange(val){
@@ -1022,6 +1045,72 @@ function buildPeriodMenu(){
 
 function togglePeriodMenu(){
   document.getElementById('period-dropdown').classList.toggle('open');
+}
+
+// ── REPORTS PERIOD FILTER ─────────────────────────────────
+function buildReportPeriodMenu(){
+  const now=new Date(); const y=now.getFullYear(); const py=y-1;
+  const dropdown=document.getElementById('report-period-dropdown');
+  if(!dropdown) return;
+  const items=[
+    {val:'month',label:'This Month'},
+    {val:'last_month',label:'Last Month'},
+    {div:true},
+    {val:`q1_${y}`,label:`Q1 ${y} · Jan–Mar`},
+    {val:`q2_${y}`,label:`Q2 ${y} · Apr–Jun`},
+    {val:`q3_${y}`,label:`Q3 ${y} · Jul–Sep`},
+    {val:`q4_${y}`,label:`Q4 ${y} · Oct–Dec`},
+    {div:true},
+    {val:`year_${y}`,label:`Full Year ${y}`,default:true},
+    {div:true},
+    {val:`q1_${py}`,label:`Q1 ${py} · Jan–Mar`},
+    {val:`q2_${py}`,label:`Q2 ${py} · Apr–Jun`},
+    {val:`q3_${py}`,label:`Q3 ${py} · Jul–Sep`},
+    {val:`q4_${py}`,label:`Q4 ${py} · Oct–Dec`},
+    {div:true},
+    {val:`year_${py}`,label:`Full Year ${py}`},
+    {div:true},
+    {val:'all',label:'All Time'},
+    {div:true},
+    {val:'custom',label:'Custom Range'},
+  ];
+  dropdown.innerHTML=items.map(item=>{
+    if(item.div) return '<div class="period-divider"></div>';
+    return `<div class="period-option${item.default?' active':''}" onclick="selectReportPeriod('${item.val}','${item.label}')">${item.label}</div>`;
+  }).join('');
+}
+
+function toggleReportPeriodMenu(){
+  document.getElementById('report-period-dropdown').classList.toggle('open');
+}
+
+function selectReportPeriod(val,label){
+  document.getElementById('report-period-label-text').textContent=label;
+  document.querySelectorAll('#report-period-dropdown .period-option').forEach(el=>el.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('report-period-dropdown').classList.remove('open');
+  const custom=document.getElementById('report-custom-range');
+  if(val==='custom'){ custom.classList.add('visible'); }
+  else{
+    custom.classList.remove('visible');
+    const [from,to]=getPeriodRange(val);
+    reportPeriodFrom=from; reportPeriodTo=to;
+  }
+}
+
+function applyReportCustomRange(){
+  const f=document.getElementById('report-custom-from').value;
+  const t=document.getElementById('report-custom-to').value;
+  if(!f||!t){alert('Please select both dates.');return;}
+  reportPeriodFrom=new Date(f); reportPeriodTo=new Date(t);
+  document.getElementById('report-custom-range').classList.remove('visible');
+}
+
+function getReportFilteredTx(){
+  if(!reportPeriodFrom||!reportPeriodTo) return transactions;
+  return transactions.filter(t=>{
+    const d=new Date(t.date); return d>=reportPeriodFrom && d<=reportPeriodTo;
+  });
 }
 
 function selectPeriod(val,label){
@@ -1298,6 +1387,7 @@ async function launchApp(user){
     const tbe=document.getElementById('topbar-user-email');if(tbe)tbe.textContent=user.email;
     document.getElementById('m-date').value=new Date().toISOString().split('T')[0];
     buildPeriodMenu();
+    buildReportPeriodMenu();
     const [pFrom,pTo]=getPeriodRange('month');
     periodFrom=pFrom; periodTo=pTo;
     loadTaxProfile();
@@ -1977,7 +2067,7 @@ td{padding:9px 12px;border-bottom:1px solid #eee;font-size:13px}
 }
 
 function generateReport(type){
-  const filtered=getFilteredTx();
+  const filtered=getReportFilteredTx();
   if(!filtered.length){alert('No transactions in this period.');return;}
   const inc=filtered.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
   const exp=filtered.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
@@ -2183,7 +2273,7 @@ ${batch.map((r,j)=>`${j+1}. ${r.type.toUpperCase()} ${fmt(r.amount)} — ${r.des
 }
 
 function exportCSV(){
-  const filtered=getFilteredTx();
+  const filtered=getReportFilteredTx();
   if(!filtered.length){alert('No transactions in this period.');return;}
   const header='Date,Vendor,Type,Amount,Currency,Category,Deductible,Note\n';
   const rows=filtered.map(t=>`${t.date},${t.vendor},${t.type},${t.amount},${t.currency||'USD'},${t.category},${t.deductible},${t.note}`).join('\n');
@@ -2192,7 +2282,7 @@ function exportCSV(){
 }
 
 async function generateAIReport(){
-  const filtered=getFilteredTx();
+  const filtered=getReportFilteredTx();
   if(!filtered.length){document.getElementById('report-output').innerHTML='<div style="color:var(--warn);font-size:13px">⚠️ No transactions in this period.</div>';return;}
   document.getElementById('report-output').innerHTML='<div class="loading"><div class="spinner"></div> Generating report...</div>';
   const sum=filtered.map(t=>`- ${t.vendor}: ${t.type==='income'?'+':'-'}$${t.amount} (${t.category}, ${t.deductible?'deductible':'non-deductible'})`).join('\n');
@@ -2242,9 +2332,8 @@ function getTaxProfile() {
 function exportTaxForms(formType) {
   const p = getTaxProfile();
   if (!p.ein) { alert('Please complete your LLC profile first (EIN is required).'); return; }
-  const taxYear = new Date().getFullYear() - 1;
-  // IRS export always uses ALL transactions from the tax year, not the dashboard period filter
-  const filtered = transactions.filter(t => t.date && t.date.startsWith(String(taxYear)));
+  // Use the Reports page period filter
+  const filtered = getReportFilteredTx();
   const inc = filtered.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
   const exp = filtered.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
   const profit = inc - exp;
@@ -2524,6 +2613,9 @@ document.addEventListener('click', e => {
   const psw = document.getElementById('period-switcher');
   if(psw && !psw.contains(e.target))
     document.getElementById('period-dropdown').classList.remove('open');
+  const rpsw = document.getElementById('report-period-switcher');
+  if(rpsw && !rpsw.contains(e.target))
+    document.getElementById('report-period-dropdown').classList.remove('open');
 });
 
 function setAppLang(lang){
