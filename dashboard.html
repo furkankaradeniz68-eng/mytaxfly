@@ -1684,7 +1684,8 @@ function detectCurrency(str) {
 }
 
 function parseAmountStr(str) {
-  return parseFloat(str.replace(/[^0-9.]/g, '')) || 0;
+  const v = parseFloat(str.replace(/[^0-9.]/g, '')) || 0;
+  return v;
 }
 
 let _historicalRateCache = {};
@@ -1754,7 +1755,19 @@ async function submitManual(){
   const date=document.getElementById('m-date').value||new Date().toISOString().split('T')[0];
   const notes=document.getElementById('m-notes').value.trim();
   if(!vendor){alert('Please enter a vendor or description.');return;}
-  if(!parseAmountStr(amountRaw)){alert('Please enter a valid amount.');return;}
+  const _parsedAmt = parseAmountStr(amountRaw);
+  if(!_parsedAmt || _parsedAmt <= 0){alert('Please enter a valid amount greater than $0.');return;}
+  if(_parsedAmt > 10000000){
+    if(!confirm(`The amount ${amountRaw} is over $10,000,000. Is this correct?`)) return;
+  }
+  const _dateVal = document.getElementById('m-date').value;
+  if(_dateVal){
+    const _enteredDate = new Date(_dateVal);
+    const _now = new Date();
+    const _threeYearsAgo = new Date(_now.getFullYear()-3, _now.getMonth(), _now.getDate());
+    if(_enteredDate > _now){ alert('Date cannot be in the future.'); return; }
+    if(_enteredDate < _threeYearsAgo){ if(!confirm('This date is more than 3 years in the past. Is this correct?')) return; }
+  }
   const res=document.getElementById('manual-result');
   res.innerHTML='<div class="loading"><div class="spinner"></div> AI is categorizing your transaction...</div>';
   const conv = await convertToUSD(amountRaw, date);
@@ -2431,6 +2444,11 @@ function getTaxProfile() {
   return JSON.parse(localStorage.getItem(TAX_PROFILE_KEY) || '{}');
 }
 
+function fmtIRS(n) {
+  // IRS instructions: round to nearest whole dollar
+  return '$' + Math.round(n).toLocaleString('en-US');
+}
+
 function exportTaxForms(formType) {
   const p = getTaxProfile();
   if (!p.ein) { alert('Please complete your LLC profile first (EIN is required).'); return; }
@@ -2438,8 +2456,8 @@ function exportTaxForms(formType) {
   const filtered = getReportFilteredTx();
   // Derive tax year label from the selected report period
   const taxYear = reportPeriodFrom ? reportPeriodFrom.getFullYear() : new Date().getFullYear() - 1;
-  const inc = filtered.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
-  const exp = filtered.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+  const inc = filtered.filter(t => t.type === 'income').reduce((s, t) => s + (parseFloat(t.amount)||0), 0);
+  const exp = filtered.filter(t => t.type === 'expense').reduce((s, t) => s + (parseFloat(t.amount)||0), 0);
   const profit = inc - exp;
   const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
@@ -2483,7 +2501,7 @@ td{padding:6px 10px;border-bottom:1px solid #eee;font-size:11px}.amount{text-ali
 <tr><td class="field-label">Street Address</td><td><div class="field">${p.address || '___________________________'}</div></td><td class="field-label">1c Total Assets</td><td><div class="field">${fmt(inc)}</div></td></tr>
 <tr><td class="field-label">City, State, ZIP</td><td><div class="field">${p.city || '___________________________'}</div></td><td></td><td></td></tr>
 <tr><td class="field-label">1d Principal Business Activity</td><td><div class="field">${p.activity || '___________________________'}</div></td><td class="field-label">1l Country of Incorporation</td><td><div class="field">${p.country || 'United States'}</div></td></tr>
-<tr><td class="field-label">1f Total Gross Payments</td><td><div class="field">${fmt(inc + exp)}</div></td><td class="field-label">1m Date of Incorporation</td><td><div class="field">${p.incDate || '___________'}</div></td></tr>
+<tr><td class="field-label">1f Total Gross Payments</td><td><div class="field">${fmtIRS(inc + exp)}</div></td><td class="field-label">1m Date of Incorporation</td><td><div class="field">${p.incDate || '___________'}</div></td></tr>
 <tr><td class="field-label">1g Total # of Forms 5472</td><td><div class="field">1</div></td><td class="field-label">1j Initial Year Filing?</td><td><div class="field">☐ Check if yes</div></td></tr>
 </tbody></table>
 <div style="font-size:11px;color:#555;margin:6px 0 2px"><strong>Check 3:</strong> ☑ This is a foreign-owned domestic disregarded entity (foreign-owned U.S. DE) treated as a corporation for purposes of section 6038A.</div>
@@ -2498,19 +2516,22 @@ td{padding:6px 10px;border-bottom:1px solid #eee;font-size:11px}.amount{text-ali
 </div>
 
 <div class="section">
-<div class="section-title">Part IV — Monetary Transactions (Auto-filled from your transactions)</div>
+<div class="section-title">Part IV — Monetary Transactions Between LLC and Foreign Owner</div>
 <table><thead><tr><th>Line</th><th>Description</th><th class="amount">Amount (USD)</th></tr></thead><tbody>
 ${filtered.filter(t => t.type === 'income').map((t, i) => `<tr><td>${i === 0 ? '15/21' : ''}</td><td>${t.vendor} — ${t.category}</td><td class="amount green">${fmt(t.amount)}</td></tr>`).join('')}
-<tr class="total-row"><td>22</td><td>Total Received (Lines 9–21)</td><td class="amount green">${fmt(inc)}</td></tr>
+<tr class="total-row"><td>22</td><td>Total Received (Lines 9–21)</td><td class="amount green">${fmtIRS(inc)}</td></tr>
 ${filtered.filter(t => t.type === 'expense').map((t, i) => `<tr><td>${i === 0 ? '29/35' : ''}</td><td>${t.vendor} — ${t.category}</td><td class="amount red">${fmt(t.amount)}</td></tr>`).join('')}
-<tr class="total-row"><td>36</td><td>Total Paid (Lines 23–35)</td><td class="amount red">${fmt(exp)}</td></tr>
+<tr class="total-row"><td>36</td><td>Total Paid (Lines 23–35)</td><td class="amount red">${fmtIRS(exp)}</td></tr>
 </tbody></table>
+<div style="font-size:10px;color:#744210;background:#fff8f0;border:1px solid #f6ad55;border-radius:4px;padding:8px 10px;margin-top:6px">
+<strong>⚠️ Part IV Note:</strong> Form 5472 Part IV reports monetary transactions between the LLC and its 25% foreign shareholder (you). This list includes all recorded transactions as a starting point — your CPA must review and retain only transactions that represent capital contributions, distributions, loans, or other direct owner↔LLC flows. Third-party business expenses (e.g. software, contractors) are generally <em>not</em> Part IV reportable transactions and should appear on your supporting schedules instead.
+</div>
 </div>
 
 <div style="page-break-before:always"></div>
 
 <h1>PRO FORMA FORM 1120 — U.S. Corporation Income Tax Return</h1>
-<div class="subtitle">Tax Year ${taxYear} · Foreign-Owned Single-Member LLC (Disregarded Entity) · Pre-filled from MyTaxFly data</div>
+<div class="subtitle">Tax Year ${taxYear} · Foreign-Owned Single-Member LLC (Disregarded Entity) · Pre-filled from MyTaxFly data · Dollar amounts rounded per IRS instructions</div>
 
 <div class="section">
 <div class="section-title">Header Information</div>
@@ -2525,26 +2546,26 @@ ${filtered.filter(t => t.type === 'expense').map((t, i) => `<tr><td>${i === 0 ? 
 <div class="section">
 <div class="section-title">Income (Page 1)</div>
 <table><thead><tr><th>Line</th><th>Description</th><th class="amount">Amount</th></tr></thead><tbody>
-<tr><td>1a</td><td>Gross receipts or sales</td><td class="amount green">${fmt(inc)}</td></tr>
-<tr><td>1c</td><td>Balance (gross receipts)</td><td class="amount green">${fmt(inc)}</td></tr>
-<tr class="total-row"><td>11</td><td>Total Income</td><td class="amount green">${fmt(inc)}</td></tr>
+<tr><td>1a</td><td>Gross receipts or sales</td><td class="amount green">${fmtIRS(inc)}</td></tr>
+<tr><td>1c</td><td>Balance (gross receipts)</td><td class="amount green">${fmtIRS(inc)}</td></tr>
+<tr class="total-row"><td>11</td><td>Total Income</td><td class="amount green">${fmtIRS(inc)}</td></tr>
 </tbody></table>
 </div>
 
 <div class="section">
 <div class="section-title">Deductions (Page 1)</div>
 <table><thead><tr><th>Line</th><th>IRS Category</th><th class="amount">Amount</th></tr></thead><tbody>
-${advertising > 0 ? `<tr><td>22</td><td>Advertising</td><td class="amount">${fmt(advertising)}</td></tr>` : ''}
-<tr><td>26</td><td>Other deductions (see attached transaction list)</td><td class="amount">${fmt(otherDed)}</td></tr>
-<tr class="total-row"><td>27</td><td>Total Deductions</td><td class="amount">${fmt(exp)}</td></tr>
-<tr class="total-row"><td>28</td><td>Taxable Income before NOL</td><td class="amount ${profit >= 0 ? 'green' : 'red'}">${profit>=0?'+':''}${fmt(profit)}</td></tr>
+${advertising > 0 ? `<tr><td>22</td><td>Advertising</td><td class="amount">${fmtIRS(advertising)}</td></tr>` : ''}
+<tr><td>26</td><td>Other deductions (see attached transaction list)</td><td class="amount">${fmtIRS(otherDed)}</td></tr>
+<tr class="total-row"><td>27</td><td>Total Deductions</td><td class="amount">${fmtIRS(exp)}</td></tr>
+<tr class="total-row"><td>28</td><td>Taxable Income before NOL</td><td class="amount ${profit >= 0 ? 'green' : 'red'}">${profit>=0?'+':''}${fmtIRS(Math.abs(profit))}</td></tr>
 </tbody></table>
 </div>
 
 <div class="highlight">
   <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Net Profit / Loss — Tax Year ${taxYear}</div>
-  <div style="font-size:32px;font-weight:800;color:${profit >= 0 ? '#00c896' : '#e53e3e'}">${profit>=0?'+':''}${fmt(profit)}</div>
-  <div style="font-size:11px;color:#777;margin-top:6px">Gross Receipts ${fmt(inc)} · Total Deductions ${fmt(exp)}</div>
+  <div style="font-size:32px;font-weight:800;color:${profit >= 0 ? '#00c896' : '#e53e3e'}">${profit>=0?'+':''}${fmtIRS(Math.abs(profit))}</div>
+  <div style="font-size:11px;color:#777;margin-top:6px">Gross Receipts ${fmtIRS(inc)} · Total Deductions ${fmtIRS(exp)} · <em>Rounded to nearest dollar per IRS instructions</em></div>
 </div>
 
 <div class="section">
@@ -3204,8 +3225,8 @@ if (IS_SHARE_VIEW) {
     document.getElementById('share-banner-title').textContent = `${d.llc_name} — Shared by ${d.user_name || 'owner'}`;
 
     const txs = d.transactions || [];
-    const inc = txs.filter(t=>t.type==='income').reduce((s,t)=>s+parseFloat(t.amount),0);
-    const exp = txs.filter(t=>t.type==='expense').reduce((s,t)=>s+parseFloat(t.amount),0);
+    const inc = txs.filter(t=>t.type==='income').reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
+    const exp = txs.filter(t=>t.type==='expense').reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
     const fmt = n => '$' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
     const icons = {'Income':'💰','Software & Tools':'💻','Advertising':'📢','Travel':'✈️','Office Expenses':'🏢','Legal & Professional':'⚖️','Other':'📋'};
