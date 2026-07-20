@@ -754,7 +754,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
         <div class="entry-tab active" id="tab-manual" onclick="switchTab('manual')"><svg style="display:inline;vertical-align:-2px;margin-right:5px" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d='M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7'/><path d='M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z'/></svg><span id="t-tab-manual">Manual Entry</span></div>
         <div class="entry-tab" id="tab-upload" onclick="switchTab('upload')"><svg style="display:inline;vertical-align:-2px;margin-right:5px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span id="t-tab-upload">Upload Receipt</span></div>
         <div class="entry-tab" id="tab-csv" onclick="switchTab('csv')"><svg style="display:inline;vertical-align:-2px;margin-right:5px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 19 19 12"/></svg>Import CSV</div>
-        <div class="entry-tab biz-only" id="tab-bank" onclick="gatedAction(()=>switchTab('bank'),'business')"><svg style="display:inline;vertical-align:-2px;margin-right:5px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>Bank Import</div>
+        <div class="entry-tab biz-only" id="tab-bank" style="opacity:0.6;cursor:default;position:relative" onclick="showBankComingSoon()"><svg style="display:inline;vertical-align:-2px;margin-right:5px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>Bank Sync <span style="font-size:9px;font-weight:800;padding:2px 6px;background:rgba(245,158,11,0.2);color:#f59e0b;border-radius:20px;border:1px solid rgba(245,158,11,0.3);margin-left:4px;vertical-align:1px">SOON</span></div>
       </div>
       <div id="panel-manual">
         <div class="entry-form">
@@ -805,25 +805,25 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
         <div id="csv-preview"></div>
       </div>
       <div id="panel-bank" style="display:none">
-        <div style="margin-bottom:20px">
-          <div style="font-size:13px;font-weight:700;color:var(--text2);margin-bottom:14px">Select your bank to auto-map columns:</div>
-          <div class="bank-grid">
-            <div class="bank-card selected" id="bank-mercury" onclick="selectBank('mercury')"><div class="bank-logo">🏦</div><div class="bank-name">Mercury</div></div>
-            <div class="bank-card" id="bank-chase" onclick="selectBank('chase')"><div class="bank-logo">🔵</div><div class="bank-name">Chase</div></div>
-            <div class="bank-card" id="bank-wise" onclick="selectBank('wise')"><div class="bank-logo">🌍</div><div class="bank-name">Wise</div></div>
-            <div class="bank-card" id="bank-boa" onclick="selectBank('boa')"><div class="bank-logo">🏛️</div><div class="bank-name">Bank of America</div></div>
-            <div class="bank-card" id="bank-wells" onclick="selectBank('wells')"><div class="bank-logo">🟥</div><div class="bank-name">Wells Fargo</div></div>
-            <div class="bank-card" id="bank-other" onclick="selectBank('other')"><div class="bank-logo">📋</div><div class="bank-name">Other / Auto</div></div>
+        <div style="text-align:center;padding:40px 20px">
+          <div style="width:64px;height:64px;background:rgba(245,158,11,0.1);border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+          </div>
+          <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#f59e0b;margin-bottom:10px;text-transform:uppercase">Coming Soon</div>
+          <div style="font-size:20px;font-weight:800;color:var(--text);margin-bottom:12px">Bank Sync</div>
+          <div style="font-size:13px;color:var(--text2);max-width:380px;margin:0 auto 28px;line-height:1.7">Connect your bank directly — MyTaxFly will automatically pull in your transactions every day. No more manual entry. Supports Mercury, Chase, Wise, Bank of America and more.</div>
+          <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:32px">
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 16px;font-size:12px;font-weight:700;color:var(--text2)">🏦 Mercury</div>
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 16px;font-size:12px;font-weight:700;color:var(--text2)">🔵 Chase</div>
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 16px;font-size:12px;font-weight:700;color:var(--text2)">🌍 Wise</div>
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 16px;font-size:12px;font-weight:700;color:var(--text2)">🏛️ Bank of America</div>
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 16px;font-size:12px;font-weight:700;color:var(--text2)">+ more</div>
+          </div>
+          <div style="background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);border-radius:12px;padding:16px 20px;display:inline-flex;align-items:center;gap:10px;font-size:13px;color:var(--text2)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+            We'll notify you as soon as Bank Sync is available.
           </div>
         </div>
-        <div class="upload-zone" id="bank-drop-zone" onclick="document.getElementById('bank-file-input').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleBankDrop(event)">
-          <div class="empty-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
-          <div class="upload-title">Drop bank statement CSV here or click</div>
-          <div class="upload-sub">Columns auto-detected for your selected bank</div>
-          <br><button class="btn-sec" onclick="event.stopPropagation();document.getElementById('bank-file-input').click()">Select CSV File</button>
-        </div>
-        <input type="file" id="bank-file-input" accept=".csv" onchange="handleBankFile(event)" style="display:none">
-        <div id="bank-preview"></div>
       </div>
     </div>
 
@@ -3187,6 +3187,15 @@ const BANK_COLUMN_MAPS = {
   wells:    { date: ['date'], vendor: ['description'], amount: ['amount'], type_hint: 'sign' },
   other:    { date: ['date','transaction date'], vendor: ['description','payee','merchant'], amount: ['amount','debit','credit'], type_hint: 'sign' }
 };
+
+function showBankComingSoon() {
+  ['manual','upload','csv','bank'].forEach(t=>{
+    const tb=document.getElementById('tab-'+t);
+    const pn=document.getElementById('panel-'+t);
+    if(tb) tb.classList.toggle('active',t==='bank');
+    if(pn) pn.style.display=t==='bank'?'block':'none';
+  });
+}
 
 function selectBank(bank) {
   selectedBank = bank;
