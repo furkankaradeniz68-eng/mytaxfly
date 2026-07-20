@@ -1695,18 +1695,48 @@ let _rateCacheTime = 0;
 
 function detectCurrency(str) {
   const s = str.trim();
-  if (/^€|EUR$/i.test(s)) return {code:'EUR', symbol:'€'};
-  if (/^£|GBP$/i.test(s)) return {code:'GBP', symbol:'£'};
+  // Symbol shortcuts
+  if (/^€|EUR/i.test(s)) return {code:'EUR', symbol:'€'};
+  if (/^£|GBP/i.test(s)) return {code:'GBP', symbol:'£'};
+  if (/^¥|JPY/i.test(s)) return {code:'JPY', symbol:'¥'};
+  if (/^\$|USD/i.test(s)) return {code:'USD', symbol:'$'};
   if (/CHF/i.test(s)) return {code:'CHF', symbol:'CHF'};
-  if (/^¥|JPY$/i.test(s)) return {code:'JPY', symbol:'¥'};
   if (/AED/i.test(s)) return {code:'AED', symbol:'AED'};
-  if (/CAD|C\$/i.test(s)) return {code:'CAD', symbol:'CAD'};
-  if (/AUD|AU\$/i.test(s)) return {code:'AUD', symbol:'AUD'};
+  if (/CAD|C\$/i.test(s)) return {code:'CAD', symbol:'C$'};
+  if (/AUD|AU\$/i.test(s)) return {code:'AUD', symbol:'A$'};
+  if (/NZD|NZ\$/i.test(s)) return {code:'NZD', symbol:'NZ$'};
+  if (/HKD|HK\$/i.test(s)) return {code:'HKD', symbol:'HK$'};
+  if (/SGD|SG\$/i.test(s)) return {code:'SGD', symbol:'S$'};
   if (/SEK/i.test(s)) return {code:'SEK', symbol:'SEK'};
   if (/NOK/i.test(s)) return {code:'NOK', symbol:'NOK'};
   if (/DKK/i.test(s)) return {code:'DKK', symbol:'DKK'};
-  if (/TRY/i.test(s)) return {code:'TRY', symbol:'TRY'};
+  if (/TRY/i.test(s)) return {code:'TRY', symbol:'₺'};
   if (/SAR/i.test(s)) return {code:'SAR', symbol:'SAR'};
+  if (/MXN/i.test(s)) return {code:'MXN', symbol:'MX$'};
+  if (/BRL/i.test(s)) return {code:'BRL', symbol:'R$'};
+  if (/INR/i.test(s)) return {code:'INR', symbol:'₹'};
+  if (/CNY|RMB/i.test(s)) return {code:'CNY', symbol:'¥'};
+  if (/KRW/i.test(s)) return {code:'KRW', symbol:'₩'};
+  if (/PLN/i.test(s)) return {code:'PLN', symbol:'zł'};
+  if (/CZK/i.test(s)) return {code:'CZK', symbol:'Kč'};
+  if (/HUF/i.test(s)) return {code:'HUF', symbol:'Ft'};
+  if (/RON/i.test(s)) return {code:'RON', symbol:'lei'};
+  if (/ILS/i.test(s)) return {code:'ILS', symbol:'₪'};
+  if (/ZAR/i.test(s)) return {code:'ZAR', symbol:'R'};
+  if (/IDR/i.test(s)) return {code:'IDR', symbol:'Rp'};
+  if (/MYR/i.test(s)) return {code:'MYR', symbol:'RM'};
+  if (/THB/i.test(s)) return {code:'THB', symbol:'฿'};
+  if (/PHP/i.test(s)) return {code:'PHP', symbol:'₱'};
+  if (/TWD/i.test(s)) return {code:'TWD', symbol:'NT$'};
+  if (/PKR/i.test(s)) return {code:'PKR', symbol:'₨'};
+  if (/EGP/i.test(s)) return {code:'EGP', symbol:'E£'};
+  if (/NGN/i.test(s)) return {code:'NGN', symbol:'₦'};
+  if (/KWD/i.test(s)) return {code:'KWD', symbol:'KD'};
+  if (/QAR/i.test(s)) return {code:'QAR', symbol:'QR'};
+  if (/BHD/i.test(s)) return {code:'BHD', symbol:'BD'};
+  // Generic fallback: catch any 3-letter ISO code (e.g. "DZD 500", "CLP 1000")
+  const isoMatch = s.toUpperCase().match(/\b([A-Z]{3})\b/);
+  if (isoMatch && isoMatch[1] !== 'USD') return {code: isoMatch[1], symbol: isoMatch[1]};
   return {code:'USD', symbol:'$'};
 }
 
