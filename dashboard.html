@@ -1728,7 +1728,7 @@ async function getUSDRate(currency, date) {
     try {
       const r = await fetch(`https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@${useDate}/v1/currencies/usd.json`);
       const data = await r.json();
-      const rate = data.usd ? (1 / data.usd[currency.toLowerCase()]) : null;
+      const rate = data.usd ? data.usd[currency.toLowerCase()] : null;
       if (rate) _historicalRateCache[cacheKey] = rate;
       return rate;
     } catch(e) { /* fall through to today's rate */ }
