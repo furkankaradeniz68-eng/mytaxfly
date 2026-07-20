@@ -2924,11 +2924,8 @@ function renderMarkdown(text) {
     .replace(/\*\*(.+?)\*\*/g, '<strong style="color:var(--text)">$1</strong>')
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
     .replace(/^- (.+)$/gm, '<div style="padding:2px 0 2px 12px;border-left:2px solid var(--border)">$1</div>')
-    .replace(/
-
-/g, '<div style="height:10px"></div>')
-    .replace(/
-/g, '<br>');
+    .replace(/\n\n/g, '<div style="height:10px"></div>')
+    .replace(/\n/g, '<br>');
 }
 
 // ═══════════════════════════════════════════════════════
