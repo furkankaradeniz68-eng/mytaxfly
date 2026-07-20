@@ -1510,13 +1510,16 @@ async function launchApp(user){
 
 // Auth state listener
 sb.auth.onAuthStateChange(async (event, session)=>{
+  if(IS_SHARE_VIEW) return; // don't interfere with read-only share view
   if(event === 'PASSWORD_RECOVERY'){
-    // Show "set new password" form instead of launching the app
     showSetNewPasswordForm();
     return;
   }
   if(session?.user){
     await launchApp(session.user);
+  } else {
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
   }
 });
 
@@ -2386,7 +2389,7 @@ async function generateAIReport(){
   const sum=filtered.map(t=>`- ${t.vendor}: ${t.type==='income'?'+':'-'}$${t.amount} (${t.category}, ${t.deductible?'deductible':'non-deductible'})`).join('\n');
   try{
     const report=await callClaude([{role:'user',content:`Create a professional bookkeeping report for LLC "${llcName}":\n\n${sum}\n\nInclude: Executive summary, P&L, total deductible expenses, IRS categories, recommendations. Max 300 words.`}],null,1000);
-    document.getElementById('report-output').innerHTML=`<div class="result-card" style="margin-top:0"><div style="font-weight:700;margin-bottom:12px">AI Report — ${llcName}</div><div style="font-size:13px;line-height:1.7;color:var(--text2)">${report.replace(/\n/g,'<br>')}</div><div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);font-size:11px;color:var(--text3)">⚠️ Informational only. Not tax advice. Consult a CPA.</div></div>`;
+    document.getElementById('report-output').innerHTML=`<div class="result-card" style="margin-top:0"><div style="font-weight:700;margin-bottom:12px">AI Report — ${llcName}</div><div style="font-size:13px;line-height:1.7;color:var(--text2)">${renderMarkdown(report)}</div><div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);font-size:11px;color:var(--text3)">⚠️ Informational only. Not tax advice. Consult a CPA.</div></div>`;
   }catch(e){document.getElementById('report-output').innerHTML=`<div style="color:var(--warn);font-size:13px">❌ Error: ${e.message}</div>`;}
 }
 
@@ -2913,6 +2916,21 @@ document.addEventListener('click', e => {
   const modal = document.getElementById('account-modal');
   if (modal && e.target === modal) closeAccountModal();
 });
+
+function renderMarkdown(text) {
+  return text
+    .replace(/^## (.+)$/gm, '<div style="font-size:12px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.5px;margin:16px 0 6px">$1</div>')
+    .replace(/^### (.+)$/gm, '<div style="font-size:13px;font-weight:700;color:var(--text);margin:12px 0 4px">$1</div>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong style="color:var(--text)">$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/^- (.+)$/gm, '<div style="padding:2px 0 2px 12px;border-left:2px solid var(--border)">$1</div>')
+    .replace(/
+
+/g, '<div style="height:10px"></div>')
+    .replace(/
+/g, '<br>');
+}
+
 // ═══════════════════════════════════════════════════════
 // BUSINESS PLAN FEATURES
 // ═══════════════════════════════════════════════════════
@@ -3132,48 +3150,104 @@ function showToast(msg) {
 }
 
 // ── Read-Only Share View ───────────────────────────────
+// ── SHARE VIEW (Accountant Read-Only) ─────────────────────
+const SHARE_PARAMS = new URLSearchParams(location.search);
+const IS_SHARE_VIEW = !!(SHARE_PARAMS.get('share') && SHARE_PARAMS.get('uid'));
+
+if (IS_SHARE_VIEW) {
+  // Immediately hide login screen so auth listener doesn't interfere
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'none';
+  });
+}
+
 (async function checkShareView() {
-  const params = new URLSearchParams(location.search);
-  const shareToken = params.get('share');
-  const uid = params.get('uid');
-  if (!shareToken || !uid) return;
+  if (!IS_SHARE_VIEW) return;
 
+  const shareToken = SHARE_PARAMS.get('share');
+  const uid = SHARE_PARAMS.get('uid');
+
+  // Hide login, show loading state
+  document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'none';
-  document.getElementById('auth-screen')?.style && (document.getElementById('auth-screen').style.display = 'none');
 
-  const banner = document.createElement('div');
-  banner.style.cssText = 'background:#13161e;border-bottom:1px solid #252a38;padding:10px 24px;display:flex;align-items:center;gap:10px;font-family:Montserrat,sans-serif;font-size:13px;font-weight:600;color:#00c896';
-  banner.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Read-Only Accountant View';
-  document.body.prepend(banner);
+  // Create full-page read-only view
+  const wrapper = document.createElement('div');
+  wrapper.id = 'share-view';
+  wrapper.style.cssText = 'min-height:100vh;background:var(--bg);font-family:Montserrat,sans-serif';
+  wrapper.innerHTML = `
+    <div style="background:var(--bg2);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:12px">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        <span style="font-size:14px;font-weight:700;color:var(--accent)" id="share-banner-title">Loading...</span>
+      </div>
+      <span style="font-size:11px;font-weight:700;padding:4px 10px;background:rgba(0,200,150,0.1);color:var(--accent);border-radius:20px;border:1px solid rgba(0,200,150,0.3)">READ ONLY</span>
+    </div>
+    <div id="share-content" style="max-width:900px;margin:0 auto;padding:32px 24px">
+      <div style="text-align:center;padding:60px 0;color:var(--text3)">
+        <div class="spinner" style="margin:0 auto 16px"></div>
+        Loading transactions...
+      </div>
+    </div>`;
+  document.body.innerHTML = '';
+  document.body.appendChild(wrapper);
 
   try {
-    const res = await fetch(`/api/share?token=${shareToken}&uid=${uid}`);
+    const res = await fetch(\`/api/share?token=\${shareToken}&uid=\${uid}\`);
     const d = await res.json();
-    if (!d.ok) { banner.textContent = 'Invalid or expired link.'; banner.style.color='var(--warn)'; return; }
 
-    banner.innerHTML += ` — <span style="color:var(--text)">${d.llc_name}</span>`;
-    transactions = d.transactions.map(t => ({
-      vendor: t.vendor, amount: parseFloat(t.amount), currency: t.currency || 'USD',
-      date: t.date, category: t.category, type: t.type,
-      deductible: t.deductible, note: t.note || '', _id: t.id
-    }));
+    if (!d.ok) {
+      document.getElementById('share-banner-title').textContent = 'Invalid or expired link';
+      document.getElementById('share-content').innerHTML = \`<div style="text-align:center;padding:80px 0"><div style="font-size:48px;margin-bottom:16px">🔒</div><div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:8px">Link Invalid or Expired</div><div style="font-size:13px;color:var(--text3)">This share link has been revoked or is no longer valid.</div></div>\`;
+      return;
+    }
 
-    // Show minimal read-only dashboard
-    const app = document.getElementById('app');
-    app.style.display = 'flex';
-    // Hide sidebar nav items, add tx button, etc.
-    document.querySelectorAll('.nav-item').forEach(el => el.style.display = 'none');
-    document.querySelector('.sidebar')?.querySelectorAll('[onclick]').forEach(el => el.removeAttribute('onclick'));
-    showPage('transactions', null);
-    refreshDashboard();
+    document.getElementById('share-banner-title').textContent = \`\${d.llc_name} — Shared by \${d.user_name || 'owner'}\`;
 
-    // Remove edit/delete buttons after render
-    setTimeout(() => {
-      document.querySelectorAll('.tx-delete,.btn-primary,.btn-sec').forEach(el => el.style.display = 'none');
-    }, 500);
+    const txs = d.transactions || [];
+    const inc = txs.filter(t=>t.type==='income').reduce((s,t)=>s+parseFloat(t.amount),0);
+    const exp = txs.filter(t=>t.type==='expense').reduce((s,t)=>s+parseFloat(t.amount),0);
+    const fmt = n => '$' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+    const icons = {'Income':'💰','Software & Tools':'💻','Advertising':'📢','Travel':'✈️','Office Expenses':'🏢','Legal & Professional':'⚖️','Other':'📋'};
+
+    document.getElementById('share-content').innerHTML = \`
+      <div style="margin-bottom:28px">
+        <div style="font-size:22px;font-weight:800;color:var(--text);margin-bottom:4px">\${d.llc_name}</div>
+        <div style="font-size:13px;color:var(--text3)">\${txs.length} transactions · Read-only view</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px">
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px">
+          <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Total Income</div>
+          <div style="font-size:22px;font-weight:800;color:var(--accent)">\${fmt(inc)}</div>
+        </div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px">
+          <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Total Expenses</div>
+          <div style="font-size:22px;font-weight:800;color:var(--warn)">\${fmt(exp)}</div>
+        </div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px">
+          <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Net Profit</div>
+          <div style="font-size:22px;font-weight:800;color:\${inc-exp>=0?'var(--accent)':'var(--warn)'}">\${fmt(inc-exp)}</div>
+        </div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--border);font-size:13px;font-weight:700;color:var(--text)">Transactions</div>
+        \${txs.length === 0 ? '<div style="padding:40px;text-align:center;color:var(--text3)">No transactions</div>' :
+          txs.map(t => \`<div style="display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid rgba(37,42,56,0.5)">
+            <div style="width:36px;height:36px;background:var(--bg3);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">\${icons[t.category]||'📋'}</div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">\${t.vendor}</div>
+              <div style="font-size:11px;color:var(--text3)">\${t.category} · \${t.date}</div>
+            </div>
+            <div style="font-size:14px;font-weight:700;color:\${t.type==='income'?'var(--accent)':'var(--warn)'};\${t.type==='income'?'':''}">\${t.type==='income'?'+':'-'}\${fmt(parseFloat(t.amount))}</div>
+          </div>\`).join('')}
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:24px;font-size:11px;color:var(--text3)">Powered by <strong style="color:var(--accent)">MyTaxFly</strong> · Read-only view · <a href="https://mytaxfly.com" style="color:var(--accent);text-decoration:none">Get your own →</a></div>
+    \`;
   } catch(err) {
-    banner.textContent = 'Failed to load shared data.';
-    banner.style.color = 'var(--warn)';
+    document.getElementById('share-content').innerHTML = '<div style="color:var(--warn);text-align:center;padding:60px">Failed to load data. Please try again.</div>';
   }
 })();
 
