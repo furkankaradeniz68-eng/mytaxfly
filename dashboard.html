@@ -3043,12 +3043,30 @@ function addEntity() {
 function removeEntity(id) {
   const e = entities.find(x => x.id === id);
   if (!e) return;
-  if (!confirm(`Delete "${e.name}"? All transactions tagged to this entity will remain but lose their entity assignment.`)) return;
-  entities = entities.filter(x => x.id !== id);
-  saveEntities();
-  if (activeEntityId === id) switchEntity(entities[0].id);
-  renderEntityModalList();
-  renderEntitySwitcher();
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:20000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)';
+  modal.innerHTML = `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;max-width:360px;width:90%;text-align:center">
+    <div style="width:44px;height:44px;background:rgba(229,62,62,0.1);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e53e3e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+    </div>
+    <div style="font-size:16px;font-weight:700;margin-bottom:8px">Delete Entity?</div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:24px">«${e.name}»<br>Transactions stay but lose their entity tag.<br>This cannot be undone.</div>
+    <div style="display:flex;gap:10px">
+      <button id="entity-del-cancel" style="flex:1;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-weight:600;cursor:pointer;font-family:'Montserrat',sans-serif">Cancel</button>
+      <button id="entity-del-confirm" style="flex:1;padding:10px;background:#e53e3e;border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:'Montserrat',sans-serif">Delete</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+  modal.querySelector('#entity-del-cancel').onclick = () => modal.remove();
+  modal.addEventListener('click', ev => { if (ev.target === modal) modal.remove(); });
+  modal.querySelector('#entity-del-confirm').onclick = () => {
+    modal.remove();
+    entities = entities.filter(x => x.id !== id);
+    saveEntities();
+    if (activeEntityId === id) switchEntity(entities[0].id);
+    renderEntityModalList();
+    renderEntitySwitcher();
+  };
 }
 
 // close entity dropdown on outside click
