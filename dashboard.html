@@ -2978,14 +2978,53 @@ function closeEntityModal() {
 function renderEntityModalList() {
   const list = document.getElementById('entity-modal-list');
   if (!list) return;
-  list.innerHTML = entities.map((e, i) => `
-    <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--bg3);border-radius:8px;margin-bottom:8px">
-      <span class="entity-dot"></span>
-      <span style="flex:1;font-size:13px;font-weight:600;color:var(--text)">${e.name}</span>
-      ${entities.length > 1 && e.id !== activeEntityId ? `<button onclick="removeEntity('${e.id}')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;line-height:1;padding:0">&times;</button>` : ''}
+  const isBiz = currentPlan === 'business';
+
+  list.innerHTML = entities.map((e) => `
+    <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--bg3);border-radius:8px;margin-bottom:8px" id="entity-row-${e.id}">
+      <span class="entity-dot" style="background:${e.id===activeEntityId?'var(--accent)':'var(--border)'}"></span>
+      <span id="entity-label-${e.id}" style="flex:1;font-size:13px;font-weight:600;color:var(--text)">${e.name}</span>
+      <input id="entity-input-${e.id}" class="f-input" value="${e.name}" style="flex:1;display:none;font-size:13px;padding:6px 10px">
+      <button id="entity-edit-btn-${e.id}" onclick="startRename('${e.id}')" title="Rename" style="background:none;border:none;color:var(--text3);cursor:pointer;padding:4px;line-height:1;display:flex">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d='M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7'/><path d='M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z'/></svg>
+      </button>
+      <button id="entity-save-btn-${e.id}" onclick="saveRename('${e.id}')" style="display:none;background:var(--accent);border:none;color:#000;font-size:11px;font-weight:700;padding:5px 10px;border-radius:6px;cursor:pointer">Save</button>
+      ${entities.length > 1 ? `<button onclick="removeEntity('${e.id}')" title="Remove" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;line-height:1;padding:0 2px">&times;</button>` : ''}
     </div>`).join('');
+
+  // show/hide add vs upgrade section
+  const addSec = document.getElementById('entity-add-section');
+  const upgSec = document.getElementById('entity-upgrade-section');
+  if (addSec) addSec.style.display = isBiz ? 'block' : 'none';
+  if (upgSec) upgSec.style.display = isBiz ? 'none' : 'block';
+
   const limitNote = document.getElementById('entity-limit-note');
-  if (limitNote) limitNote.style.display = entities.length >= 5 ? 'block' : 'none';
+  if (limitNote) limitNote.style.display = (isBiz && entities.length >= 5) ? 'block' : 'none';
+}
+
+function startRename(id) {
+  const label = document.getElementById('entity-label-'+id);
+  const inp = document.getElementById('entity-input-'+id);
+  const editBtn = document.getElementById('entity-edit-btn-'+id);
+  const saveBtn = document.getElementById('entity-save-btn-'+id);
+  if (!label || !inp) return;
+  label.style.display = 'none';
+  inp.style.display = 'block';
+  editBtn.style.display = 'none';
+  saveBtn.style.display = 'inline-block';
+  inp.focus();
+  inp.onkeydown = e => { if(e.key==='Enter') saveRename(id); };
+}
+
+function saveRename(id) {
+  const inp = document.getElementById('entity-input-'+id);
+  const name = inp?.value?.trim();
+  if (!name) return;
+  const e = entities.find(x => x.id === id);
+  if (e) e.name = name;
+  saveEntities();
+  renderEntitySwitcher();
+  renderEntityModalList();
 }
 
 function addEntity() {
@@ -3383,19 +3422,31 @@ async function importBankRows() {
   </div>
 <!-- ENTITY MANAGEMENT MODAL -->
 <div id="entity-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:10000;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
-  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;width:440px;max-width:90vw">
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;width:460px;max-width:92vw">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-      <div style="font-size:16px;font-weight:800;color:var(--text)">Manage Entities</div>
+      <div style="font-size:16px;font-weight:800;color:var(--text)">My Entities</div>
       <button onclick="closeEntityModal()" style="background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;line-height:1">&times;</button>
     </div>
-    <div id="entity-modal-list" style="margin-bottom:16px"></div>
-    <div style="border-top:1px solid var(--border);padding-top:16px">
-      <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px">Add New Entity</div>
-      <div style="display:flex;gap:8px">
-        <input class="f-input" id="entity-new-name" placeholder="e.g. My Holdings LLC" style="flex:1">
-        <button class="btn-primary" style="padding:10px 16px;white-space:nowrap" onclick="addEntity()">Add</button>
+    <div id="entity-modal-list" style="margin-bottom:4px"></div>
+    <!-- Business: Add form -->
+    <div id="entity-add-section" style="border-top:1px solid var(--border);padding-top:16px;margin-top:8px">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Add LLC / Entity</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input class="f-input" id="entity-new-name" placeholder="e.g. My Holdings LLC" style="flex:1;min-width:0">
+        <button class="btn-primary" style="padding:10px 18px;white-space:nowrap;flex-shrink:0" onclick="addEntity()">Add</button>
       </div>
-      <div id="entity-limit-note" style="display:none;font-size:11px;color:var(--warn);margin-top:8px">Maximum 5 entities reached on Business plan.</div>
+      <div id="entity-limit-note" style="display:none;font-size:11px;color:var(--warn);margin-top:8px">Maximum 5 entities reached.</div>
+    </div>
+    <!-- Basic/Pro: Locked upgrade CTA -->
+    <div id="entity-upgrade-section" style="display:none;border-top:1px solid var(--border);padding-top:16px;margin-top:8px">
+      <div style="background:rgba(0,200,150,0.06);border:1px dashed rgba(0,200,150,0.3);border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:12px">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x='5' y='11' width='14' height='10' rx='2'/><path d='M8 11V7a4 4 0 0 1 8 0v4'/></svg>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px">Add more LLCs</div>
+          <div style="font-size:11px;color:var(--text3)">Manage up to 5 entities — Business plan only</div>
+        </div>
+        <a href="https://mytaxfly.com/#pricing" target="_blank" class="btn-primary" style="padding:8px 14px;font-size:12px;white-space:nowrap;text-decoration:none">Upgrade →</a>
+      </div>
     </div>
   </div>
 </div>
