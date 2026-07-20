@@ -3041,7 +3041,10 @@ function addEntity() {
 }
 
 function removeEntity(id) {
-  entities = entities.filter(e => e.id !== id);
+  const e = entities.find(x => x.id === id);
+  if (!e) return;
+  if (!confirm(`Delete "${e.name}"? All transactions tagged to this entity will remain but lose their entity assignment.`)) return;
+  entities = entities.filter(x => x.id !== id);
   saveEntities();
   if (activeEntityId === id) switchEntity(entities[0].id);
   renderEntityModalList();
@@ -3432,8 +3435,8 @@ async function importBankRows() {
     <div id="entity-add-section" style="border-top:1px solid var(--border);padding-top:16px;margin-top:8px">
       <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Add LLC / Entity</div>
       <div style="display:flex;gap:8px;align-items:center">
-        <input class="f-input" id="entity-new-name" placeholder="e.g. My Holdings LLC" style="flex:1;min-width:0">
-        <button class="btn-primary" style="padding:10px 18px;white-space:nowrap;flex-shrink:0" onclick="addEntity()">Add</button>
+        <input class="f-input" id="entity-new-name" placeholder="e.g. My Holdings LLC" style="flex:1;min-width:0;width:0">
+        <button onclick="addEntity()" style="padding:10px 18px;white-space:nowrap;flex-shrink:0;background:var(--accent);color:#000;font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;border:none;border-radius:10px;cursor:pointer">Add</button>
       </div>
       <div id="entity-limit-note" style="display:none;font-size:11px;color:var(--warn);margin-top:8px">Maximum 5 entities reached.</div>
     </div>
