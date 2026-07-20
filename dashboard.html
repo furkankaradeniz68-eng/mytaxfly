@@ -3191,16 +3191,16 @@ if (IS_SHARE_VIEW) {
   document.body.appendChild(wrapper);
 
   try {
-    const res = await fetch(\`/api/share?token=\${shareToken}&uid=\${uid}\`);
+    const res = await fetch(`/api/share?token=${shareToken}&uid=${uid}`);
     const d = await res.json();
 
     if (!d.ok) {
       document.getElementById('share-banner-title').textContent = 'Invalid or expired link';
-      document.getElementById('share-content').innerHTML = \`<div style="text-align:center;padding:80px 0"><div style="font-size:48px;margin-bottom:16px">🔒</div><div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:8px">Link Invalid or Expired</div><div style="font-size:13px;color:var(--text3)">This share link has been revoked or is no longer valid.</div></div>\`;
+      document.getElementById('share-content').innerHTML = `<div style="text-align:center;padding:80px 0"><div style="font-size:48px;margin-bottom:16px">🔒</div><div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:8px">Link Invalid or Expired</div><div style="font-size:13px;color:var(--text3)">This share link has been revoked or is no longer valid.</div></div>`;
       return;
     }
 
-    document.getElementById('share-banner-title').textContent = \`\${d.llc_name} — Shared by \${d.user_name || 'owner'}\`;
+    document.getElementById('share-banner-title').textContent = `${d.llc_name} — Shared by ${d.user_name || 'owner'}`;
 
     const txs = d.transactions || [];
     const inc = txs.filter(t=>t.type==='income').reduce((s,t)=>s+parseFloat(t.amount),0);
@@ -3209,40 +3209,40 @@ if (IS_SHARE_VIEW) {
 
     const icons = {'Income':'💰','Software & Tools':'💻','Advertising':'📢','Travel':'✈️','Office Expenses':'🏢','Legal & Professional':'⚖️','Other':'📋'};
 
-    document.getElementById('share-content').innerHTML = \`
+    document.getElementById('share-content').innerHTML = `
       <div style="margin-bottom:28px">
-        <div style="font-size:22px;font-weight:800;color:var(--text);margin-bottom:4px">\${d.llc_name}</div>
-        <div style="font-size:13px;color:var(--text3)">\${txs.length} transactions · Read-only view</div>
+        <div style="font-size:22px;font-weight:800;color:var(--text);margin-bottom:4px">${d.llc_name}</div>
+        <div style="font-size:13px;color:var(--text3)">${txs.length} transactions · Read-only view</div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px">
         <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px">
           <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Total Income</div>
-          <div style="font-size:22px;font-weight:800;color:var(--accent)">\${fmt(inc)}</div>
+          <div style="font-size:22px;font-weight:800;color:var(--accent)">${fmt(inc)}</div>
         </div>
         <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px">
           <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Total Expenses</div>
-          <div style="font-size:22px;font-weight:800;color:var(--warn)">\${fmt(exp)}</div>
+          <div style="font-size:22px;font-weight:800;color:var(--warn)">${fmt(exp)}</div>
         </div>
         <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px">
           <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Net Profit</div>
-          <div style="font-size:22px;font-weight:800;color:\${inc-exp>=0?'var(--accent)':'var(--warn)'}">\${fmt(inc-exp)}</div>
+          <div style="font-size:22px;font-weight:800;color:${inc-exp>=0?'var(--accent)':'var(--warn)'}">${fmt(inc-exp)}</div>
         </div>
       </div>
       <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden">
         <div style="padding:16px 20px;border-bottom:1px solid var(--border);font-size:13px;font-weight:700;color:var(--text)">Transactions</div>
-        \${txs.length === 0 ? '<div style="padding:40px;text-align:center;color:var(--text3)">No transactions</div>' :
-          txs.map(t => \`<div style="display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid rgba(37,42,56,0.5)">
-            <div style="width:36px;height:36px;background:var(--bg3);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">\${icons[t.category]||'📋'}</div>
+        ${txs.length === 0 ? '<div style="padding:40px;text-align:center;color:var(--text3)">No transactions</div>' :
+          txs.map(t => `<div style="display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid rgba(37,42,56,0.5)">
+            <div style="width:36px;height:36px;background:var(--bg3);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">${icons[t.category]||'📋'}</div>
             <div style="flex:1;min-width:0">
-              <div style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">\${t.vendor}</div>
-              <div style="font-size:11px;color:var(--text3)">\${t.category} · \${t.date}</div>
+              <div style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.vendor}</div>
+              <div style="font-size:11px;color:var(--text3)">${t.category} · ${t.date}</div>
             </div>
-            <div style="font-size:14px;font-weight:700;color:\${t.type==='income'?'var(--accent)':'var(--warn)'};\${t.type==='income'?'':''}">\${t.type==='income'?'+':'-'}\${fmt(parseFloat(t.amount))}</div>
-          </div>\`).join('')}
+            <div style="font-size:14px;font-weight:700;color:${t.type==='income'?'var(--accent)':'var(--warn)'};${t.type==='income'?'':''}">${t.type==='income'?'+':'-'}${fmt(parseFloat(t.amount))}</div>
+          </div>`).join('')}
         </div>
       </div>
       <div style="text-align:center;margin-top:24px;font-size:11px;color:var(--text3)">Powered by <strong style="color:var(--accent)">MyTaxFly</strong> · Read-only view · <a href="https://mytaxfly.com" style="color:var(--accent);text-decoration:none">Get your own →</a></div>
-    \`;
+    `;
   } catch(err) {
     document.getElementById('share-content').innerHTML = '<div style="color:var(--warn);text-align:center;padding:60px">Failed to load data. Please try again.</div>';
   }
