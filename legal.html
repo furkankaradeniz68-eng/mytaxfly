@@ -53,20 +53,19 @@
 <div class="container">
 
   <div class="tabs">
-    <button class="tab active" onclick="showTab('impressum',this)">Impressum</button>
-    <button class="tab" onclick="showTab('datenschutz',this)">Datenschutz</button>
+    <button class="tab active" onclick="showTab('imprint',this)">Imprint</button>
     <button class="tab" onclick="showTab('tos',this)">Terms of Service</button>
     <button class="tab" onclick="showTab('privacy',this)">Privacy Policy</button>
   </div>
 
   <!-- ══════════════════════════════════════════════ -->
-  <!-- IMPRESSUM                                      -->
+  <!-- IMPRINT                                        -->
   <!-- ══════════════════════════════════════════════ -->
-  <div class="panel active" id="panel-impressum">
-    <h1>Impressum</h1>
-    <p class="meta">Angaben gemäß § 5 TMG</p>
+  <div class="panel active" id="panel-imprint">
+    <h1>Imprint</h1>
+    <p class="meta">Legal disclosure pursuant to § 5 TMG (German Telemedia Act)</p>
 
-    <h2>Anbieter</h2>
+    <h2>Service Provider</h2>
     <div class="contact-box">
       <strong>AYNA UNIVERSE LLC</strong>
       30 N Gould St, Ste N<br>
@@ -74,120 +73,36 @@
       United States of America
     </div>
 
-    <h2>Vertretungsberechtigte Person</h2>
-    <p>Anil Seckin (Sole Member / Geschäftsführer)</p>
+    <h2>Authorized Representative</h2>
+    <p>Anil Seckin (Sole Member)</p>
 
-    <h2>Kontakt</h2>
+    <h2>Contact</h2>
     <div class="contact-box">
       E-Mail: <a href="mailto:support@mytaxfly.com">support@mytaxfly.com</a><br>
       Website: <a href="https://mytaxfly.com">www.mytaxfly.com</a>
     </div>
 
-    <h2>Unternehmensregistrierung</h2>
+    <h2>Business Registration</h2>
     <table>
-      <tr><td>Rechtsform</td><td>Limited Liability Company (LLC)</td></tr>
-      <tr><td>Gründungsstaat</td><td>Wyoming, USA</td></tr>
+      <tr><td>Legal form</td><td>Limited Liability Company (LLC)</td></tr>
+      <tr><td>State of incorporation</td><td>Wyoming, USA</td></tr>
       <tr><td>EIN (Employer Identification Number)</td><td>30-1449491</td></tr>
     </table>
 
-    <h2>Hinweis zur Steuerpflicht</h2>
-    <p>AYNA UNIVERSE LLC ist eine nach US-amerikanischem Recht gegründete Gesellschaft. Steuerliche Angelegenheiten unterliegen dem Recht der Vereinigten Staaten von Amerika.</p>
+    <h2>Tax Notice</h2>
+    <p>AYNA UNIVERSE LLC is incorporated under the laws of the United States of America. Tax matters are governed by US federal and state law.</p>
 
-    <h2>Haftung für Inhalte</h2>
-    <p>Die Inhalte dieser Website wurden mit größtmöglicher Sorgfalt erstellt. MyTaxFly ist ein Softwarewerkzeug und kein lizenzierter Steuerberater, Rechtsanwalt oder Finanzberater. Die auf dieser Website bereitgestellten Informationen stellen keine Steuer-, Rechts- oder Finanzberatung dar. Für individuelle steuerliche Fragestellungen wenden Sie sich bitte an einen qualifizierten Steuerberater (CPA).</p>
+    <h2>Disclaimer — Content</h2>
+    <p>The content of this website has been prepared with the utmost care. MyTaxFly is a software tool and not a licensed tax advisor, attorney, or financial advisor. Nothing on this website constitutes tax, legal, or financial advice. For individual tax questions, please consult a qualified CPA.</p>
 
-    <h2>Haftung für Links</h2>
-    <p>Diese Website enthält Links zu externen Websites Dritter. Auf deren Inhalte haben wir keinen Einfluss und übernehmen dafür keine Gewähr. Für die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter oder Betreiber verantwortlich.</p>
+    <h2>Disclaimer — External Links</h2>
+    <p>This website may contain links to third-party websites. We have no control over their content and accept no responsibility for them. The respective provider or operator of each linked page is responsible for its content.</p>
 
-    <h2>Urheberrecht</h2>
-    <p>Die durch den Seitenbetreiber erstellten Inhalte und Werke auf dieser Website unterliegen dem US-amerikanischen Urheberrecht. Vervielfältigung, Bearbeitung, Verbreitung und jede Art der Verwertung außerhalb der Grenzen des Urheberrechts bedürfen der schriftlichen Zustimmung von AYNA UNIVERSE LLC.</p>
-
-    <div class="divider"></div>
-    <p style="color:#8892a4;font-size:12px">Stand: Juli 2026 · AYNA UNIVERSE LLC · mytaxfly.com</p>
-  </div>
-
-  <!-- ══════════════════════════════════════════════ -->
-  <!-- DATENSCHUTZ (DEUTSCH)                          -->
-  <!-- ══════════════════════════════════════════════ -->
-  <div class="panel" id="panel-datenschutz">
-    <h1>Datenschutzerklärung</h1>
-    <p class="meta">Version 1.0 · Juli 2026 · DSGVO-konform · mytaxfly.com</p>
-
-    <h2>1. Verantwortlicher</h2>
-    <div class="contact-box">
-      <strong>AYNA UNIVERSE LLC (MyTaxFly)</strong>
-      30 N Gould St, Ste N · Sheridan, WY 82801 · USA<br>
-      E-Mail: <a href="mailto:privacy@mytaxfly.com">privacy@mytaxfly.com</a>
-    </div>
-
-    <h2>2. Welche Daten wir erheben</h2>
-    <ul>
-      <li><strong>Kontodaten:</strong> Name, E-Mail-Adresse, Passwort (verschlüsselt gespeichert)</li>
-      <li><strong>Unternehmensdaten:</strong> LLC-Name, EIN, Adresse</li>
-      <li><strong>Finanzdaten:</strong> Von Ihnen eingegebene Transaktionen, Einnahmen, Ausgaben</li>
-      <li><strong>Dokumente:</strong> Von Ihnen hochgeladene Belege, Rechnungen, Kontoauszüge (PDF, JPG, PNG)</li>
-      <li><strong>Zahlungsdaten:</strong> Abonnementinformationen über Stripe (Kreditkartendaten werden nicht bei uns gespeichert)</li>
-      <li><strong>Technische Daten:</strong> IP-Adresse, Browser-Typ, Zugriffszeitpunkte (Server-Logs)</li>
-    </ul>
-
-    <h2>3. Zweck der Verarbeitung</h2>
-    <ul>
-      <li>Bereitstellung der Buchhaltungs- und Steuervorbereitungssoftware</li>
-      <li>KI-gestützte Kategorisierung von Transaktionen (Anthropic Claude API)</li>
-      <li>Verarbeitung von Abonnementzahlungen (Stripe)</li>
-      <li>Versand servicebezogener E-Mails (Transaktionsbestätigungen, Sicherheitshinweise)</li>
-      <li>Sicherheit und Missbrauchsprävention</li>
-    </ul>
-
-    <h2>4. Rechtsgrundlagen (DSGVO)</h2>
-    <table>
-      <thead><tr><th>Verarbeitung</th><th>Rechtsgrundlage</th></tr></thead>
-      <tr><td>Vertragserfüllung</td><td>Art. 6 Abs. 1 lit. b DSGVO</td></tr>
-      <tr><td>Berechtigte Interessen (Sicherheit, Betrug)</td><td>Art. 6 Abs. 1 lit. f DSGVO</td></tr>
-      <tr><td>Einwilligung (Cookies, Analytics)</td><td>Art. 6 Abs. 1 lit. a DSGVO</td></tr>
-    </table>
-
-    <h2>5. KI-Verarbeitung</h2>
-    <div class="highlight">
-      <strong>Wichtig:</strong> Ihre Finanzdaten werden <strong>nicht</strong> zum Training von KI-Modellen verwendet. Dokumentinhalte werden ausschließlich zur Erbringung der Analysedienstleistung an Anthropic übermittelt. Anthropic hat eine Zero-Data-Retention-Policy für API-Anfragen.
-    </div>
-
-    <h2>6. Auftragsverarbeiter (Drittanbieter)</h2>
-    <table>
-      <thead><tr><th>Anbieter</th><th>Zweck</th><th>Standort</th><th>Datenschutz</th></tr></thead>
-      <tr><td>Supabase Inc.</td><td>Datenbank & Auth</td><td>USA (AWS us-east-1)</td><td><a href="https://supabase.com/privacy" target="_blank">supabase.com/privacy</a></td></tr>
-      <tr><td>Anthropic PBC</td><td>KI-Analyse (Claude)</td><td>USA · Zero Retention</td><td><a href="https://anthropic.com/privacy" target="_blank">anthropic.com/privacy</a></td></tr>
-      <tr><td>Stripe Inc.</td><td>Zahlungsabwicklung</td><td>USA / EU</td><td><a href="https://stripe.com/privacy" target="_blank">stripe.com/privacy</a></td></tr>
-      <tr><td>Vercel Inc.</td><td>Hosting & CDN</td><td>USA / Global</td><td><a href="https://vercel.com/legal/privacy-policy" target="_blank">vercel.com/legal</a></td></tr>
-    </table>
-    <p>Datentransfers in die USA erfolgen auf Basis von Standardvertragsklauseln (SCCs) gemäß Art. 46 Abs. 2 lit. c DSGVO.</p>
-
-    <h2>7. Speicherdauer</h2>
-    <p>Ihre Daten werden gespeichert, solange Ihr Konto aktiv ist. Nach Kündigung werden alle personenbezogenen Daten innerhalb von 30 Tagen gelöscht, sofern keine gesetzlichen Aufbewahrungspflichten entgegenstehen.</p>
-
-    <h2>8. Ihre Rechte (DSGVO)</h2>
-    <ul>
-      <li><strong>Auskunft</strong> (Art. 15) — Welche Daten wir über Sie gespeichert haben</li>
-      <li><strong>Berichtigung</strong> (Art. 16) — Korrektur unrichtiger Daten</li>
-      <li><strong>Löschung</strong> (Art. 17) — „Recht auf Vergessenwerden"</li>
-      <li><strong>Datenportabilität</strong> (Art. 20) — Export Ihrer Daten im CSV-Format</li>
-      <li><strong>Widerspruch</strong> (Art. 21) — Widerspruch gegen bestimmte Verarbeitungen</li>
-      <li><strong>Beschwerde</strong> — Bei der zuständigen Datenschutzaufsichtsbehörde</li>
-    </ul>
-    <p>Anfragen richten Sie bitte an: <a href="mailto:privacy@mytaxfly.com">privacy@mytaxfly.com</a> — Wir antworten innerhalb von 30 Tagen.</p>
-
-    <h2>9. Cookies</h2>
-    <p>Wir verwenden technisch notwendige Cookies (Session, Auth-Token) sowie optionale Analytics-Cookies. Beim ersten Besuch werden Sie um Ihre Einwilligung gebeten. Sie können Cookies jederzeit in Ihren Browser-Einstellungen deaktivieren.</p>
-
-    <h2>10. Kontakt Datenschutz</h2>
-    <div class="contact-box">
-      <strong>AYNA UNIVERSE LLC — Datenschutz</strong>
-      E-Mail: <a href="mailto:privacy@mytaxfly.com">privacy@mytaxfly.com</a><br>
-      Anschrift: 30 N Gould St, Ste N · Sheridan, WY 82801 · USA
-    </div>
+    <h2>Copyright</h2>
+    <p>All content and works on this website are subject to US copyright law. Reproduction, editing, distribution, or any use beyond the scope of copyright law requires the written consent of AYNA UNIVERSE LLC.</p>
 
     <div class="divider"></div>
-    <p style="color:#8892a4;font-size:12px">Stand: Juli 2026 · AYNA UNIVERSE LLC · mytaxfly.com</p>
+    <p style="color:#8892a4;font-size:12px">Last updated: July 2026 · AYNA UNIVERSE LLC · mytaxfly.com</p>
   </div>
 
   <!-- ══════════════════════════════════════════════ -->
@@ -333,11 +248,13 @@ function showTab(id, btn) {
   btn.classList.add('active');
 }
 
-// Allow direct linking: legal.html#datenschutz
+// Allow direct linking: legal.html#imprint, #tos, #privacy
 const hash = location.hash.replace('#','');
-if (hash) {
-  const btn = document.querySelector(`.tab[onclick*="${hash}"]`);
-  if (btn) showTab(hash, btn);
+const hashMap = {impressum:'imprint', datenschutz:'privacy', imprint:'imprint', tos:'tos', privacy:'privacy'};
+const target = hashMap[hash];
+if (target) {
+  const btn = document.querySelector(`.tab[onclick*="'${target}'"]`);
+  if (btn) showTab(target, btn);
 }
 </script>
 </body>
