@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyTaxFly — Produktpräsentation</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --green:   #00c896;
+    --green-d: #00a87a;
+    --blue:    #0099ff;
+    --orange:  #ff6b35;
+    --bg:      #0d0f14;
+    --bg2:     #13161e;
+    --bg3:     #1a1e28;
+    --card:    #161922;
+    --border:  #252a38;
+    --text:    #e8eaf2;
+    --text2:   #7a8099;
+    --text3:   #4a5068;
+  }
+
+  body { font-family: 'Montserrat', sans-serif; background: #fff; color: #1a1a2e; line-height: 1.6; }
+
+  /* ── COVER ── */
+  .cover {
+    min-height: 100vh;
+    background: linear-gradient(140deg, #0d0f14 0%, #0a1410 60%, #0d1a10 100%);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center; padding: 80px 40px;
+    position: relative; overflow: hidden;
+  }
+  .cover::before {
+    content: '';
+    position: absolute; top: -200px; left: -200px;
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(0,200,150,0.13) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .cover::after {
+    content: '';
+    position: absolute; bottom: -150px; right: -100px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(0,153,255,0.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .cover-logo-wrap { display: flex; align-items: center; gap: 18px; margin-bottom: 20px; position: relative; }
+  .cover-logo-img {
+    width: 80px; height: 80px; border-radius: 50%;
+    border: 2px solid rgba(0,200,150,0.4);
+    box-shadow: 0 0 48px rgba(0,200,150,0.28);
+  }
+  .cover-brand { font-size: 46px; font-weight: 900; color: #00c896; letter-spacing: -2px; }
+  .cover-tagline {
+    font-size: 12px; color: rgba(255,255,255,0.35);
+    letter-spacing: 3.5px; text-transform: uppercase;
+    margin-bottom: 52px; font-weight: 600;
+  }
+  .cover-headline {
+    font-size: 50px; font-weight: 900; color: #fff;
+    letter-spacing: -2px; line-height: 1.08;
+    max-width: 740px; margin-bottom: 24px;
+  }
+  .cover-headline span { color: #00c896; }
+  .cover-desc {
+    font-size: 17px; color: rgba(255,255,255,0.5);
+    max-width: 560px; line-height: 1.75; margin-bottom: 52px; font-weight: 400;
+  }
+  .cover-chips { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 64px; }
+  .chip {
+    background: rgba(0,200,150,0.1); border: 1px solid rgba(0,200,150,0.25);
+    border-radius: 100px; padding: 7px 18px; font-size: 12px; font-weight: 700;
+    color: #00c896; letter-spacing: 0.3px;
+  }
+  .chip.blue { background: rgba(0,153,255,0.1); border-color: rgba(0,153,255,0.25); color: #0099ff; }
+  .chip.org  { background: rgba(255,107,53,0.1); border-color: rgba(255,107,53,0.25); color: #ff6b35; }
+  .cover-meta {
+    font-size: 11px; color: rgba(255,255,255,0.18);
+    letter-spacing: 1.2px; text-transform: uppercase;
+    position: absolute; bottom: 36px; font-weight: 500;
+  }
+
+  /* ── WRAPPERS ── */
+  .w-dark   { background: #0d0f14; color: #e8eaf2; padding: 84px 0; }
+  .w-gray   { background: #f7f9fc; color: #1a1a2e;  padding: 84px 0; }
+  .w-white  { background: #ffffff; color: #1a1a2e;  padding: 84px 0; }
+  .inner    { max-width: 1020px; margin: 0 auto; padding: 0 48px; }
+  .divider  { height: 1px; background: linear-gradient(90deg,transparent,rgba(0,200,150,0.25),transparent); }
+
+  /* ── HEADINGS ── */
+  .label {
+    font-size: 10px; font-weight: 800; letter-spacing: 3px;
+    text-transform: uppercase; color: #00c896; margin-bottom: 10px;
+  }
+  .h2 { font-size: 36px; font-weight: 900; letter-spacing: -1px; line-height: 1.12; margin-bottom: 14px; }
+  .sub { font-size: 16px; color: #7a8099; max-width: 600px; line-height: 1.72; margin-bottom: 52px; }
+  .w-dark .h2  { color: #e8eaf2; }
+  .w-dark .sub { color: rgba(232,234,242,0.5); }
+
+  /* ── PROBLEM GRID ── */
+  .problem-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .pcard {
+    background: #fff; border: 1px solid #e6ebf4;
+    border-left: 4px solid #ff6b35; border-radius: 16px; padding: 28px;
+  }
+  .pcard .pi  { font-size: 30px; margin-bottom: 12px; }
+  .pcard h3   { font-size: 15px; font-weight: 700; margin-bottom: 8px; color: #1a1a2e; }
+  .pcard p    { font-size: 13px; color: #6b7280; line-height: 1.65; }
+
+  /* ── STATS BAR ── */
+  .stats-bar {
+    display: grid; grid-template-columns: repeat(4,1fr);
+    gap: 1px; background: #252a38;
+    border-radius: 16px; overflow: hidden; margin-bottom: 56px;
+  }
+  .sbox { background: #13161e; padding: 32px 20px; text-align: center; }
+  .snum { font-size: 40px; font-weight: 900; color: #00c896; letter-spacing: -2px; line-height: 1; margin-bottom: 6px; }
+  .slbl { font-size: 11px; color: rgba(232,234,242,0.38); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+
+  /* ── FEATURES GRID ── */
+  .feat-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
+  .fcard {
+    background: #13161e; border: 1px solid #252a38;
+    border-radius: 16px; padding: 28px;
+    transition: border-color 0.2s;
+  }
+  .fcard:hover { border-color: rgba(0,200,150,0.35); }
+  .ficon {
+    width: 46px; height: 46px;
+    background: rgba(0,200,150,0.1); border: 1px solid rgba(0,200,150,0.18);
+    border-radius: 12px; display: flex; align-items: center; justify-content: center;
+    margin-bottom: 16px; font-size: 22px;
+  }
+  .fcard h3 { font-size: 15px; font-weight: 700; color: #e8eaf2; margin-bottom: 8px; }
+  .fcard p  { font-size: 13px; color: rgba(232,234,242,0.48); line-height: 1.65; }
+  .fbadge {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: rgba(0,200,150,0.1); border: 1px solid rgba(0,200,150,0.2);
+    border-radius: 20px; padding: 3px 10px;
+    font-size: 10px; font-weight: 800; color: #00c896;
+    text-transform: uppercase; letter-spacing: 0.6px; margin-top: 14px;
+  }
+  .fbadge.pro { background: rgba(0,153,255,0.1); border-color: rgba(0,153,255,0.2); color: #0099ff; }
+
+  /* ── HOW IT WORKS ── */
+  .steps { display: flex; flex-direction: column; }
+  .step {
+    display: flex; gap: 32px; padding: 36px 0;
+    border-bottom: 1px solid #edf0f7; align-items: flex-start;
+  }
+  .step:last-child { border-bottom: none; }
+  .step-num {
+    width: 52px; height: 52px; flex-shrink: 0;
+    background: linear-gradient(135deg, #00c896, #00a87a);
+    border-radius: 14px; display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 900; color: #0d0f14;
+  }
+  .step-body h3 { font-size: 18px; font-weight: 800; color: #1a1a2e; margin-bottom: 8px; letter-spacing: -0.3px; }
+  .step-body p  { font-size: 14px; color: #6b7280; line-height: 1.72; max-width: 580px; }
+  .stag {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: #f0fdf8; border: 1px solid #a7f3d0;
+    border-radius: 20px; padding: 3px 12px;
+    font-size: 11px; font-weight: 700; color: #00a87a; margin-top: 10px;
+  }
+
+  /* ── EXPORTS ── */
+  .exp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .ecard {
+    background: #1a1e28; border: 1px solid #252a38;
+    border-radius: 16px; padding: 26px;
+    display: flex; gap: 20px; align-items: flex-start;
+  }
+  .eicon {
+    width: 50px; height: 50px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; flex-shrink: 0;
+  }
+  .eg  { background: rgba(0,200,150,0.1); }
+  .eo  { background: rgba(255,107,53,0.1); }
+  .eb  { background: rgba(0,153,255,0.1); }
+  .ep  { background: rgba(167,139,250,0.1); }
+  .ecard h3 { font-size: 14px; font-weight: 700; color: #e8eaf2; margin-bottom: 6px; }
+  .ecard p  { font-size: 12px; color: rgba(232,234,242,0.48); line-height: 1.6; }
+  .etag {
+    display: inline-block; margin-top: 10px; padding: 3px 10px;
+    border-radius: 20px; font-size: 10px; font-weight: 800;
+    letter-spacing: 0.6px; text-transform: uppercase;
+  }
+  .tc  { background: rgba(0,200,150,0.1); color: #00c896; border: 1px solid rgba(0,200,150,0.2); }
+  .tp  { background: rgba(255,107,53,0.1); color: #ff6b35; border: 1px solid rgba(255,107,53,0.2); }
+  .ta  { background: rgba(0,153,255,0.1);  color: #0099ff; border: 1px solid rgba(0,153,255,0.2); }
+  .tir { background: rgba(167,139,250,0.1); color: #a78bfa; border: 1px solid rgba(167,139,250,0.2); }
+
+  /* ── DIFF LIST ── */
+  .dlist { display: flex; flex-direction: column; gap: 16px; }
+  .ditem {
+    display: flex; gap: 20px; align-items: flex-start;
+    background: #f7f9fc; border-radius: 14px;
+    padding: 20px 24px; border-left: 4px solid #00c896;
+  }
+  .dbullet { font-size: 24px; flex-shrink: 0; margin-top: 1px; }
+  .ditem h4 { font-size: 15px; font-weight: 700; color: #1a1a2e; margin-bottom: 4px; }
+  .ditem p  { font-size: 13px; color: #6b7280; line-height: 1.65; }
+
+  /* ── AUDIENCE ── */
+  .aud-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
+  .acard {
+    background: #fff; border: 1px solid #e6ebf4;
+    border-radius: 16px; padding: 28px 24px; text-align: center;
+  }
+  .aicon   { font-size: 36px; margin-bottom: 14px; }
+  .acard h3 { font-size: 15px; font-weight: 700; color: #1a1a2e; margin-bottom: 8px; }
+  .acard p  { font-size: 13px; color: #6b7280; line-height: 1.6; }
+
+  /* ── PLANS ── */
+  .plans-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 22px; }
+  .pln {
+    background: #fff; border: 1.5px solid #e6ebf4;
+    border-radius: 20px; padding: 32px 26px; position: relative;
+  }
+  .pln.hot {
+    border-color: #00c896;
+    box-shadow: 0 0 0 1px #00c896, 0 20px 60px rgba(0,200,150,0.12);
+  }
+  .pln-badge {
+    position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
+    background: #00c896; color: #0d0f14;
+    font-size: 10px; font-weight: 800; letter-spacing: 1.2px;
+    text-transform: uppercase; padding: 4px 16px; border-radius: 20px;
+  }
+  .pln-name { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: #7a8099; margin-bottom: 6px; }
+  .pln-price { font-size: 44px; font-weight: 900; color: #1a1a2e; letter-spacing: -2px; line-height: 1; margin-bottom: 4px; }
+  .pln-price sup { font-size: 20px; font-weight: 600; vertical-align: super; letter-spacing: 0; }
+  .pln-note { font-size: 12px; color: #9ca3af; margin-bottom: 8px; }
+  .pln-save { font-size: 11px; color: #00c896; font-weight: 700; margin-bottom: 22px; }
+  .pln-div  { height: 1px; background: #f0f3f9; margin-bottom: 20px; }
+  .pf {
+    display: flex; align-items: flex-start; gap: 10px;
+    font-size: 13px; color: #374151; margin-bottom: 10px; line-height: 1.4;
+  }
+  .pf .ok {
+    width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px;
+    background: #f0fdf8; border: 1px solid #a7f3d0;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 10px; color: #00a87a;
+  }
+  .pf .no {
+    width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px;
+    background: #fef2f2; border: 1px solid #fecaca;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 10px; color: #ef4444;
+  }
+  .pf.dim { color: #9ca3af; }
+
+  /* ── TECH ── */
+  .tech-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; }
+  .tcard {
+    background: #1a1e28; border: 1px solid #252a38;
+    border-radius: 14px; padding: 22px 16px; text-align: center;
+  }
+  .tlogo { font-size: 30px; margin-bottom: 10px; }
+  .tname { font-size: 13px; font-weight: 700; color: #e8eaf2; margin-bottom: 4px; }
+  .trole { font-size: 11px; color: rgba(232,234,242,0.38); line-height: 1.45; }
+
+  /* ── CI SECTION ── */
+  .ci-grid { display: grid; grid-template-columns: 1fr 1.8fr; gap: 48px; align-items: start; }
+  .ci-logo-box {
+    background: #13161e; border: 1px solid #252a38;
+    border-radius: 20px; padding: 48px 32px;
+    display: flex; flex-direction: column; align-items: center; gap: 24px;
+  }
+  .ci-logo-ring {
+    width: 140px; height: 140px; border-radius: 50%;
+    border: 2px solid rgba(0,200,150,0.35);
+    box-shadow: 0 0 60px rgba(0,200,150,0.2);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .ci-logo-ring img { width: 140px; height: 140px; border-radius: 50%; object-fit: cover; }
+  .ci-wordmark {
+    font-size: 30px; font-weight: 900; color: #00c896; letter-spacing: -1px;
+  }
+  .ci-tag { font-size: 11px; color: rgba(232,234,242,0.35); text-transform: uppercase; letter-spacing: 2px; font-weight: 600; }
+  .ci-font-box {
+    background: #13161e; border: 1px solid #252a38; border-radius: 14px; padding: 20px 24px; margin-top: 16px;
+  }
+  .ci-font-label { font-size: 10px; color: rgba(232,234,242,0.35); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; margin-bottom: 10px; }
+  .ci-font-sample { font-size: 22px; font-weight: 800; color: #e8eaf2; letter-spacing: -0.5px; margin-bottom: 4px; }
+  .ci-font-name   { font-size: 11px; color: rgba(232,234,242,0.4); font-weight: 500; }
+
+  .colors-wrap { display: flex; flex-direction: column; gap: 12px; }
+  .color-row   { display: flex; gap: 12px; }
+  .color-tile {
+    flex: 1; border-radius: 14px; padding: 20px 18px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .color-tile.small { flex: 0 0 calc(33.33% - 8px); }
+  .c-name  { font-size: 12px; font-weight: 700; }
+  .c-hex   { font-size: 11px; font-weight: 600; opacity: 0.6; font-family: monospace; letter-spacing: 0.5px; }
+  .c-role  { font-size: 11px; opacity: 0.55; line-height: 1.4; }
+  .on-dark  { color: #e8eaf2; }
+  .on-light { color: #1a1a2e; }
+
+  /* ── CLOSING ── */
+  .closing {
+    background: linear-gradient(140deg, #0d0f14, #0a1410);
+    color: #fff; padding: 100px 48px; text-align: center; position: relative; overflow: hidden;
+  }
+  .closing::before {
+    content: ''; position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(0,200,150,0.1) 0%, transparent 70%);
+  }
+  .closing h2 { font-size: 44px; font-weight: 900; letter-spacing: -1.5px; margin-bottom: 16px; position: relative; }
+  .closing h2 span { color: #00c896; }
+  .closing p  { font-size: 17px; color: rgba(255,255,255,0.48); max-width: 520px; margin: 0 auto 40px; line-height: 1.75; position: relative; }
+  .cta-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: #00c896; color: #0d0f14; font-family: 'Montserrat', sans-serif;
+    font-size: 15px; font-weight: 800; padding: 16px 38px; border-radius: 12px;
+    text-decoration: none; position: relative; letter-spacing: -0.2px;
+  }
+  .close-contact { margin-top: 36px; font-size: 12px; color: rgba(255,255,255,0.25); letter-spacing: 0.5px; position: relative; }
+  .close-contact a { color: #00c896; text-decoration: none; }
+
+  .quote-box {
+    background: linear-gradient(135deg, rgba(0,200,150,0.06), rgba(0,153,255,0.03));
+    border: 1px solid rgba(0,200,150,0.18); border-radius: 16px;
+    padding: 32px; margin-top: 48px; text-align: center;
+  }
+  .quote-text   { font-size: 17px; font-weight: 700; color: #e8eaf2; line-height: 1.5; margin-bottom: 10px; letter-spacing: -0.3px; }
+  .quote-author { font-size: 11px; color: rgba(232,234,242,0.35); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
+
+  .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+  .sticker {
+    background: rgba(0,200,150,0.08); border: 1px solid rgba(0,200,150,0.2);
+    border-radius: 20px; padding: 5px 14px; font-size: 12px; font-weight: 600; color: #00c896;
+  }
+
+  @media print {
+    .cover { page-break-after: always; min-height: auto; padding: 60px 40px 80px; }
+    .w-dark, .w-gray, .w-white { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     COVER
+══════════════════════════════════════ -->
+<div class="cover">
+  <div class="cover-logo-wrap">
+    <img
+      src="https://yacwkxstvqvdgiiffwos.supabase.co/storage/v1/object/public/asstets/mytaxfly-logo-02.png"
+      alt="MyTaxFly" class="cover-logo-img"
+      onerror="this.style.display='none'"
+    >
+    <div class="cover-brand">MyTaxFly</div>
+  </div>
+  <div class="cover-tagline">Tax Management for US LLCs</div>
+
+  <h1 class="cover-headline">
+    Steuern für deine US‑LLC —<br>
+    <span>einfach. automatisch. korrekt.</span>
+  </h1>
+  <p class="cover-desc">
+    MyTaxFly ist die All‑in‑One‑Plattform für ausländische LLC‑Gründer, die ihre Buchhaltung automatisieren und IRS‑konforme Formulare auf Knopfdruck exportieren wollen.
+  </p>
+
+  <div class="cover-chips">
+    <div class="chip">🤖 KI‑gestützt</div>
+    <div class="chip blue">📊 IRS‑konform</div>
+    <div class="chip org">🌍 Für Non‑US Founder</div>
+    <div class="chip">💳 Stripe‑Billing</div>
+    <div class="chip blue">📱 Mobile‑Ready</div>
+    <div class="chip org">🔐 Supabase Auth</div>
+  </div>
+
+  <div class="cover-meta">Produktpräsentation · Stand Juli 2026 · mytaxfly.com</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════
+     DAS PROBLEM
+══════════════════════════════════════ -->
+<div class="w-white">
+  <div class="inner">
+    <div class="label">Das Problem</div>
+    <h2 class="h2">US‑LLCs für Nicht‑Amerikaner<br>sind ein steuerliches Minenfeld</h2>
+    <p class="sub">Tausende internationale Unternehmer gründen jährlich eine US‑LLC — und kämpfen dann mit IRS‑Pflichten, die kaum jemand kennt.</p>
+    <div class="problem-grid">
+      <div class="pcard"><div class="pi">📋</div><h3>Unbekannte IRS‑Formulare</h3><p>Form 5472 und Form 1120 müssen jährlich eingereicht werden — die meisten Gründer wissen das nicht einmal. Strafen beginnen bei $25.000.</p></div>
+      <div class="pcard"><div class="pi">🗂️</div><h3>Kein System für Belege</h3><p>Belege in Gmail, PayPal, Stripe und Co. — aber kein zentrales Tool, das automatisch kategorisiert und Steuerabzüge berechnet.</p></div>
+      <div class="pcard"><div class="pi">💸</div><h3>Teure Steuerberater</h3><p>US‑CPAs verlangen $500–$2.000 pro Jahr allein für die LLC‑Grundbuchhaltung — für Arbeit, die Software in Sekunden erledigt.</p></div>
+      <div class="pcard"><div class="pi">🌐</div><h3>Keine passende Lösung</h3><p>QuickBooks und Wave sind für US‑Bürger gebaut. Für ausländische Single‑Member LLCs fehlt ein spezialisiertes Tool.</p></div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════
+     LÖSUNG
+══════════════════════════════════════ -->
+<div class="w-dark">
+  <div class="inner">
+    <div class="label">Die Lösung</div>
+    <h2 class="h2">MyTaxFly — dein digitaler<br>US‑Steuerbegleiter</h2>
+    <p class="sub">Eine Plattform, die Buchhaltung automatisiert, Steuerabzüge erkennt und IRS‑Formulare auf Knopfdruck generiert.</p>
+
+    <div class="stats-bar">
+      <div class="sbox"><div class="snum">5</div><div class="slbl">Kernfunktionen</div></div>
+      <div class="sbox"><div class="snum">3</div><div class="slbl">IRS‑Formulare</div></div>
+      <div class="sbox"><div class="snum">100%</div><div class="slbl">KI‑Kategorisierung</div></div>
+      <div class="sbox"><div class="snum">∞</div><div class="slbl">Transaktionen</div></div>
+    </div>
+
+    <div class="quote-box">
+      <div class="quote-text">"Beleg hochladen → KI liest Vendor, Betrag, Kategorie &amp; Abzugsfähigkeit aus → in Sekunden im Dashboard. Fertig."</div>
+      <div class="quote-author">KI‑gestützte Buchhaltung powered by Claude AI</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════
+     FEATURES
+══════════════════════════════════════ -->
+<div class="w-dark">
+  <div class="inner">
+    <div class="label">Funktionen</div>
+    <h2 class="h2">Alles, was du brauchst —<br>nichts, was du nicht brauchst</h2>
+    <p class="sub">Sechs Module, die ein vollständiges Buchhaltungs‑ und Steuersystem ergeben.</p>
+
+    <div class="feat-grid">
+      <div class="fcard">
+        <div class="ficon">📊</div>
+        <h3>Live‑Dashboard</h3>
+        <p>Umsatz, Ausgaben, Nettogewinn und geschätzte Steuerlast — immer aktuell. Flexibler Zeitraumfilter: monatlich, quartalsweise oder individuell.</p>
+        <div class="fbadge">Alle Pläne</div>
+      </div>
+      <div class="fcard">
+        <div class="ficon">🤖</div>
+        <h3>KI‑Transaktionen</h3>
+        <p>Beleg hochladen oder manuell eingeben — Claude AI kategorisiert nach IRS Schedule C und berechnet den Steuerabzugsprozentsatz automatisch.</p>
+        <div class="fbadge">Alle Pläne</div>
+      </div>
+      <div class="fcard">
+        <div class="ficon">💬</div>
+        <h3>AI Tax Advisor</h3>
+        <p>Chat‑Assistent für alle Steuerfragen rund um US‑LLC, IRS‑Formulare, Abzüge und Buchführung. Kontextsensitiv zu deinen Daten.</p>
+        <div class="fbadge pro">Pro &amp; Business</div>
+      </div>
+      <div class="fcard">
+        <div class="ficon">📤</div>
+        <h3>Reports &amp; Exporte</h3>
+        <p>CSV‑Export, IRS Form 1120, Form 5472 und KI‑generierter Buchführungsbericht — alle nach Zeitraum gefiltert, per Klick exportierbar.</p>
+        <div class="fbadge pro">Pro &amp; Business</div>
+      </div>
+      <div class="fcard">
+        <div class="ficon">📁</div>
+        <h3>Dokumentenverwaltung</h3>
+        <p>Alle Belege zentral gespeichert, durchsuchbar und mit der jeweiligen Transaktion verknüpft. Direkter Zugriff auf Originaldokumente.</p>
+        <div class="fbadge">Alle Pläne</div>
+      </div>
+      <div class="fcard">
+        <div class="ficon">🌍</div>
+        <h3>Mehrsprachig</h3>
+        <p>Deutsch, Englisch, Spanisch, Französisch und Portugiesisch — per Klick umschaltbar. Für internationale Nutzer gebaut, nicht nur übersetzt.</p>
+        <div class="fbadge">Alle Pläne</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════
+     HOW IT WORKS
+══════════════════════════════════════ -->
+<div class="w-gray">
+  <div class="inner">
+    <div class="label">So funktioniert es</div>
+    <h2 class="h2">Von Beleg zu IRS‑Formular<br>in vier Schritten</h2>
+    <p class="sub">Der komplette Workflow von Transaktion bis Steuerexport läuft innerhalb der Plattform — ohne externe Tools.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h3>Einloggen &amp; LLC‑Profil anlegen</h3>
+          <p>Nach der Registrierung hinterlegst du einmalig dein LLC‑Profil: Name, EIN, Adresse und Angaben als ausländischer Gesellschafter. Diese Daten fließen automatisch in alle IRS‑Exporte ein.</p>
+          <div class="stag">⚡ Einmalig · dauert unter 3 Minuten</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h3>Transaktionen hinzufügen</h3>
+          <p>Beleg fotografieren oder als PDF hochladen — die KI liest Vendor, Betrag, Datum und Kategorie automatisch aus. Alternativ: manuelle Eingabe mit sofortiger KI‑Kategorisierung nach IRS Schedule C. CSV‑Batch‑Import für viele Transaktionen auf einmal möglich.</p>
+          <div class="stag">🤖 KI‑Kategorisierung + Steuerabzug automatisch</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h3>Dashboard überwachen</h3>
+          <p>Das Live‑Dashboard zeigt Umsatz, Ausgaben, Nettogewinn und geschätzte Steuerlast für jeden Zeitraum. Transaktionen sind nach IRS‑Kategorie aufgeschlüsselt. Monatlich, quartalsweise oder individuell filterbar.</p>
+          <div class="stag">📊 Real‑Time · kein manuelles Refresh nötig</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <h3>IRS‑Formulare exportieren</h3>
+          <p>Zeitraum auswählen, Klick auf Export — vorausgefüllte Form 1120 und Form 5472 als PDF, bereit für deinen CPA. Dazu: CSV aller Transaktionen und KI‑generierter Buchführungsbericht.</p>
+          <div class="stag">📄 Sofort druckfertig · CPA‑ready</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════
+     EXPORTE
+══════════════════════════════════════ -->
+<div class="w-dark">
+  <div class="inner">
+    <div class="label">Exporte</div>
+    <h2 class="h2">Vier Export‑Formate,<br>alle IRS‑konform</h2>
+    <p class="sub">Alle Exporte reagieren auf den Zeitraumfilter auf der Reports‑Seite — du bestimmst den Zeitraum.</p>
+
+    <div class="exp-grid">
+      <div class="ecard">
+        <div class="eicon eg">📊</div>
+        <div>
+          <h3>Alle Transaktionen — CSV</h3>
+          <p>Vollständige Transaktionsliste: Datum, Vendor, Typ, Betrag, Kategorie, Abzugsfähigkeit und Notizen. Kompatibel mit Excel, Google Sheets und jedem Buchhaltungsprogramm.</p>
+          <span class="etag tc">CSV Export</span>
+        </div>
+      </div>
+      <div class="ecard">
+        <div class="eicon ep">🏛️</div>
+        <div>
+          <h3>IRS Form 1120</h3>
+          <p>Vorausgefüllte Form 1120 (Foreign Corporation Income Tax Return) als PDF — mit LLC‑Daten, Einnahmen und Ausgaben aus dem gewählten Zeitraum direkt in den richtigen Feldern.</p>
+          <span class="etag tir">IRS PDF</span>
+        </div>
+      </div>
+      <div class="ecard">
+        <div class="eicon eo">📋</div>
+        <div>
+          <h3>IRS Form 5472</h3>
+          <p>Das wichtigste Formular für ausländisch besessene US‑LLCs — vorausgefüllt mit Monetary Transactions aus deinen Buchungen. Muss jährlich eingereicht werden.</p>
+          <span class="etag tp">IRS PDF</span>
+        </div>
+      </div>
+      <div class="ecard">
+        <div class="eicon eb">✨</div>
+        <div>
+          <h3>KI‑Buchführungsbericht</h3>
+          <p>Claude AI erstellt einen professionellen Buchführungsbericht: Executive Summary, P&amp;L, abzugsfähige Ausgaben nach IRS‑Kategorien und individuelle Empfehlungen.</p>
+          <span class="etag ta">AI Report · PDF</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════
+     ZIELGRUPPE
+══════════════════════════════════════ -->
+<div class="w-white">
+  <div class="inner">
+    <div class="label">Zielgruppe</div>
+    <h2 class="h2">Für wen ist MyTaxFly gemacht?</h2>
+    <p class="sub">Alle, die eine US‑LLC besitzen oder gründen möchten und nicht in den USA leben.</p>
+
+    <div class="aud-grid">
+      <div class="acard"><div class="aicon">🛒</div><h3>E‑Commerce &amp; Amazon FBA</h3><p>Internationale Seller, die eine US‑LLC als Holding für ihren Amazon‑ oder Shopify‑Store nutzen und jährlich IRS‑konform berichten müssen.</p></div>
+      <div class="acard"><div class="aicon">💻</div><h3>Digital‑Unternehmer</h3><p>Freelancer, SaaS‑Gründer und Agenturen, die Zahlungen über Stripe, PayPal oder Wise empfangen und ihre US‑LLC buchführen müssen.</p></div>
+      <div class="acard"><div class="aicon">🌍</div><h3>Non‑US Founders</h3><p>Gründer aus Deutschland, Europa, Lateinamerika oder Asien, die eine Wyoming‑ oder Delaware‑LLC gegründet haben.</p></div>
+      <div class="acard"><div class="aicon">📱</div><h3>App &amp; SaaS Creator</h3><p>Entwickler, die ihre App‑Store‑ oder SaaS‑Erlöse über eine US‑Entity abwickeln und steuerlich korrekt vorgehen wollen.</p></div>
+      <div class="acard"><div class="aicon">🏢</div><h3>LLC Starter</h3><p>Personen, die gerade eine US‑LLC gegründet haben und eine einfache Lösung suchen, um von Anfang an compliance‑konform zu sein.</p></div>
+      <div class="acard"><div class="aicon">🤝</div><h3>CPAs &amp; Berater</h3><p>Steuerberater und LLC‑Setup‑Dienstleister, die ihren Kunden ein Tool empfehlen möchten, das die jährliche Buchführung vereinfacht.</p></div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════
+     PREISE
+══════════════════════════════════════ -->
+<div class="w-gray">
+  <div class="inner">
+    <div class="label">Preismodell</div>
+    <h2 class="h2">Drei Pläne —<br>transparent &amp; monatlich kündbar</h2>
+    <p class="sub">Monatliche Subscriptions, abgerechnet in USD via Stripe. Bei jährlicher Zahlung 20% sparen.</p>
+
+    <div class="plans-grid">
+
+      <!-- BASIC -->
+      <div class="pln">
+        <div class="pln-name">Basic</div>
+        <div class="pln-price"><sup>$</sup>29</div>
+        <div class="pln-note">pro Monat · oder $23/Monat jährlich</div>
+        <div class="pln-save">💰 Spare $70 pro Jahr bei jährlicher Zahlung</div>
+        <div class="pln-div"></div>
+        <div class="pf"><span class="ok">✓</span> Receipt &amp; PDF Upload</div>
+        <div class="pf"><span class="ok">✓</span> AI Auto‑Kategorisierung</div>
+        <div class="pf"><span class="ok">✓</span> Live‑Dashboard</div>
+        <div class="pf"><span class="ok">✓</span> PDF &amp; CSV Export</div>
+        <div class="pf"><span class="ok">✓</span> IRS Deadline Alerts</div>
+        <div class="pf dim"><span class="no">✕</span> AI Tax Advisor Chat</div>
+        <div class="pf dim"><span class="no">✕</span> IRS Form 1120 &amp; 5472 Export</div>
+        <div class="pf dim"><span class="no">✕</span> Bank Sync</div>
+        <div class="pf dim"><span class="no">✕</span> Multi‑Entity</div>
+      </div>
+
+      <!-- PRO -->
+      <div class="pln hot">
+        <div class="pln-badge">POPULAR</div>
+        <div class="pln-name">Pro</div>
+        <div class="pln-price"><sup>$</sup>59</div>
+        <div class="pln-note">pro Monat · oder $47/Monat jährlich</div>
+        <div class="pln-save">💰 Spare $144 pro Jahr bei jährlicher Zahlung</div>
+        <div class="pln-div"></div>
+        <div class="pf"><span class="ok">✓</span> Alles aus Basic</div>
+        <div class="pf"><span class="ok">✓</span> AI Tax Advisor Chat</div>
+        <div class="pf"><span class="ok">✓</span> Unbegrenzte Transaktionen</div>
+        <div class="pf"><span class="ok">✓</span> IRS Form 1120 &amp; 5472 Export</div>
+        <div class="pf"><span class="ok">✓</span> Priority Support</div>
+        <div class="pf"><span class="ok">✓</span> Accountant Export Link</div>
+        <div class="pf dim"><span class="no">✕</span> Bank Sync</div>
+        <div class="pf dim"><span class="no">✕</span> Multi‑Entity</div>
+      </div>
+
+      <!-- BUSINESS -->
+      <div class="pln">
+        <div class="pln-name">Business</div>
+        <div class="pln-price"><sup>$</sup>99</div>
+        <div class="pln-note">pro Monat · oder $79/Monat jährlich</div>
+        <div class="pln-save">💰 Spare $240 pro Jahr bei jährlicher Zahlung</div>
+        <div class="pln-div"></div>
+        <div class="pf"><span class="ok">✓</span> Alles aus Pro</div>
+        <div class="pf"><span class="ok">✓</span> Multi‑Entity (bis zu 5 LLCs)</div>
+        <div class="pf"><span class="ok">✓</span> Bank Sync</div>
+        <div class="pf"><span class="ok">✓</span> AI Tax Optimization</div>
+        <div class="pf"><span class="ok">✓</span> Accountant Read‑Only Access</div>
+        <div class="pf"><span class="ok">✓</span> Dedicated Support</div>
+        <div class="pf"><span class="ok">✓</span> Custom Report Templates</div>
+        <div class="pf"><span class="ok">✓</span> API Access (demnächst)</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════
+     CI — CORPORATE IDENTITY
+══════════════════════════════════════ -->
+<div class="w-dark">
+  <div class="inner">
+    <div class="label">Corporate Identity</div>
+    <h2 class="h2">Logo, Farben &amp; Typografie</h2>
+    <p class="sub">Das visuelle System von MyTaxFly — dunkel, präzise und von einem starken Akzent‑Grün geprägt.</p>
+
+    <div class="ci-grid">
+
+      <!-- Logo + Font -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div class="ci-logo-box">
+          <div class="ci-logo-ring">
+            <img
+              src="https://yacwkxstvqvdgiiffwos.supabase.co/storage/v1/object/public/asstets/mytaxfly-logo-02.png"
+              alt="MyTaxFly Logo"
+              onerror="this.style.background='#00c896';this.style.display='flex'"
+            >
+          </div>
+          <div class="ci-wordmark">MyTaxFly</div>
+          <div class="ci-tag">Primary Logomark</div>
+        </div>
+
+        <div class="ci-font-box">
+          <div class="ci-font-label">Typeface</div>
+          <div class="ci-font-sample" style="font-weight:900">Montserrat</div>
+          <div class="ci-font-name">Black · Bold · Medium · Regular</div>
+          <div style="margin-top:14px;display:flex;flex-direction:column;gap:6px;">
+            <div style="font-size:22px;font-weight:900;color:#e8eaf2;letter-spacing:-1px">Aa Bb Cc</div>
+            <div style="font-size:16px;font-weight:700;color:#7a8099;">Headlines &amp; UI</div>
+            <div style="font-size:13px;font-weight:500;color:#4a5068;">Body text &amp; labels</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Colors -->
+      <div class="colors-wrap">
+
+        <!-- Primary -->
+        <div class="color-row">
+          <div class="color-tile" style="background:#00c896;flex:1.5;">
+            <div class="c-name on-dark">Primary Green</div>
+            <div class="c-hex on-dark">#00c896</div>
+            <div class="c-role on-dark">CTA, Akzente, aktive Zustände, Badges</div>
+          </div>
+          <div class="color-tile" style="background:#00a87a;">
+            <div class="c-name on-dark">Green Dark</div>
+            <div class="c-hex on-dark">#00a87a</div>
+            <div class="c-role on-dark">Hover, Gradienten</div>
+          </div>
+        </div>
+
+        <!-- Secondary -->
+        <div class="color-row">
+          <div class="color-tile" style="background:#0099ff;">
+            <div class="c-name on-dark">Accent Blue</div>
+            <div class="c-hex on-dark">#0099ff</div>
+            <div class="c-role on-dark">Links, Infos, Pro‑Badges</div>
+          </div>
+          <div class="color-tile" style="background:#ff6b35;">
+            <div class="c-name on-dark">Warn Orange</div>
+            <div class="c-hex on-dark">#ff6b35</div>
+            <div class="c-role on-dark">Warnungen, Ausgaben, Deadlines</div>
+          </div>
+        </div>
+
+        <!-- Backgrounds -->
+        <div class="color-row">
+          <div class="color-tile small" style="background:#0d0f14;border:1px solid #252a38;">
+            <div class="c-name on-dark">BG Primary</div>
+            <div class="c-hex on-dark">#0d0f14</div>
+            <div class="c-role on-dark">Page Background</div>
+          </div>
+          <div class="color-tile small" style="background:#13161e;border:1px solid #252a38;">
+            <div class="c-name on-dark">BG Card</div>
+            <div class="c-hex on-dark">#13161e</div>
+            <div class="c-role on-dark">Sidebar, Cards</div>
+          </div>
+          <div class="color-tile small" style="background:#1a1e28;border:1px solid #252a38;">
+            <div class="c-name on-dark">BG Input</div>
+            <div class="c-hex on-dark">#1a1e28</div>
+            <div class="c-role on-dark">Inputs, Inner</div>
+          </div>
+        </div>
+
+        <!-- Text + Border -->
+        <div class="color-row">
+          <div class="color-tile small" style="background:#e8eaf2;">
+            <div class="c-name on-light">Text Primary</div>
+            <div class="c-hex on-light">#e8eaf2</div>
+            <div class="c-role on-light">Headlines</div>
+          </div>
+          <div class="color-tile small" style="background:#7a8099;">
+            <div class="c-name on-dark">Text Secondary</div>
+            <div class="c-hex on-dark">#7a8099</div>
+            <div class="c-role on-dark">Subtitles</div>
+          </div>
+          <div class="color-tile small" style="background:#252a38;border:1px solid #333;">
+            <div class="c-name on-dark">Border</div>
+            <div class="c-hex on-dark">#252a38</div>
+            <div class="c-role on-dark">Divider, Cards</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════
+     TECH STACK
+══════════════════════════════════════ -->
+<div class="w-dark">
+  <div class="inner">
+    <div class="label">Technologie</div>
+    <h2 class="h2">Enterprise‑Infrastruktur,<br>ohne Enterprise‑Komplexität</h2>
+    <p class="sub">MyTaxFly läuft auf bewährten, skalierbaren Cloud‑Diensten — für maximale Sicherheit und Verfügbarkeit.</p>
+
+    <div class="tech-grid">
+      <div class="tcard"><div class="tlogo">🤖</div><div class="tname">Claude AI</div><div class="trole">KI‑Engine für Kategorisierung, Beleg‑Scanning und Tax Advisor</div></div>
+      <div class="tcard"><div class="tlogo">🔐</div><div class="tname">Supabase</div><div class="trole">Auth, Datenbank, Dateispeicherung mit Row‑Level Security</div></div>
+      <div class="tcard"><div class="tlogo">⚡</div><div class="tname">Vercel</div><div class="trole">Globales CDN‑Hosting, Edge Functions, SSL und HSTS</div></div>
+      <div class="tcard"><div class="tlogo">💳</div><div class="tname">Stripe</div><div class="trole">Subscription‑Billing, Zahlungsabwicklung, Kundenportal</div></div>
+    </div>
+
+    <div style="margin-top:40px;">
+      <div class="label" style="margin-bottom:12px;">Sicherheit &amp; Compliance</div>
+      <div class="tag-row">
+        <div class="sticker">🔒 HTTPS / HSTS</div>
+        <div class="sticker">🛡️ Row‑Level Security</div>
+        <div class="sticker">🚫 Kein AI‑Training mit Nutzerdaten</div>
+        <div class="sticker">🇩🇪 DSGVO‑konform</div>
+        <div class="sticker">🔑 Supabase Auth (JWT)</div>
+        <div class="sticker">📋 AGB &amp; Datenschutzerklärung</div>
+        <div class="sticker">🌍 EU‑Nutzerrechte berücksichtigt</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════
+     DIFFERENZIATOREN
+══════════════════════════════════════ -->
+<div class="w-white">
+  <div class="inner">
+    <div class="label">Warum MyTaxFly</div>
+    <h2 class="h2">Was MyTaxFly von anderen<br>Tools unterscheidet</h2>
+    <p class="sub">Es gibt viele Buchhaltungstools — aber keines, das ausländische US‑LLC‑Besitzer so konsequent adressiert.</p>
+
+    <div class="dlist">
+      <div class="ditem"><div class="dbullet">🎯</div><div><h4>Gebaut für ausländische LLC‑Inhaber</h4><p>QuickBooks, Wave und FreshBooks sind für US‑Bürger entwickelt. MyTaxFly ist von Grund auf für foreign‑owned Single‑Member LLCs konzipiert — inklusive Form 5472, die nur diese Gruppe betrifft.</p></div></div>
+      <div class="ditem"><div class="dbullet">⚡</div><div><h4>Von Beleg zu Steuerformular in Minuten</h4><p>Kein anderes Tool bietet den kompletten Workflow: Beleg hochladen → KI kategorisiert → Formular vorausgefüllt → Download. Dieser Workflow spart Stunden manueller Arbeit pro Steuerjahr.</p></div></div>
+      <div class="ditem"><div class="dbullet">💬</div><div><h4>Eingebetteter AI Tax Advisor</h4><p>Nicht nur Buchhaltung — auch steuerliche Beratung direkt in der App. Der AI Advisor beantwortet spezifische Fragen zu deiner LLC‑Situation, ohne Google oder einen teuren CPA.</p></div></div>
+      <div class="ditem"><div class="dbullet">📱</div><div><h4>Mobile‑First</h4><p>Vollständig responsive mit optimierter mobiler Ansicht. Belege fotografieren und hochladen, Transaktionen eintragen und das Dashboard checken — alles auf dem Smartphone.</p></div></div>
+      <div class="ditem"><div class="dbullet">🌍</div><div><h4>Mehrsprachig &amp; international</h4><p>5 Sprachen per Klick umschaltbar: Deutsch, Englisch, Spanisch, Französisch, Portugiesisch. Die Plattform denkt international: USD‑Basis, IRS‑Nomenklatur — aber in der Muttersprache des Nutzers.</p></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════
+     CLOSING
+══════════════════════════════════════ -->
+<div class="closing">
+  <h2>Buchhaltung, die <span>einfach funktioniert.</span></h2>
+  <p>MyTaxFly nimmt dir die steuerliche Last ab — damit du dich auf das konzentrierst, was wirklich zählt: dein Unternehmen.</p>
+  <a class="cta-btn" href="https://mytaxfly.com">Jetzt starten →</a>
+  <div class="close-contact">
+    Fragen? <a href="mailto:info@mytaxfly.com">info@mytaxfly.com</a> &nbsp;·&nbsp; <a href="https://mytaxfly.com">mytaxfly.com</a>
+  </div>
+</div>
+
+</body>
+</html>
