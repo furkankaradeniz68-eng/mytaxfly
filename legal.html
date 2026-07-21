@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Legal · MyTaxFly</title>
+<link rel="icon" type="image/png" href="/Logo/mytaxfly-logo-transparent.png">
+<link rel="apple-touch-icon" href="/Logo/mytaxfly-logo-transparent.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -12,8 +14,8 @@
   a{color:#00c896;text-decoration:none}
   a:hover{text-decoration:underline}
 
-  .top-bar{background:#0d0f14;border-bottom:1px solid #1e2130;padding:16px 32px;display:flex;align-items:center;justify-content:space-between}
-  .logo{font-size:18px;font-weight:800;color:#00c896;letter-spacing:-0.5px}
+  .top-bar{background:#0d0f14;border-bottom:1px solid #1e2130;padding:12px 32px;display:flex;align-items:center;justify-content:space-between}
+  .logo img{height:38px;display:block}
   .back-link{font-size:13px;color:#8892a4;transition:color 0.2s}
   .back-link:hover{color:#00c896;text-decoration:none}
 
@@ -46,7 +48,7 @@
 <body>
 
 <div class="top-bar">
-  <a href="/" class="logo">mytaxfly</a>
+  <a href="/" class="logo"><img src="/Logo/mytaxfly-logo-transparent.png" alt="MyTaxFly"></a>
   <a href="/" class="back-link">← Back to mytaxfly.com</a>
 </div>
 
@@ -56,6 +58,7 @@
     <button class="tab active" onclick="showTab('imprint',this)">Imprint</button>
     <button class="tab" onclick="showTab('tos',this)">Terms of Service</button>
     <button class="tab" onclick="showTab('privacy',this)">Privacy Policy</button>
+    <button class="tab" onclick="showTab('cookies',this)">Cookie Policy</button>
   </div>
 
   <!-- ══════════════════════════════════════════════ -->
@@ -238,20 +241,70 @@
     <p style="color:#8892a4;font-size:12px">Version 1.0 · July 2026 · AYNA UNIVERSE LLC · mytaxfly.com</p>
   </div>
 
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- COOKIE POLICY                                  -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="panel" id="panel-cookies">
+    <h1>Cookie Policy</h1>
+    <p class="meta">Version 1.0 · July 2026 · mytaxfly.com</p>
+
+    <h2>1. What Are Cookies</h2>
+    <p>Cookies are small text files stored on your device when you visit a website. They allow the website to remember your preferences and session information across page visits.</p>
+
+    <h2>2. Cookies We Use</h2>
+    <table>
+      <thead><tr><th>Cookie</th><th>Type</th><th>Purpose</th><th>Duration</th></tr></thead>
+      <tr><td>sb-auth-token</td><td>Essential</td><td>Keeps you logged in to your account (Supabase authentication)</td><td>Session</td></tr>
+      <tr><td>cookie-consent</td><td>Essential</td><td>Stores your cookie consent preference</td><td>1 year</td></tr>
+      <tr><td>_vercel_analytics</td><td>Analytics</td><td>Anonymous page view statistics (Vercel Analytics)</td><td>90 days</td></tr>
+    </table>
+
+    <h2>3. Essential Cookies</h2>
+    <p>Essential cookies are required for the platform to function. Without them, you cannot log in or use the application. These cookies do not require your consent under ePrivacy Directive Art. 5(3).</p>
+
+    <h2>4. Analytics Cookies</h2>
+    <p>We use Vercel Analytics to understand how visitors use our site. Data is anonymized and never linked to individual users. You can opt out at any time by adjusting your browser settings or declining cookies on your first visit.</p>
+
+    <h2>5. Third-Party Cookies</h2>
+    <p>We do not use third-party advertising or tracking cookies. The only third-party cookies come from Stripe (payment forms) when you access checkout pages — these are subject to <a href="https://stripe.com/privacy" target="_blank">Stripe's Privacy Policy</a>.</p>
+
+    <h2>6. Managing Cookies</h2>
+    <p>You can control and delete cookies through your browser settings at any time. Please note that disabling essential cookies will prevent you from logging in to MyTaxFly.</p>
+    <ul>
+      <li><a href="https://support.google.com/chrome/answer/95647" target="_blank">Google Chrome</a></li>
+      <li><a href="https://support.mozilla.org/en-US/kb/clear-cookies-and-site-data-firefox" target="_blank">Mozilla Firefox</a></li>
+      <li><a href="https://support.apple.com/en-us/105082" target="_blank">Safari</a></li>
+      <li><a href="https://support.microsoft.com/en-us/windows/delete-and-manage-cookies" target="_blank">Microsoft Edge</a></li>
+    </ul>
+
+    <h2>7. Contact</h2>
+    <div class="contact-box">
+      <strong>AYNA UNIVERSE LLC — Privacy</strong>
+      E-Mail: <a href="mailto:privacy@mytaxfly.com">privacy@mytaxfly.com</a><br>
+      Address: 30 N Gould St, Ste N · Sheridan, WY 82801 · USA
+    </div>
+
+    <div class="divider"></div>
+    <p style="color:#8892a4;font-size:12px">Version 1.0 · July 2026 · AYNA UNIVERSE LLC · mytaxfly.com</p>
+  </div>
+
 </div>
 
 <script>
+const urlMap = {imprint:'/imprint', tos:'/tos', privacy:'/privacy', cookies:'/cookies'};
+
 function showTab(id, btn) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById('panel-' + id).classList.add('active');
   btn.classList.add('active');
+  if (urlMap[id]) history.pushState(null, '', urlMap[id]);
 }
 
-// Allow direct linking: legal.html#imprint, #tos, #privacy
-const hash = location.hash.replace('#','');
-const hashMap = {impressum:'imprint', datenschutz:'privacy', imprint:'imprint', tos:'tos', privacy:'privacy'};
-const target = hashMap[hash];
+// Resolve entry point from path or hash
+const pathMap = {'/imprint':'imprint','/tos':'tos','/privacy':'privacy','/cookies':'cookies','/legal':'imprint'};
+const hashMap = {impressum:'imprint',datenschutz:'privacy',imprint:'imprint',tos:'tos',privacy:'privacy',cookies:'cookies'};
+const target = pathMap[location.pathname] || hashMap[location.hash.replace('#','')];
 if (target) {
   const btn = document.querySelector(`.tab[onclick*="'${target}'"]`);
   if (btn) showTab(target, btn);

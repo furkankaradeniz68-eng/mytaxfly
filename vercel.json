@@ -3,7 +3,12 @@
   "rewrites": [
     { "source": "/", "destination": "/index.html" },
     { "source": "/dashboard", "destination": "/dashboard.html" },
-    { "source": "/success", "destination": "/success.html" }
+    { "source": "/success", "destination": "/success.html" },
+    { "source": "/imprint", "destination": "/legal.html" },
+    { "source": "/privacy", "destination": "/legal.html" },
+    { "source": "/tos", "destination": "/legal.html" },
+    { "source": "/cookies", "destination": "/legal.html" },
+    { "source": "/legal", "destination": "/legal.html" }
   ],
   "headers": [
     {
