@@ -245,9 +245,10 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
   .period-divider{height:1px;background:var(--border);}
   .period-custom{display:none;align-items:center;gap:8px;}
   .period-custom.visible{display:flex;}
-  .period-date{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:7px 10px;color:var(--text);font-family:'Montserrat',sans-serif;font-size:12px;outline:none;transition:border-color 0.2s;}
-  .period-date:focus{border-color:var(--accent);}
-  .period-sep{font-size:11px;color:var(--text3);}
+  .period-date{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:7px 10px;color:var(--text);font-family:'Montserrat',sans-serif;font-size:12px;font-weight:500;outline:none;transition:border-color 0.2s,box-shadow 0.2s;color-scheme:dark;}
+  .period-date:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,200,150,0.12);}
+  .period-date::-webkit-calendar-picker-indicator{filter:invert(1) sepia(1) saturate(2) hue-rotate(120deg);opacity:0.7;cursor:pointer;}
+  .period-sep{font-size:13px;color:var(--accent);font-weight:700;}
   .period-count{font-size:12px;color:var(--accent);font-weight:600;}
 
 /* ═══════════════════════════════════════
@@ -1114,29 +1115,20 @@ function getPeriodRange(val){
 }
 
 function buildPeriodMenu(){
-  const now=new Date(); const y=now.getFullYear(); const py=y-1;
+  const now=new Date(); const y=now.getFullYear();
   const dropdown=document.getElementById('period-dropdown');
   if(!dropdown) return;
   const items=[
     {val:'month',label:'This Month'},
-    {val:'last_month',label:'Last Month'},
     {div:true},
-    {val:`q1_${y}`,label:`Q1 ${y} · Jan–Mar`},
-    {val:`q2_${y}`,label:`Q2 ${y} · Apr–Jun`},
-    {val:`q3_${y}`,label:`Q3 ${y} · Jul–Sep`},
-    {val:`q4_${y}`,label:`Q4 ${y} · Oct–Dec`},
+    {val:`q1_${y}`,label:`Q1 · Jan–Mar`},
+    {val:`q2_${y}`,label:`Q2 · Apr–Jun`},
+    {val:`q3_${y}`,label:`Q3 · Jul–Sep`},
+    {val:`q4_${y}`,label:`Q4 · Oct–Dec`},
     {div:true},
-    {val:`year_${y}`,label:`Full Year ${y}`},
-    {div:true},
-    {val:`q1_${py}`,label:`Q1 ${py} · Jan–Mar`},
-    {val:`q2_${py}`,label:`Q2 ${py} · Apr–Jun`},
-    {val:`q3_${py}`,label:`Q3 ${py} · Jul–Sep`},
-    {val:`q4_${py}`,label:`Q4 ${py} · Oct–Dec`},
-    {div:true},
-    {val:`year_${py}`,label:`Full Year ${py}`},
+    {val:`year_${y}`,label:`This Year ${y}`},
     {div:true},
     {val:'all',label:'All Time'},
-    {div:true},
     {val:'custom',label:'Custom Range'},
   ];
   dropdown.innerHTML=items.map((item,i)=>{
@@ -1151,29 +1143,20 @@ function togglePeriodMenu(){
 
 // ── REPORTS PERIOD FILTER ─────────────────────────────────
 function buildReportPeriodMenu(){
-  const now=new Date(); const y=now.getFullYear(); const py=y-1;
+  const now=new Date(); const y=now.getFullYear();
   const dropdown=document.getElementById('report-period-dropdown');
   if(!dropdown) return;
   const items=[
     {val:'month',label:'This Month'},
-    {val:'last_month',label:'Last Month'},
     {div:true},
-    {val:`q1_${y}`,label:`Q1 ${y} · Jan–Mar`},
-    {val:`q2_${y}`,label:`Q2 ${y} · Apr–Jun`},
-    {val:`q3_${y}`,label:`Q3 ${y} · Jul–Sep`},
-    {val:`q4_${y}`,label:`Q4 ${y} · Oct–Dec`},
+    {val:`q1_${y}`,label:`Q1 · Jan–Mar`},
+    {val:`q2_${y}`,label:`Q2 · Apr–Jun`},
+    {val:`q3_${y}`,label:`Q3 · Jul–Sep`},
+    {val:`q4_${y}`,label:`Q4 · Oct–Dec`},
     {div:true},
-    {val:`year_${y}`,label:`Full Year ${y}`,default:true},
-    {div:true},
-    {val:`q1_${py}`,label:`Q1 ${py} · Jan–Mar`},
-    {val:`q2_${py}`,label:`Q2 ${py} · Apr–Jun`},
-    {val:`q3_${py}`,label:`Q3 ${py} · Jul–Sep`},
-    {val:`q4_${py}`,label:`Q4 ${py} · Oct–Dec`},
-    {div:true},
-    {val:`year_${py}`,label:`Full Year ${py}`},
+    {val:`year_${y}`,label:`This Year ${y}`,default:true},
     {div:true},
     {val:'all',label:'All Time'},
-    {div:true},
     {val:'custom',label:'Custom Range'},
   ];
   dropdown.innerHTML=items.map(item=>{
