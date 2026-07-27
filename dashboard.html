@@ -695,6 +695,10 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
             <span>Edit Account</span>
           </button>
+          <button id="gear-share-btn" onclick="openShareModal();closeGearMenu()" class="gdrop-item gdrop-btn biz-only" style="display:none">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            <span>Share with Accountant</span>
+          </button>
         </div>
       </div>
       <!-- Sign Out -->
@@ -780,21 +784,6 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
         <div id="manual-result"></div>
       </div>
       <div id="panel-upload" style="display:none">
-        <!-- Upload type selector -->
-        <div style="margin-bottom:16px">
-          <div class="f-label" style="margin-bottom:8px">Document Type</div>
-          <div class="type-toggle">
-            <div class="type-btn active-expense" id="upload-btn-expense" onclick="setUploadType('expense')" style="flex:1;justify-content:center">
-              <svg style="display:inline;vertical-align:-2px;margin-right:5px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              Receipt / Expense
-            </div>
-            <div class="type-btn" id="upload-btn-income" onclick="setUploadType('income')" style="flex:1;justify-content:center">
-              <svg style="display:inline;vertical-align:-2px;margin-right:5px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-              Invoice Sent / Income
-            </div>
-          </div>
-          <div style="font-size:11px;color:var(--text3);margin-top:6px" id="upload-type-hint">Uploading a receipt or bill you received (expense)</div>
-        </div>
         <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)">
           <div class="empty-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
           <div class="upload-title" id="t-drop-title">Drop receipt here or click</div>
@@ -915,6 +904,28 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
           <span style="font-size:11px;font-weight:700;padding:2px 9px;background:rgba(0,200,150,0.15);color:#00c896;border-radius:20px;border:1px solid rgba(0,200,150,0.3)">Unique Feature</span>
         </div>
         <div style="font-size:13px;color:var(--text2);margin-bottom:16px">Export your data pre-filled into <strong style="color:var(--text)">Form 1120</strong> and <strong style="color:var(--text)">Form 5472</strong> — the two IRS forms every foreign-owned US LLC must file. Your numbers, in the right fields, ready for your CPA.</div>
+        <!-- Export buttons directly in this card -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+          <div style="position:relative">
+            <button class="btn-primary" style="width:100%;padding:14px 10px;font-size:13px;font-weight:700;background:linear-gradient(135deg,#00c896,#00a87a)" onclick="gatedAction(exportForm1120,'pro')">
+              <svg style="display:inline;vertical-align:-3px;margin-right:6px" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Pro Forma 1120
+            </button>
+            <div id="irs-lock-1120" style="display:none;position:absolute;inset:0;background:rgba(13,15,20,0.85);border-radius:10px;align-items:center;justify-content:center;gap:8px;cursor:pointer;backdrop-filter:blur(2px)" onclick="showUpgradeModal('pro')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x='5' y='11' width='14' height='10' rx='2'/><path d='M8 11V7a4 4 0 0 1 8 0v4'/></svg><span style="font-size:12px;font-weight:700;color:var(--text)">Pro — <span style="color:#00c896">Upgrade →</span></span>
+            </div>
+          </div>
+          <div style="position:relative">
+            <button class="btn-primary" style="width:100%;padding:14px 10px;font-size:13px;font-weight:700;background:linear-gradient(135deg,#00c896,#00a87a)" onclick="gatedAction(exportForm5472,'pro')">
+              <svg style="display:inline;vertical-align:-3px;margin-right:6px" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Form 5472
+            </button>
+            <div id="irs-lock-5472" style="display:none;position:absolute;inset:0;background:rgba(13,15,20,0.85);border-radius:10px;align-items:center;justify-content:center;gap:8px;cursor:pointer;backdrop-filter:blur(2px)" onclick="showUpgradeModal('pro')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x='5' y='11' width='14' height='10' rx='2'/><path d='M8 11V7a4 4 0 0 1 8 0v4'/></svg><span style="font-size:12px;font-weight:700;color:var(--text)">Pro — <span style="color:#00c896">Upgrade →</span></span>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:16px"><svg style="display:inline;vertical-align:-2px;margin-right:4px" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d='M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z'/><line x1='12' y1='9' x2='12' y2='13'/><line x1='12' y1='17' x2='12.01' y2='17'/></svg>Review with your CPA before filing. Signature required.</div>
         <div id="tax-profile-section">
           <div style="background:rgba(255,200,50,0.08);border:1px solid rgba(255,200,50,0.25);border-radius:10px;padding:14px 16px;margin-bottom:16px">
             <div style="font-size:13px;font-weight:600;color:#f6ad55;margin-bottom:4px;display:flex;align-items:center;gap:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f6ad55" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d='M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z'/><line x1='12' y1='9' x2='12' y2='13'/><line x1='12' y1='17' x2='12.01' y2='17'/></svg> Complete your LLC profile to enable export</div>
@@ -938,53 +949,6 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
           <button class="btn-primary" style="width:auto;padding:12px 24px;margin-right:8px" onclick="saveTaxProfile()"><svg style="display:inline;vertical-align:-2px;margin-right:5px" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d='M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z'/><polyline points='17 21 17 13 7 13 7 21'/><polyline points='7 3 7 8 15 8'/></svg>Save Profile</button>
           <div id="tp-saved" style="display:inline;font-size:12px;color:#00c896;display:none">✓ Saved</div>
         </div>
-      </div>
-      <!-- SHARE WITH ACCOUNTANT (Business) -->
-      <div class="card biz-only" id="share-accountant-card" style="border-color:rgba(0,200,150,0.25);margin-top:0;display:none">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-          <div class="card-title" style="color:#00c896;margin:0">Share with Accountant</div>
-          <span style="font-size:11px;font-weight:700;padding:2px 9px;background:rgba(0,200,150,0.15);color:#00c896;border-radius:20px;border:1px solid rgba(0,200,150,0.3)">Business</span>
-        </div>
-        <div style="font-size:13px;color:var(--text2);margin-bottom:16px">Generate a read-only link so your accountant can view all your transactions without logging in. The link can be revoked at any time.</div>
-        <button class="share-btn" onclick="generateShareLink()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-          Generate Share Link
-        </button>
-        <div id="share-link-box" style="display:none;margin-top:14px">
-          <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Accountant Link (read-only)</div>
-          <div style="display:flex;gap:8px;align-items:center">
-            <input class="f-input" id="share-link-input" readonly style="flex:1;font-size:11px;color:var(--accent)">
-            <button class="btn-sec" style="padding:8px 14px;white-space:nowrap" onclick="copyShareLink()">Copy Link</button>
-            <button class="btn-sec" style="padding:8px 14px;white-space:nowrap;border-color:rgba(255,107,53,0.4);color:#ff6b35" onclick="revokeShareLink()">Revoke</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- IRS EXPORT BUTTONS — own card -->
-      <div class="card" style="border-color:rgba(0,200,150,0.2);margin-top:0">
-        <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:14px;letter-spacing:.3px">Download Pre-Filled IRS Forms</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
-          <div style="position:relative">
-            <button class="btn-primary" style="width:100%;padding:15px 10px;font-size:13px;font-weight:700;background:linear-gradient(135deg,#00c896,#00a87a)" onclick="gatedAction(exportForm1120,'pro')">
-              <svg style="display:inline;vertical-align:-3px;margin-right:6px" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-              Pro Forma 1120
-            </button>
-            <div id="irs-lock-1120" style="display:none;position:absolute;inset:0;background:rgba(13,15,20,0.85);border-radius:10px;align-items:center;justify-content:center;gap:8px;cursor:pointer;backdrop-filter:blur(2px)" onclick="showUpgradeModal('pro')">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x='5' y='11' width='14' height='10' rx='2'/><path d='M8 11V7a4 4 0 0 1 8 0v4'/></svg><span style="font-size:12px;font-weight:700;color:var(--text)">Pro — <span style="color:#00c896">Upgrade →</span></span>
-            </div>
-          </div>
-          <div style="position:relative">
-            <button class="btn-primary" style="width:100%;padding:15px 10px;font-size:13px;font-weight:700;background:linear-gradient(135deg,#00c896,#00a87a)" onclick="gatedAction(exportForm5472,'pro')">
-              <svg style="display:inline;vertical-align:-3px;margin-right:6px" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-              Form 5472
-            </button>
-            <div id="irs-lock-5472" style="display:none;position:absolute;inset:0;background:rgba(13,15,20,0.85);border-radius:10px;align-items:center;justify-content:center;gap:8px;cursor:pointer;backdrop-filter:blur(2px)" onclick="showUpgradeModal('pro')">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x='5' y='11' width='14' height='10' rx='2'/><path d='M8 11V7a4 4 0 0 1 8 0v4'/></svg><span style="font-size:12px;font-weight:700;color:var(--text)">Pro — <span style="color:#00c896">Upgrade →</span></span>
-            </div>
-          </div>
-        </div>
-        <div style="font-size:11px;color:var(--text3);text-align:center"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d='M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z'/><line x1='12' y1='9' x2='12' y2='13'/><line x1='12' y1='17' x2='12.01' y2='17'/></svg> Review with your CPA before filing. Signature required.</div>
       </div>
 
       <div class="card">
@@ -1522,7 +1486,7 @@ async function launchApp(user){
 
   try {
     const meta=user.user_metadata||{};
-    userName=meta.name||user.email.split('@')[0];
+    userName=localStorage.getItem('MTF_USER_NAME')||meta.full_name||meta.name||user.email.split('@')[0];
     llcName=meta.llc_name||'My LLC';
     userEmail=user.email;
     document.getElementById('dash-title').textContent=`Welcome, ${userName}`;
@@ -2060,21 +2024,20 @@ function readB64(f){return new Promise(r=>{const fr=new FileReader();fr.onload=(
 function readTxt(f){return new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(fr.result);fr.readAsText(f);});}
 
 function buildUploadPrompt(){
-  const hint = uploadType === 'income'
-    ? 'The user indicates this is an OUTGOING invoice they sent to a customer — treat as INCOME.'
-    : 'The user indicates this is an incoming receipt/bill they paid — treat as EXPENSE.';
-  return `Analyze this document for a US LLC (LLC name: "${llcName}").
-${hint}
+  return `Analyze this financial document for a US LLC (LLC name: "${llcName}").
 
-Rules for type detection:
-- If this document was ISSUED BY the LLC (LLC is sender/vendor, customer owes money) → type = "income"
-- If this document was RECEIVED BY the LLC (LLC is buyer/client, LLC owes or paid money) → type = "expense"
-- If "Bill To" / "Invoice To" shows a customer name and the LLC is the issuer → type = "income"
-- Receipts, subscription confirmations, bills from vendors → type = "expense"
-- Currency: keep the original currency code (EUR, USD, GBP, etc.) from the document
+CRITICAL — Determine type by reading sender and recipient carefully:
+- Look at FROM / ISSUED BY / VENDOR / SELLER: if this is a company other than "${llcName}" → they sent this document TO the LLC → type = "expense"
+- Look at BILL TO / INVOICE TO / CLIENT / CUSTOMER: if this shows "${llcName}" as the recipient → type = "expense"
+- If "${llcName}" appears as the SENDER / FROM / ISSUED BY → the LLC sent this invoice to a client → type = "income"
+- If "Bill To" / "Invoice To" shows a customer name (not "${llcName}") and "${llcName}" is the issuer → type = "income"
+- Receipts, subscription confirmations, order confirmations from any vendor → type = "expense"
+- Bank statements: positive/credit entries → income, negative/debit entries → expense
+- When in doubt: who is paying whom? If the LLC is PAYING → expense. If the LLC is RECEIVING money → income.
+- Currency: keep the original currency code exactly as shown (EUR, USD, GBP, CHF, etc.)
 
-Respond ONLY with JSON:
-{"vendor":"name","amount":0.00,"currency":"EUR or USD or original","date":"YYYY-MM-DD","category":"Software & Tools / Marketing / Office & Supplies / Travel / Meals / Professional Services / Other","type":"expense or income","deductible":true,"deductible_percent":100,"note":"Brief IRS deductibility explanation"}`;
+Respond ONLY with valid JSON, no extra text:
+{"vendor":"name of the other party","amount":0.00,"currency":"original currency code","date":"YYYY-MM-DD","category":"Software & Tools / Marketing / Office & Supplies / Travel / Meals / Professional Services / Other","type":"expense or income","deductible":true,"deductible_percent":100,"note":"Brief IRS deductibility explanation"}`;
 }
 
 async function analyzeWithClaude(fn,b64,mt,loaderId,fileUrl){
@@ -2542,11 +2505,11 @@ function fmtIRS(n) {
 }
 
 function exportTaxForms(formType) {
+  if (formType === '1120') { exportForm1120(); return; }
+  if (formType === '5472') { exportForm5472(); return; }
   const p = getTaxProfile();
   if (!p.ein) { alert('Please complete your LLC profile first (EIN is required).'); return; }
-  // Use the Reports page period filter
   const filtered = getReportFilteredTx();
-  // Derive tax year label from the selected report period
   const taxYear = reportPeriodFrom ? reportPeriodFrom.getFullYear() : new Date().getFullYear() - 1;
   const inc = filtered.filter(t => t.type === 'income').reduce((s, t) => s + (parseFloat(t.amount)||0), 0);
   const exp = filtered.filter(t => t.type === 'expense').reduce((s, t) => s + (parseFloat(t.amount)||0), 0);
@@ -2691,10 +2654,104 @@ ${filtered.map(t => `<tr><td>${t.date}</td><td>${t.vendor}</td><td>${t.type}</td
 
 // ── COOKIE BANNER ─────────────────────────────────────────
 function exportForm1120() {
-  exportTaxForms('1120');
+  const p = getTaxProfile();
+  if (!p.ein) { alert('Please complete your LLC profile first (EIN is required).'); return; }
+  const filtered = getReportFilteredTx();
+  const taxYear = reportPeriodFrom ? reportPeriodFrom.getFullYear() : new Date().getFullYear() - 1;
+  const inc = filtered.filter(t => t.type === 'income').reduce((s, t) => s + (parseFloat(t.amount)||0), 0);
+  const exp = filtered.filter(t => t.type === 'expense').reduce((s, t) => s + (parseFloat(t.amount)||0), 0);
+  const profit = inc - exp;
+  const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  const cats = {};
+  filtered.filter(t => t.type === 'expense').forEach(t => { cats[t.category] = (cats[t.category] || 0) + t.amount; });
+  const advertising = Object.entries(cats).filter(([k]) => k.toLowerCase().includes('marketing') || k.toLowerCase().includes('advertis')).reduce((s, [, v]) => s + v, 0);
+  const otherDed = exp - advertising;
+  const css = `body{font-family:Arial,sans-serif;max-width:820px;margin:32px auto;color:#1a1a1a;padding:0 24px;font-size:12px}h1{font-size:18px;font-weight:800;border-bottom:3px solid #00c896;padding-bottom:8px;margin-bottom:4px}.subtitle{font-size:11px;color:#777;margin-bottom:24px}.section{margin-bottom:20px}.section-title{font-size:13px;font-weight:700;background:#f5f5f5;padding:6px 10px;border-left:3px solid #00c896;margin-bottom:8px}table{width:100%;border-collapse:collapse;margin-bottom:12px}th{background:#f5f5f5;padding:6px 10px;text-align:left;font-size:11px;font-weight:700;border-bottom:1px solid #ddd;text-transform:uppercase}td{padding:6px 10px;border-bottom:1px solid #eee;font-size:11px}.amount{text-align:right;font-weight:600}.green{color:#00c896}.red{color:#e53e3e}.total-row td{font-weight:700;border-top:2px solid #aaa;background:#f9f9f9}.highlight{background:#f0fdf4;border:2px solid #00c896;border-radius:8px;padding:16px;margin:16px 0;text-align:center}.field{flex:1;border:1px solid #ddd;padding:5px 8px;border-radius:4px;min-height:22px;font-size:11px}.field-label{font-size:10px;color:#777;margin-bottom:2px}.disclaimer{margin-top:24px;padding:10px 14px;background:#fff8f0;border:1px solid #f6ad55;border-radius:6px;font-size:10px;color:#744210;line-height:1.5}.footer{margin-top:16px;text-align:center;font-size:10px;color:#bbb;border-top:1px solid #eee;padding-top:12px}.brand{color:#00c896;font-weight:800}@media print{@page{margin:15mm}}`;
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Pro Forma 1120 — ${llcName} — ${taxYear}</title><style>${css}</style></head><body>
+<div style="text-align:center;margin-bottom:24px"><div style="font-size:22px;font-weight:800;color:#00c896">MyTaxFly</div><div style="font-size:14px;font-weight:700;margin-top:4px">Pro Forma Form 1120 — Tax Year ${taxYear}</div><div style="font-size:11px;color:#777">Generated: ${today} · Review with your CPA before filing</div></div>
+<h1>PRO FORMA FORM 1120 — U.S. Corporation Income Tax Return</h1>
+<div class="subtitle">Tax Year ${taxYear} · Foreign-Owned Single-Member LLC (Disregarded Entity) · Pre-filled from MyTaxFly data · Dollar amounts rounded per IRS instructions</div>
+<div class="section"><div class="section-title">Header Information</div><table><tbody>
+<tr><td class="field-label" style="width:180px">Name</td><td><div class="field">${llcName}</div></td><td class="field-label" style="width:160px">B Employer ID (EIN)</td><td><div class="field">${p.ein}</div></td></tr>
+<tr><td class="field-label">Address</td><td><div class="field">${p.address || '___________________________'}</div></td><td class="field-label">C Date Incorporated</td><td><div class="field">${p.incDate || '___________'}</div></td></tr>
+<tr><td class="field-label">City / State / ZIP</td><td><div class="field">${p.city || '___________________________'}</div></td><td class="field-label">D Total Assets</td><td><div class="field">${fmt(inc)}</div></td></tr>
+<tr><td class="field-label">E Check if Initial Return</td><td><div class="field">☐ Initial return</div></td><td class="field-label">Tax Year</td><td><div class="field">${taxYear}</div></td></tr>
+</tbody></table></div>
+<div class="section"><div class="section-title">Income (Page 1)</div><table><thead><tr><th>Line</th><th>Description</th><th class="amount">Amount</th></tr></thead><tbody>
+<tr><td>1a</td><td>Gross receipts or sales</td><td class="amount green">${fmtIRS(inc)}</td></tr>
+<tr><td>1c</td><td>Balance (gross receipts)</td><td class="amount green">${fmtIRS(inc)}</td></tr>
+<tr class="total-row"><td>11</td><td>Total Income</td><td class="amount green">${fmtIRS(inc)}</td></tr>
+</tbody></table></div>
+<div class="section"><div class="section-title">Deductions (Page 1)</div><table><thead><tr><th>Line</th><th>IRS Category</th><th class="amount">Amount</th></tr></thead><tbody>
+${advertising > 0 ? `<tr><td>22</td><td>Advertising</td><td class="amount">${fmtIRS(advertising)}</td></tr>` : ''}
+<tr><td>26</td><td>Other deductions (see attached transaction list)</td><td class="amount">${fmtIRS(otherDed)}</td></tr>
+<tr class="total-row"><td>27</td><td>Total Deductions</td><td class="amount">${fmtIRS(exp)}</td></tr>
+<tr class="total-row"><td>28</td><td>Taxable Income before NOL</td><td class="amount ${profit >= 0 ? 'green' : 'red'}">${profit>=0?'+':''}${fmtIRS(Math.abs(profit))}</td></tr>
+</tbody></table></div>
+<div class="highlight"><div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Net Profit / Loss — Tax Year ${taxYear}</div><div style="font-size:32px;font-weight:800;color:${profit >= 0 ? '#00c896' : '#e53e3e'}">${profit>=0?'+':''}${fmtIRS(Math.abs(profit))}</div><div style="font-size:11px;color:#777;margin-top:6px">Gross Receipts ${fmtIRS(inc)} · Total Deductions ${fmtIRS(exp)} · <em>Rounded to nearest dollar per IRS instructions</em></div></div>
+<div class="section"><div class="section-title">Attached: Transaction List (${filtered.length} transactions)</div><table><thead><tr><th>Date</th><th>Vendor</th><th>Type</th><th>Category</th><th class="amount">Amount</th></tr></thead><tbody>
+${filtered.map(t => `<tr><td>${t.date}</td><td>${t.vendor}</td><td>${t.type}</td><td>${t.category}</td><td class="amount ${t.type==='income'?'green':'red'}">${t.type==='income'?'+':'-'}${fmt(t.amount)}</td></tr>`).join('')}
+</tbody></table></div>
+<div class="disclaimer"><strong>⚠️ Important:</strong> This document is a pre-filled working draft generated by <span class="brand">MyTaxFly</span>. It is NOT a substitute for professional tax advice. Review with a qualified CPA before filing. MyTaxFly is not a licensed tax advisor.</div>
+<div class="footer">Generated by <span class="brand">MyTaxFly</span> · mytaxfly.com · ${today} · Tax Year ${taxYear}</div>
+</body></html>`;
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `MyTaxFly_1120_${llcName.replace(/[^a-zA-Z0-9]/g,'_')}_${taxYear}.html`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+  const win = window.open(url, '_blank');
+  if (win) setTimeout(() => { win.focus(); win.print(); }, 800);
 }
+
 function exportForm5472() {
-  exportTaxForms('5472');
+  const p = getTaxProfile();
+  if (!p.ein) { alert('Please complete your LLC profile first (EIN is required).'); return; }
+  const filtered = getReportFilteredTx();
+  const taxYear = reportPeriodFrom ? reportPeriodFrom.getFullYear() : new Date().getFullYear() - 1;
+  const inc = filtered.filter(t => t.type === 'income').reduce((s, t) => s + (parseFloat(t.amount)||0), 0);
+  const exp = filtered.filter(t => t.type === 'expense').reduce((s, t) => s + (parseFloat(t.amount)||0), 0);
+  const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  const css = `body{font-family:Arial,sans-serif;max-width:820px;margin:32px auto;color:#1a1a1a;padding:0 24px;font-size:12px}h1{font-size:18px;font-weight:800;border-bottom:3px solid #00c896;padding-bottom:8px;margin-bottom:4px}.subtitle{font-size:11px;color:#777;margin-bottom:24px}.section{margin-bottom:20px}.section-title{font-size:13px;font-weight:700;background:#f5f5f5;padding:6px 10px;border-left:3px solid #00c896;margin-bottom:8px}table{width:100%;border-collapse:collapse;margin-bottom:12px}th{background:#f5f5f5;padding:6px 10px;text-align:left;font-size:11px;font-weight:700;border-bottom:1px solid #ddd;text-transform:uppercase}td{padding:6px 10px;border-bottom:1px solid #eee;font-size:11px}.amount{text-align:right;font-weight:600}.green{color:#00c896}.red{color:#e53e3e}.total-row td{font-weight:700;border-top:2px solid #aaa;background:#f9f9f9}.field{flex:1;border:1px solid #ddd;padding:5px 8px;border-radius:4px;min-height:22px;font-size:11px}.field-label{font-size:10px;color:#777;margin-bottom:2px}.disclaimer{margin-top:24px;padding:10px 14px;background:#fff8f0;border:1px solid #f6ad55;border-radius:6px;font-size:10px;color:#744210;line-height:1.5}.footer{margin-top:16px;text-align:center;font-size:10px;color:#bbb;border-top:1px solid #eee;padding-top:12px}.brand{color:#00c896;font-weight:800}@media print{@page{margin:15mm}}`;
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Form 5472 — ${llcName} — ${taxYear}</title><style>${css}</style></head><body>
+<div style="text-align:center;margin-bottom:24px"><div style="font-size:22px;font-weight:800;color:#00c896">MyTaxFly</div><div style="font-size:14px;font-weight:700;margin-top:4px">Form 5472 — Tax Year ${taxYear}</div><div style="font-size:11px;color:#777">Generated: ${today} · Review with your CPA before filing</div></div>
+<h1>FORM 5472 — Information Return (Foreign-Owned U.S. LLC)</h1>
+<div class="subtitle">Rev. December 2023 · Sections 6038A and 6038C · Pre-filled from MyTaxFly data</div>
+<div class="section"><div class="section-title">Part I — Reporting Corporation</div><table><tbody>
+<tr><td class="field-label" style="width:220px">1a Name of Reporting Corporation</td><td><div class="field">${llcName}</div></td><td class="field-label" style="width:160px">1b Employer ID (EIN)</td><td><div class="field">${p.ein}</div></td></tr>
+<tr><td class="field-label">Street Address</td><td><div class="field">${p.address || '___________________________'}</div></td><td class="field-label">1c Total Assets</td><td><div class="field">${fmt(inc)}</div></td></tr>
+<tr><td class="field-label">City, State, ZIP</td><td><div class="field">${p.city || '___________________________'}</div></td><td></td><td></td></tr>
+<tr><td class="field-label">1d Principal Business Activity</td><td><div class="field">${p.activity || '___________________________'}</div></td><td class="field-label">1l Country of Incorporation</td><td><div class="field">${p.country || 'United States'}</div></td></tr>
+<tr><td class="field-label">1f Total Gross Payments</td><td><div class="field">${fmtIRS(inc + exp)}</div></td><td class="field-label">1m Date of Incorporation</td><td><div class="field">${p.incDate || '___________'}</div></td></tr>
+<tr><td class="field-label">1g Total # of Forms 5472</td><td><div class="field">1</div></td><td class="field-label">1j Initial Year Filing?</td><td><div class="field">☐ Check if yes</div></td></tr>
+</tbody></table>
+<div style="font-size:11px;color:#555;margin:6px 0 2px"><strong>Check 3:</strong> ☑ This is a foreign-owned domestic disregarded entity (foreign-owned U.S. DE) treated as a corporation for purposes of section 6038A.</div>
+</div>
+<div class="section"><div class="section-title">Part II — 25% Foreign Shareholder (You)</div><table><tbody>
+<tr><td class="field-label" style="width:220px">4a Name &amp; Address</td><td><div class="field">${p.shName || '___________________________'}</div></td><td class="field-label" style="width:160px">4d Country of Citizenship</td><td><div class="field">${p.shCountry || '___________'}</div></td></tr>
+<tr><td class="field-label">4b(3) Foreign Tax ID (FTIN)</td><td><div class="field">${p.shFtin || '___________________________'}</div></td><td class="field-label">4e Country of Tax Residence</td><td><div class="field">${p.shRes || '___________'}</div></td></tr>
+</tbody></table></div>
+<div class="section"><div class="section-title">Part IV — Monetary Transactions Between LLC and Foreign Owner</div>
+<table><thead><tr><th>Line</th><th>Description</th><th class="amount">Amount (USD)</th></tr></thead><tbody>
+${filtered.filter(t => t.type === 'income').map((t, i) => `<tr><td>${i === 0 ? '15/21' : ''}</td><td>${t.vendor} — ${t.category}</td><td class="amount green">${fmt(t.amount)}</td></tr>`).join('')}
+<tr class="total-row"><td>22</td><td>Total Received (Lines 9–21)</td><td class="amount green">${fmtIRS(inc)}</td></tr>
+${filtered.filter(t => t.type === 'expense').map((t, i) => `<tr><td>${i === 0 ? '29/35' : ''}</td><td>${t.vendor} — ${t.category}</td><td class="amount red">${fmt(t.amount)}</td></tr>`).join('')}
+<tr class="total-row"><td>36</td><td>Total Paid (Lines 23–35)</td><td class="amount red">${fmtIRS(exp)}</td></tr>
+</tbody></table>
+<div style="font-size:10px;color:#744210;background:#fff8f0;border:1px solid #f6ad55;border-radius:4px;padding:8px 10px;margin-top:6px"><strong>⚠️ Part IV Note:</strong> Form 5472 Part IV reports monetary transactions between the LLC and its 25% foreign shareholder (you). Your CPA must review and retain only transactions that represent capital contributions, distributions, loans, or other direct owner↔LLC flows. Third-party business expenses are generally <em>not</em> Part IV reportable.</div>
+</div>
+<div class="disclaimer"><strong>⚠️ Important:</strong> This document is a pre-filled working draft generated by <span class="brand">MyTaxFly</span>. It is NOT a substitute for professional tax advice. Review with a qualified CPA before filing. Forms 5472 must be attached to your Pro Forma 1120 and mailed to: IRS, P.O. Box 409101, Ogden, UT 84409.</div>
+<div class="footer">Generated by <span class="brand">MyTaxFly</span> · mytaxfly.com · ${today} · Tax Year ${taxYear}</div>
+</body></html>`;
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `MyTaxFly_5472_${llcName.replace(/[^a-zA-Z0-9]/g,'_')}_${taxYear}.html`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+  const win = window.open(url, '_blank');
+  if (win) setTimeout(() => { win.focus(); win.print(); }, 800);
 }
 
 function initCookieBanner(){
@@ -2986,7 +3043,7 @@ function openAccountModal() {
   const emailEl = document.getElementById('acc-email');
   if (emailEl) emailEl.value = userEmail || '';
   const nameEl = document.getElementById('acc-name');
-  if (nameEl && !nameEl.value) nameEl.value = userName || '';
+  if (nameEl) nameEl.value = localStorage.getItem('MTF_USER_NAME') || userName || '';
   // Reset email change form
   document.getElementById('email-change-form').style.display = 'none';
   document.getElementById('email-change-msg').style.display = 'none';
@@ -3008,6 +3065,16 @@ async function changeEmail() {
 function closeAccountModal() {
   document.getElementById('account-modal').style.display = 'none';
 }
+function openShareModal() {
+  document.getElementById('share-modal').style.display = 'flex';
+}
+function closeShareModal() {
+  document.getElementById('share-modal').style.display = 'none';
+}
+document.addEventListener('click', e => {
+  const m = document.getElementById('share-modal');
+  if (m && e.target === m) closeShareModal();
+});
 function saveAccountModal() {
   const g = id => document.getElementById(id)?.value?.trim() || '';
   const p = {
@@ -3017,6 +3084,15 @@ function saveAccountModal() {
     shFtin: g('acc-sh-ftin'), shRes: g('acc-sh-res')
   };
   localStorage.setItem(TAX_PROFILE_KEY, JSON.stringify(p));
+  // Save name and update global + Supabase user metadata
+  const newName = g('acc-name');
+  if (newName) {
+    userName = newName;
+    localStorage.setItem('MTF_USER_NAME', newName);
+    sb.auth.updateUser({ data: { full_name: newName } });
+    // Update any displayed name in the UI
+    document.querySelectorAll('.user-name-display').forEach(el => el.textContent = newName);
+  }
   // Sync to tax profile form fields as well
   const map = {ein:'tp-ein',address:'tp-address',city:'tp-city',incDate:'tp-inc-date',activity:'tp-activity',country:'tp-country',shName:'tp-sh-name',shCountry:'tp-sh-country',shFtin:'tp-sh-ftin',shRes:'tp-sh-res'};
   Object.entries(map).forEach(([k,id])=>{ const el=document.getElementById(id); if(el) el.value=p[k]||''; });
@@ -3636,6 +3712,30 @@ async function importBankRows() {
       <div id="acc-saved" style="display:none;font-size:12px;color:#00c896;text-align:center;margin-top:8px">✓ Saved successfully</div>
     </div>
   </div>
+<!-- SHARE WITH ACCOUNTANT MODAL -->
+<div id="share-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:2000;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;width:480px;max-width:92vw;position:relative">
+    <button onclick="closeShareModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;line-height:1">✕</button>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+      <div style="font-size:17px;font-weight:800;color:var(--text)">Share with Accountant</div>
+      <span style="font-size:11px;font-weight:700;padding:2px 9px;background:rgba(0,200,150,0.15);color:#00c896;border-radius:20px;border:1px solid rgba(0,200,150,0.3)">Business</span>
+    </div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:20px">Generate a read-only link so your accountant can view all your transactions without logging in. The link can be revoked at any time.</div>
+    <button class="share-btn" onclick="generateShareLink()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+      Generate Share Link
+    </button>
+    <div id="share-link-box" style="display:none;margin-top:14px">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Accountant Link (read-only)</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input class="f-input" id="share-link-input" readonly style="flex:1;font-size:11px;color:var(--accent)">
+        <button class="btn-sec" style="padding:8px 14px;white-space:nowrap" onclick="copyShareLink()">Copy</button>
+        <button class="btn-sec" style="padding:8px 14px;white-space:nowrap;border-color:rgba(255,107,53,0.4);color:#ff6b35" onclick="revokeShareLink()">Revoke</button>
+      </div>
+    </div>
+  </div>
+</div>
 <!-- ENTITY MANAGEMENT MODAL -->
 <div id="entity-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:10000;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
   <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;width:460px;max-width:92vw">
