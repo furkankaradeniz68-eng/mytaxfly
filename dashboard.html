@@ -1165,22 +1165,6 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
       </div>
     </div>
 
-    <!-- Logo upload -->
-    <div style="margin-bottom:16px">
-      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Logo (optional)</div>
-      <div style="display:flex;align-items:center;gap:12px">
-        <div id="inv-logo-preview" style="width:60px;height:40px;border:1px dashed var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--bg3)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-        </div>
-        <label style="cursor:pointer;display:flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;color:var(--text2)">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Upload Logo
-          <input type="file" id="inv-logo-input" accept="image/*" style="display:none" onchange="previewInvoiceLogo(this)">
-        </label>
-        <button id="inv-logo-remove" onclick="removeInvoiceLogo()" style="display:none;background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer;text-decoration:underline">Remove</button>
-      </div>
-    </div>
-
     <!-- Line items -->
     <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Line Items</div>
     <div style="display:grid;grid-template-columns:2fr 100px 70px 80px 100px 80px 36px;gap:6px;margin-bottom:4px;padding:0 2px">
@@ -3798,7 +3782,7 @@ async function importBankRows() {
 /* ============================================================
    INVOICE MODULE
    ============================================================ */
-let invLogoBase64 = null;
+// invLogoBase64 removed — logo now lives in Invoice Sender Profile (localStorage MTF_INV_PROFILE)
 let invLineItemCount = 0;
 let invFilter = 'all';
 let allInvoices = [];
@@ -3859,7 +3843,7 @@ function openInvoiceForm(invoiceData) {
   const wrap = document.getElementById('inv-form-wrap');
   wrap.style.display = 'block';
   // Reset
-  invLogoBase64 = invoiceData ? (invoiceData.logo || null) : null;
+  // Logo is stored in Invoice Sender Profile (localStorage), not per-invoice
   invLineItemCount = 0;
   document.getElementById('inv-client-name').value = invoiceData ? (invoiceData.client_name||'') : '';
   document.getElementById('inv-client-email').value = invoiceData ? (invoiceData.client_email||'') : '';
@@ -3877,15 +3861,6 @@ function openInvoiceForm(invoiceData) {
   document.getElementById('inv-discount-type').value = invoiceData ? (invoiceData.discount_type||'pct') : 'pct';
   document.getElementById('inv-discount-val').value = invoiceData ? (invoiceData.discount_val||0) : 0;
   document.getElementById('inv-notes').value = invoiceData ? (invoiceData.notes||'') : '';
-  // Logo preview
-  const lp = document.getElementById('inv-logo-preview');
-  if (invLogoBase64) {
-    lp.innerHTML = `<img src="${invLogoBase64}" style="max-width:100%;max-height:100%;object-fit:contain">`;
-    document.getElementById('inv-logo-remove').style.display = 'inline';
-  } else {
-    lp.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
-    document.getElementById('inv-logo-remove').style.display = 'none';
-  }
   // Line items
   document.getElementById('inv-line-items').innerHTML = '';
   const items = invoiceData ? (invoiceData.line_items || []) : [];
@@ -3976,26 +3951,7 @@ function recalcInvoice() {
   if (document.getElementById('inv-total')) document.getElementById('inv-total').textContent = fmt2(total);
 }
 
-function previewInvoiceLogo(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    invLogoBase64 = e.target.result;
-    const lp = document.getElementById('inv-logo-preview');
-    lp.innerHTML = `<img src="${invLogoBase64}" style="max-width:100%;max-height:100%;object-fit:contain">`;
-    document.getElementById('inv-logo-remove').style.display = 'inline';
-  };
-  reader.readAsDataURL(file);
-}
-
-function removeInvoiceLogo() {
-  invLogoBase64 = null;
-  const lp = document.getElementById('inv-logo-preview');
-  lp.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
-  document.getElementById('inv-logo-remove').style.display = 'none';
-  document.getElementById('inv-logo-input').value = '';
-}
+// Logo is managed in Invoice Sender Profile modal (previewProfileLogo / removeProfileLogo)
 
 async function saveInvoice(status) {
   const { data: { user } } = await sb.auth.getUser();
@@ -4041,7 +3997,7 @@ async function saveInvoice(status) {
     total,
     line_items: lineItems,
     notes: document.getElementById('inv-notes').value.trim(),
-    logo: invLogoBase64 || null,
+    // logo is stored in profile, not per-invoice
     status
   };
   let error;
@@ -4108,7 +4064,7 @@ function downloadInvoicePDF(id) {
   const discAmt = inv.discount_type === 'pct' ? inv.subtotal * (inv.discount_val/100) : Math.min(inv.discount_val||0, inv.subtotal);
   const taxable = inv.subtotal - discAmt;
   const tax = taxable * ((inv.tax_rate||0)/100);
-  const logoHtml = inv.logo ? `<img src="${inv.logo}" style="max-height:55px;max-width:140px;object-fit:contain;display:block;margin-bottom:6px">` : '';
+  const logoHtml = p.logo ? `<img src="${p.logo}" style="max-height:55px;max-width:140px;object-fit:contain;display:block;margin-bottom:6px">` : '';
 
   const css = `
     *{box-sizing:border-box;margin:0;padding:0}
@@ -4409,8 +4365,42 @@ function openInvProfileModal() {
   document.getElementById('ip-bank').value = p.bank || '';
   document.getElementById('ip-bic').value = p.bic || '';
   document.getElementById('ip-iban').value = p.iban || '';
+  // Logo preview
+  const lp = document.getElementById('ip-logo-preview');
+  const removeBtn = document.getElementById('ip-logo-remove');
+  if (p.logo) {
+    lp.innerHTML = `<img src="${p.logo}" style="max-width:100%;max-height:100%;object-fit:contain">`;
+    if (removeBtn) removeBtn.style.display = 'inline';
+  } else {
+    lp.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
+    if (removeBtn) removeBtn.style.display = 'none';
+  }
   document.getElementById('ip-saved').style.display = 'none';
   document.getElementById('inv-profile-modal').style.display = 'flex';
+}
+function previewProfileLogo(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const lp = document.getElementById('ip-logo-preview');
+    lp.innerHTML = `<img src="${e.target.result}" style="max-width:100%;max-height:100%;object-fit:contain">`;
+    document.getElementById('ip-logo-remove').style.display = 'inline';
+    // Store temporarily in profile
+    const p = getInvProfile();
+    p.logo = e.target.result;
+    localStorage.setItem('MTF_INV_PROFILE', JSON.stringify(p));
+  };
+  reader.readAsDataURL(file);
+}
+function removeProfileLogo() {
+  const lp = document.getElementById('ip-logo-preview');
+  lp.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
+  document.getElementById('ip-logo-remove').style.display = 'none';
+  document.getElementById('ip-logo-input').value = '';
+  const p = getInvProfile();
+  delete p.logo;
+  localStorage.setItem('MTF_INV_PROFILE', JSON.stringify(p));
 }
 function closeInvProfileModal() {
   document.getElementById('inv-profile-modal').style.display = 'none';
@@ -4604,6 +4594,23 @@ document.addEventListener('click', e => {
     <div style="font-size:12px;color:var(--text3);margin-bottom:20px">This data appears on every PDF invoice you generate.</div>
 
     <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Sender Info</div>
+    <!-- Logo upload in profile -->
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;padding:12px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px">
+      <div id="ip-logo-preview" style="width:72px;height:48px;border:1px dashed var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--bg2);flex-shrink:0">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px">Logo <span style="color:var(--text3);font-weight:400">(optional — appears top-right on PDF)</span></div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <label style="cursor:pointer;display:flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;color:var(--text2)">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Upload Logo
+            <input type="file" id="ip-logo-input" accept="image/*" style="display:none" onchange="previewProfileLogo(this)">
+          </label>
+          <button id="ip-logo-remove" onclick="removeProfileLogo()" style="display:none;background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer;text-decoration:underline">Remove</button>
+        </div>
+      </div>
+    </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
       <div class="form-group"><div class="f-label">Full Name / Company</div><input class="f-input" id="ip-name" placeholder="e.g. Furkan Karadeniz or My LLC"></div>
       <div class="form-group"><div class="f-label">Address</div><input class="f-input" id="ip-address" placeholder="Saarlandstr. 68 · 67434 · Neustadt"></div>
