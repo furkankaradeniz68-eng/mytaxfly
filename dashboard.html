@@ -1585,6 +1585,7 @@ function showPage(name,el){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
   if(el)el.classList.add('active');
+  window.scrollTo(0,0);
 }
 
 function switchTab(tab){
@@ -3586,7 +3587,7 @@ let editingInvoiceId = null;
 
 // Abo limits
 function invLimits() {
-  const l = planLevel || 1;
+  const l = PLAN_LEVEL[currentPlan] || 1;
   return {
     invoicesPerMonth: l >= 3 ? Infinity : l >= 2 ? 25 : 3,
     clients: l >= 3 ? Infinity : l >= 2 ? 25 : 3,
@@ -3973,14 +3974,15 @@ async function saveNewClient() {
   const name = document.getElementById('nc-name').value.trim();
   if (!name) { showNcMsg('Client name is required.', 'warn'); return; }
   const lim = invLimits();
-  if (allClients.length >= lim.clients) {
+  if (lim.clients !== Infinity && allClients.length >= lim.clients) {
     showNcMsg(`Client limit reached (${lim.clients}). Upgrade for more.`, 'warn'); return;
   }
   const { data: { user } } = await sb.auth.getUser();
+  if (!user) { showNcMsg('Not logged in.', 'warn'); return; }
   const email = document.getElementById('nc-email').value.trim();
   const address = document.getElementById('nc-address').value.trim();
   const { data, error } = await sb.from('clients').insert([{ user_id: user.id, name, email, address }]).select().single();
-  if (error) { showNcMsg('Error saving client.', 'warn'); return; }
+  if (error) { showNcMsg('Error: ' + error.message, 'warn'); return; }
   allClients.push(data);
   document.getElementById('nc-name').value = '';
   document.getElementById('nc-email').value = '';
@@ -4378,7 +4380,7 @@ document.addEventListener('click', e => {
         <div class="form-group" style="margin:0"><div class="f-label">Address</div><input class="f-input" id="nc-address" placeholder="Street, City, Country"></div>
         <button onclick="saveNewClient()" class="btn-primary" style="height:38px;padding:0 16px;white-space:nowrap">Save</button>
       </div>
-      <div id="nc-msg" style="display:none;font-size:11px;margin-top:6px"></div>
+      <div id="nc-msg" style="display:none;font-size:12px;margin-top:6px;font-weight:600"></div>
     </div>
     <div id="inv-clients-list">
       <div style="padding:24px;text-align:center;color:var(--text3);font-size:13px">No clients saved yet.</div>
