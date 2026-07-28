@@ -4058,150 +4058,150 @@ function downloadInvoicePDF(id) {
   const inv = allInvoices.find(i => i.id === id);
   if (!inv) return;
   const p = getInvProfile();
-  const curr = inv.currency;
+  const curr = inv.currency || 'USD';
   const sym = { USD:'$', EUR:'€', GBP:'£', CHF:'CHF ', CAD:'CA$', AUD:'A$' }[curr] || curr+' ';
   const fmtAmt = v => `${sym}${parseFloat(v||0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',')}`;
-  const discAmt = inv.discount_type === 'pct' ? (inv.subtotal||0) * ((inv.discount_val||0)/100) : Math.min(inv.discount_val||0, inv.subtotal||0);
+  const discAmt = inv.discount_type === 'pct' ? (inv.subtotal||0) * ((inv.discount_val||0)/100) : Math.min(parseFloat(inv.discount_val)||0, inv.subtotal||0);
   const taxable = (inv.subtotal||0) - discAmt;
   const tax = taxable * ((inv.tax_rate||0)/100);
   const senderName = p.name || llcName || '';
-  const senderMeta = [p.address, p.tax_id ? `EIN/Tax ID: ${p.tax_id}` : '', p.email, p.phone].filter(Boolean).join(' | ');
+  const senderMeta = [p.address, p.tax_id ? 'EIN/Tax ID: '+p.tax_id : '', p.email, p.phone].filter(Boolean).join('  |  ');
 
-  // Logo: inline base64 — html2pdf handles this natively
+  // Logo (base64 inline — works with html2canvas)
   const logoHtml = p.logo
     ? `<img src="${p.logo}" style="max-height:60px;max-width:150px;object-fit:contain;display:block">`
     : '';
 
-  // Service rows
-  const rows = (inv.line_items||[]).map((it,i) => {
+  // Service rows — all inline styles (no <style> block, avoids html2canvas stripping)
+  const tdBase = 'padding:8px 10px;border-bottom:1px solid #e8e8e8;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:11px;color:#1a1a1a;vertical-align:top';
+  const rows = (inv.line_items||[]).map(it => {
     const qty = parseFloat(it.qty||1);
     const rate = parseFloat(it.unit_price||0);
-    const unit = it.unit && it.unit !== 'ea' ? ` ${it.unit}` : ' hrs';
+    const unitLabel = it.unit || 'ea';
     return `<tr>
-      <td style="padding:8px 10px;border-bottom:1px solid #e8e8e8;font-size:11px">${it.description||''}</td>
-      <td style="padding:8px 10px;border-bottom:1px solid #e8e8e8;font-size:11px;text-align:center;white-space:nowrap">${qty}${unit}</td>
-      <td style="padding:8px 10px;border-bottom:1px solid #e8e8e8;font-size:11px;text-align:right;white-space:nowrap">${sym}${rate.toFixed(2)}/hr</td>
-      <td style="padding:8px 10px;border-bottom:1px solid #e8e8e8;font-size:11px;text-align:right;font-weight:600;white-space:nowrap">${fmtAmt(it.total||0)}</td>
+      <td style="${tdBase}">${it.description||''}</td>
+      <td style="${tdBase};text-align:center;white-space:nowrap">${qty} ${unitLabel}</td>
+      <td style="${tdBase};text-align:right;white-space:nowrap">${sym}${rate.toFixed(2)}</td>
+      <td style="${tdBase};text-align:right;font-weight:600;white-space:nowrap">${fmtAmt(it.total||0)}</td>
     </tr>`;
   }).join('');
 
-  // Payment instructions block
-  const paymentLines = [
-    p.bank ? `Bank: ${p.bank}${p.iban ? ' | Account: '+p.iban : ''}${p.bic ? ' | SWIFT: '+p.bic : ''}` : '',
-    inv.invoice_number ? `Wire Reference: ${inv.invoice_number}` : ''
+  // Payment instructions
+  const payParts = [
+    p.bank ? `Bank: ${p.bank}` + (p.iban ? '  |  IBAN/Account: '+p.iban : '') + (p.bic ? '  |  SWIFT: '+p.bic : '') : '',
+    `Wire Reference: ${inv.invoice_number}`
   ].filter(Boolean);
-  const paymentBlock = paymentLines.length ? `
-    <div style="border-top:1px solid #ddd;padding-top:6mm;margin-top:4mm">
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Payment Instructions</div>
-      ${paymentLines.map(l=>`<div style="font-size:10px;color:#444;line-height:1.7">${l}</div>`).join('')}
-    </div>` : '';
 
-  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:11px;color:#1a1a1a;background:#fff}
-    .page{padding:15mm 18mm 20mm 18mm;min-height:297mm;display:flex;flex-direction:column}
-  </style></head><body><div class="page">
+  const baseFont = 'font-family:Helvetica Neue,Helvetica,Arial,sans-serif;color:#1a1a1a';
 
-    <!-- TOP: company name + logo -->
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2mm">
+  // Build DOM element directly with inline styles — no separate <style> block
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;background:#fff';
+  wrap.innerHTML = `<div style="${baseFont};font-size:11px;padding:56px 68px 72px;min-height:1123px;display:flex;flex-direction:column;background:#fff;box-sizing:border-box">
+
+    <!-- TOP ROW: sender info left, logo right -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
       <div>
-        <div style="font-size:16px;font-weight:700;color:#1a1a1a;margin-bottom:2px">${senderName}</div>
-        <div style="font-size:9px;color:#555;line-height:1.7">${senderMeta}</div>
+        <div style="${baseFont};font-size:16px;font-weight:700;margin-bottom:3px">${senderName}</div>
+        <div style="${baseFont};font-size:9px;color:#555;line-height:1.8">${senderMeta}</div>
       </div>
-      <div style="text-align:right;flex-shrink:0;margin-left:12px">${logoHtml}</div>
+      <div style="text-align:right;flex-shrink:0;margin-left:16px">${logoHtml}</div>
     </div>
 
-    <!-- INVOICE heading + number/date -->
-    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:5mm">
-      <div style="font-size:28px;font-weight:900;color:#1a1a1a;letter-spacing:1px;text-transform:uppercase">INVOICE</div>
+    <!-- INVOICE + NUMBER -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px">
+      <div style="${baseFont};font-size:32px;font-weight:900;letter-spacing:1px">INVOICE</div>
       <div style="text-align:right">
-        <div style="font-size:13px;font-weight:700;color:#1a1a1a">#${inv.invoice_number}</div>
-        <div style="font-size:11px;color:#555;margin-top:2px">${inv.issue_date}</div>
+        <div style="${baseFont};font-size:14px;font-weight:700">#${inv.invoice_number}</div>
+        <div style="${baseFont};font-size:11px;color:#555;margin-top:2px">${inv.issue_date}</div>
       </div>
     </div>
 
-    <!-- DIVIDER -->
-    <div style="border-top:1.5px solid #1a1a1a;margin-bottom:5mm"></div>
+    <!-- THICK DIVIDER -->
+    <div style="border-top:2px solid #1a1a1a;margin-bottom:18px"></div>
 
-    <!-- BILL TO + PROJECT -->
-    <div style="display:flex;gap:12mm;margin-bottom:5mm">
+    <!-- BILL TO + NOTES -->
+    <div style="display:flex;gap:40px;margin-bottom:18px">
       <div style="flex:1">
-        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Bill To:</div>
-        <div style="font-size:12px;font-weight:700;color:#1a1a1a;margin-bottom:2px">${inv.client_name}</div>
-        ${inv.client_address ? `<div style="font-size:11px;color:#444;line-height:1.6">${inv.client_address.replace(/,\s*/g,'<br>')}</div>` : ''}
-        ${inv.client_email ? `<div style="font-size:10px;color:#555;margin-top:2px">${inv.client_email}</div>` : ''}
-        <div style="margin-top:4px">
-          <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px">Due Date: </span>
-          <span style="font-size:10px;color:#1a1a1a">${inv.due_date} &nbsp; Net 30 payment terms</span>
+        <div style="${baseFont};font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Bill To:</div>
+        <div style="${baseFont};font-size:13px;font-weight:700;margin-bottom:3px">${inv.client_name||''}</div>
+        ${inv.client_address ? `<div style="${baseFont};font-size:11px;color:#444;line-height:1.7">${inv.client_address.replace(/,\s*/g,'<br>')}</div>` : ''}
+        ${inv.client_email ? `<div style="${baseFont};font-size:10px;color:#555;margin-top:3px">${inv.client_email}</div>` : ''}
+        <div style="margin-top:8px">
+          <span style="${baseFont};font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px">Due Date: </span>
+          <span style="${baseFont};font-size:10px;color:#333">${inv.due_date}</span>
         </div>
       </div>
-      ${inv.notes ? `<div style="flex:1"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Project / Notes:</div><div style="font-size:11px;color:#444;line-height:1.6">${inv.notes.replace(/\n/g,'<br>')}</div></div>` : ''}
+      ${inv.notes ? `<div style="flex:1">
+        <div style="${baseFont};font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Project / Notes:</div>
+        <div style="${baseFont};font-size:11px;color:#444;line-height:1.7">${inv.notes.replace(/\n/g,'<br>')}</div>
+      </div>` : ''}
     </div>
 
-    <!-- DIVIDER -->
-    <div style="border-top:1px solid #ddd;margin-bottom:4mm"></div>
+    <!-- THIN DIVIDER -->
+    <div style="border-top:1px solid #ddd;margin-bottom:14px"></div>
 
     <!-- SERVICE TABLE -->
-    <table style="width:100%;border-collapse:collapse;margin-bottom:4mm">
+    <table style="width:100%;border-collapse:collapse;margin-bottom:14px">
       <thead>
         <tr style="border-bottom:2px solid #1a1a1a">
-          <th style="padding:7px 10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;text-align:left">Service Description</th>
-          <th style="padding:7px 10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;text-align:center;width:80px">QTY</th>
-          <th style="padding:7px 10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;text-align:right;width:90px">Rate</th>
-          <th style="padding:7px 10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;text-align:right;width:90px">Total</th>
+          <th style="${baseFont};padding:7px 10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;text-align:left">Service Description</th>
+          <th style="${baseFont};padding:7px 10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;text-align:center;width:80px">QTY</th>
+          <th style="${baseFont};padding:7px 10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;text-align:right;width:90px">Rate</th>
+          <th style="${baseFont};padding:7px 10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;text-align:right;width:100px">Total</th>
         </tr>
       </thead>
       <tbody>${rows}</tbody>
     </table>
 
     <!-- TOTALS -->
-    <div style="display:flex;justify-content:flex-end;margin-bottom:6mm">
-      <div style="width:240px">
-        <div style="display:flex;justify-content:space-between;padding:3px 0;font-size:11px;color:#444">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:20px">
+      <div style="width:260px">
+        <div style="display:flex;justify-content:space-between;padding:4px 0;${baseFont};font-size:11px;color:#444">
           <span>Subtotal:</span><span>${fmtAmt(inv.subtotal)}</span>
         </div>
-        ${discAmt>0 ? `<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:11px;color:#444">
+        ${discAmt>0?`<div style="display:flex;justify-content:space-between;padding:4px 0;${baseFont};font-size:11px;color:#444">
           <span>Discount${inv.discount_type==='pct'?' ('+inv.discount_val+'%)':''}:</span><span>-${fmtAmt(discAmt)}</span>
-        </div>` : ''}
-        <div style="display:flex;justify-content:space-between;padding:3px 0;font-size:11px;color:#444">
+        </div>`:''}
+        <div style="display:flex;justify-content:space-between;padding:4px 0;${baseFont};font-size:11px;color:#444">
           <span>Sales Tax (${inv.tax_rate||0}%):</span><span>${fmtAmt(tax)}</span>
         </div>
-        <div style="display:flex;justify-content:space-between;padding:8px 0 4px;font-size:14px;font-weight:900;border-top:2px solid #1a1a1a;margin-top:4px">
+        <div style="display:flex;justify-content:space-between;padding:10px 0 4px;${baseFont};font-size:15px;font-weight:900;border-top:2px solid #1a1a1a;margin-top:6px">
           <span>TOTAL DUE:</span><span>${fmtAmt(inv.total)} ${curr}</span>
         </div>
       </div>
     </div>
 
-    <!-- DIVIDER -->
-    <div style="border-top:1px solid #ddd;margin-bottom:4mm"></div>
+    <!-- THIN DIVIDER -->
+    <div style="border-top:1px solid #ddd;margin-bottom:14px"></div>
 
-    ${paymentBlock}
+    <!-- PAYMENT INSTRUCTIONS -->
+    ${payParts.length?`<div style="margin-bottom:16px">
+      <div style="${baseFont};font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Payment Instructions</div>
+      ${payParts.map(l=>`<div style="${baseFont};font-size:10px;color:#444;line-height:1.8">${l}</div>`).join('')}
+    </div>`:''}
 
-    <!-- Thank you -->
-    <div style="margin-top:5mm;font-size:10px;font-style:italic;color:#555">
+    <!-- THANK YOU -->
+    <div style="${baseFont};font-size:10px;font-style:italic;color:#666;margin-bottom:auto">
       Thank you for your business! This invoice represents income for ${senderName}.
     </div>
 
     <!-- FOOTER -->
-    <div style="margin-top:auto;border-top:1px solid #ddd;padding-top:3mm">
-      <div style="font-size:9px;color:#888;text-align:center">
-        ${[senderName, p.address, p.email, p.phone ? 'Tel. '+p.phone : '', p.tax_id ? 'EIN: '+p.tax_id : ''].filter(Boolean).join(' | ')}
+    <div style="border-top:1px solid #ddd;padding-top:10px;margin-top:24px">
+      <div style="${baseFont};font-size:9px;color:#999;text-align:center">
+        ${[senderName, p.address, p.email, p.phone?'Tel. '+p.phone:'', p.tax_id?'EIN: '+p.tax_id:''].filter(Boolean).join('  |  ')}
       </div>
     </div>
+  </div>`;
 
-  </div></body></html>`;
-
-  const el = document.createElement('div');
-  el.innerHTML = html;
-  el.style.cssText = 'position:fixed;left:-9999px;top:0;width:210mm';
-  document.body.appendChild(el);
+  document.body.appendChild(wrap);
   html2pdf().set({
     margin: 0,
     filename: `${inv.invoice_number}_${inv.client_name.replace(/[^a-zA-Z0-9]/g,'_')}.pdf`,
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, allowTaint: true, logging: false },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  }).from(el.firstChild).save().then(() => document.body.removeChild(el));
+    html2canvas: { scale: 2, useCORS: true, allowTaint: true, logging: false, backgroundColor: '#ffffff' },
+    jsPDF: { unit: 'px', format: [794, 1123], orientation: 'portrait' }
+  }).from(wrap.firstChild).save().then(() => document.body.removeChild(wrap));
 }
 
 function renderInvoiceList() {
@@ -4429,7 +4429,9 @@ function closeInvProfileModal() {
   document.getElementById('inv-profile-modal').style.display = 'none';
 }
 function saveInvProfile() {
+  const existing = getInvProfile(); // preserve logo (stored separately by previewProfileLogo)
   const p = {
+    logo: existing.logo || null, // keep logo — never overwrite it here
     name: document.getElementById('ip-name').value.trim(),
     address: document.getElementById('ip-address').value.trim(),
     email: document.getElementById('ip-email').value.trim(),
@@ -4440,6 +4442,7 @@ function saveInvProfile() {
     bic: document.getElementById('ip-bic').value.trim(),
     iban: document.getElementById('ip-iban').value.trim(),
   };
+  if (!p.logo) delete p.logo; // don't store null key
   localStorage.setItem('MTF_INV_PROFILE', JSON.stringify(p));
   document.getElementById('ip-saved').style.display = 'block';
   // Update preview chip
