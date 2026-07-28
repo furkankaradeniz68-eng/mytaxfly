@@ -3966,7 +3966,6 @@ function recalcInvoice() {
   const taxable = subtotal - discount;
   const tax = taxable * (taxRate / 100);
   const total = taxable + tax;
-  const curr = document.getElementById('inv-currency')?.value || 'USD';
   const fmt2 = v => `${curr} ${v.toFixed(2)}`;
   if (document.getElementById('inv-subtotal')) document.getElementById('inv-subtotal').textContent = fmt2(subtotal);
   if (document.getElementById('inv-discount-display')) document.getElementById('inv-discount-display').textContent = `-${fmt2(discount)}`;
