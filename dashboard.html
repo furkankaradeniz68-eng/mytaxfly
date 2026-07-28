@@ -1060,6 +1060,226 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
       </div>
     </div>
 
+      <div class="page" id="page-invoices">
+  <div class="page-title">Invoices</div>
+  <div class="page-sub">Create professional invoices — auto-synced with your income</div>
+
+  <!-- Top bar: stats + buttons -->
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 16px;min-width:110px">
+        <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">This Month</div>
+        <div id="inv-stat-month" style="font-size:18px;font-weight:800;color:var(--text)">0 / <span id="inv-stat-limit">3</span></div>
+        <div style="font-size:10px;color:var(--text3)">invoices used</div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 16px;min-width:110px">
+        <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Saved Clients</div>
+        <div id="inv-stat-clients" style="font-size:18px;font-weight:800;color:var(--text)">0 / <span id="inv-stat-client-limit">3</span></div>
+        <div style="font-size:10px;color:var(--text3)">clients used</div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 16px;min-width:110px">
+        <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Outstanding</div>
+        <div id="inv-stat-outstanding" style="font-size:18px;font-weight:800;color:var(--accent)">$0</div>
+        <div style="font-size:10px;color:var(--text3)">unpaid total</div>
+      </div>
+      <!-- Invoice Profile quick-preview -->
+      <div id="inv-profile-preview" onclick="openInvProfileModal()" style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 16px;min-width:140px;cursor:pointer;transition:border-color 0.15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.5px">My Profile</div>
+        </div>
+        <div id="inv-profile-name-preview" style="font-size:12px;font-weight:700;color:var(--text)">Not set</div>
+        <div style="font-size:10px;color:var(--accent);margin-top:2px">Click to edit →</div>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="openInvoiceForm()" style="display:flex;align-items:center;gap:7px;padding:11px 20px;font-size:13px">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      New Invoice
+    </button>
+  </div>
+
+  <!-- Invoice form (hidden by default) -->
+  <div id="inv-form-wrap" style="display:none;background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:24px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div style="font-size:16px;font-weight:800;color:var(--text)">New Invoice</div>
+      <button onclick="closeInvoiceForm()" style="background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;line-height:1">✕</button>
+    </div>
+
+    <!-- Client section -->
+    <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Client</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      <div class="form-group" style="position:relative">
+        <div class="f-label">Client Name *</div>
+        <input class="f-input" id="inv-client-name" placeholder="Client or Company Name" oninput="filterClientSuggestions(this.value)" onfocus="filterClientSuggestions(this.value)" autocomplete="off">
+        <div id="inv-client-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--bg2);border:1px solid var(--border);border-radius:8px;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,0.4);max-height:160px;overflow-y:auto"></div>
+      </div>
+      <div class="form-group">
+        <div class="f-label">Client Email (optional)</div>
+        <input class="f-input" id="inv-client-email" placeholder="client@example.com" type="email">
+      </div>
+      <div class="form-group" style="grid-column:1/-1">
+        <div class="f-label">Client Address (optional)</div>
+        <input class="f-input" id="inv-client-address" placeholder="Street, City, Country">
+      </div>
+    </div>
+
+    <!-- Invoice details -->
+    <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Invoice Details</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">
+      <div class="form-group">
+        <div class="f-label">Invoice # (auto)</div>
+        <input class="f-input" id="inv-number" placeholder="INV-2026-001" readonly style="opacity:0.7;cursor:not-allowed">
+      </div>
+      <div class="form-group">
+        <div class="f-label">Issue Date *</div>
+        <input class="f-input period-date" id="inv-issue-date" type="date">
+      </div>
+      <div class="form-group">
+        <div class="f-label">Due Date *</div>
+        <input class="f-input period-date" id="inv-due-date" type="date">
+      </div>
+      <div class="form-group">
+        <div class="f-label">Currency</div>
+        <select class="f-input" id="inv-currency" style="cursor:pointer">
+          <option value="USD">USD — US Dollar</option>
+          <option value="EUR">EUR — Euro</option>
+          <option value="GBP">GBP — British Pound</option>
+          <option value="CHF">CHF — Swiss Franc</option>
+          <option value="CAD">CAD — Canadian Dollar</option>
+          <option value="AUD">AUD — Australian Dollar</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <div class="f-label">Tax / VAT Rate (%)</div>
+        <input class="f-input" id="inv-tax-rate" type="number" min="0" max="100" step="0.1" placeholder="0" value="0" oninput="recalcInvoice()">
+      </div>
+      <div class="form-group">
+        <div class="f-label">Discount</div>
+        <div style="display:flex;gap:6px">
+          <select class="f-input" id="inv-discount-type" style="cursor:pointer;flex:0 0 70px;padding-left:8px" onchange="recalcInvoice()">
+            <option value="pct">%</option>
+            <option value="fixed">fixed</option>
+          </select>
+          <input class="f-input" id="inv-discount-val" type="number" min="0" step="0.01" placeholder="0" value="0" oninput="recalcInvoice()" style="flex:1">
+        </div>
+      </div>
+    </div>
+
+    <!-- Logo upload -->
+    <div style="margin-bottom:16px">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Logo (optional)</div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div id="inv-logo-preview" style="width:60px;height:40px;border:1px dashed var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--bg3)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </div>
+        <label style="cursor:pointer;display:flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;color:var(--text2)">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Upload Logo
+          <input type="file" id="inv-logo-input" accept="image/*" style="display:none" onchange="previewInvoiceLogo(this)">
+        </label>
+        <button id="inv-logo-remove" onclick="removeInvoiceLogo()" style="display:none;background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer;text-decoration:underline">Remove</button>
+      </div>
+    </div>
+
+    <!-- Line items -->
+    <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Line Items</div>
+    <div style="display:grid;grid-template-columns:2fr 100px 70px 80px 100px 80px 36px;gap:6px;margin-bottom:4px;padding:0 2px">
+      <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.4px">Description</div>
+      <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.4px">Date</div>
+      <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;text-align:center">Qty</div>
+      <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.4px">Unit</div>
+      <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;text-align:right">Unit Price</div>
+      <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;text-align:right">Total</div>
+      <div></div>
+    </div>
+    <div id="inv-line-items"></div>
+    <button onclick="addInvoiceLineItem()" style="display:flex;align-items:center;gap:6px;background:none;border:1px dashed var(--border);border-radius:8px;padding:8px 14px;color:var(--accent);font-size:12px;font-weight:600;cursor:pointer;width:100%;justify-content:center;margin-bottom:16px;transition:background 0.15s" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='none'">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Line Item
+    </button>
+
+    <!-- Totals -->
+    <div style="border-top:1px solid var(--border);padding-top:14px;margin-bottom:20px">
+      <div style="display:flex;justify-content:flex-end">
+        <div style="width:260px">
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:5px">
+            <span>Subtotal</span><span id="inv-subtotal">$0.00</span>
+          </div>
+          <div id="inv-discount-row" style="display:flex;justify-content:space-between;font-size:12px;color:var(--warn);margin-bottom:5px">
+            <span>Discount</span><span id="inv-discount-display">-$0.00</span>
+          </div>
+          <div id="inv-tax-row" style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:8px">
+            <span>Tax / VAT (<span id="inv-tax-rate-display">0</span>%)</span><span id="inv-tax-display">$0.00</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:800;color:var(--text);border-top:2px solid var(--border);padding-top:8px">
+            <span>Total</span><span id="inv-total" style="color:var(--accent)">$0.00</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="form-group" style="margin-bottom:20px">
+      <div class="f-label">Notes / Payment Instructions (optional)</div>
+      <textarea class="f-input" id="inv-notes" rows="2" placeholder="e.g. Payment due within 30 days. Bank transfer to …" style="resize:vertical"></textarea>
+    </div>
+
+    <!-- Actions -->
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn-primary" onclick="saveInvoice('draft')" style="flex:1;min-width:120px">
+        <svg style="display:inline;vertical-align:-2px;margin-right:5px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d='M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z'/><polyline points='17 21 17 13 7 13 7 21'/><polyline points='7 3 7 8 15 8'/></svg>
+        Save as Draft
+      </button>
+      <button onclick="saveInvoice('sent')" style="flex:1;min-width:120px;padding:12px;background:rgba(0,200,150,0.12);border:1px solid rgba(0,200,150,0.35);border-radius:10px;color:var(--accent);font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;cursor:pointer">
+        Mark as Sent
+      </button>
+    </div>
+    <div id="inv-form-msg" style="display:none;font-size:12px;margin-top:8px;text-align:center"></div>
+  </div>
+
+  <!-- Invoice list -->
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden">
+    <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:14px;font-weight:700;color:var(--text)">Invoice History</div>
+      <div style="display:flex;gap:6px">
+        <button id="inv-filter-all" onclick="setInvFilter('all',this)" class="btn-sec" style="padding:5px 12px;font-size:11px;background:var(--accent);color:#000;border-color:var(--accent)">All</button>
+        <button id="inv-filter-draft" onclick="setInvFilter('draft',this)" class="btn-sec" style="padding:5px 12px;font-size:11px">Draft</button>
+        <button id="inv-filter-sent" onclick="setInvFilter('sent',this)" class="btn-sec" style="padding:5px 12px;font-size:11px">Sent</button>
+        <button id="inv-filter-paid" onclick="setInvFilter('paid',this)" class="btn-sec" style="padding:5px 12px;font-size:11px">Paid</button>
+      </div>
+    </div>
+    <div id="inv-list">
+      <div style="padding:40px;text-align:center;color:var(--text3);font-size:13px">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="display:block;margin:0 auto 10px;opacity:0.3"><rect x="2" y="3" width="20" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg>
+        No invoices yet. Create your first invoice above.
+      </div>
+    </div>
+  </div>
+
+  <!-- Clients section -->
+  <div style="margin-top:20px;background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden">
+    <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:14px;font-weight:700;color:var(--text)">Saved Clients</div>
+      <button onclick="openAddClientForm()" style="display:flex;align-items:center;gap:6px;background:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text2);font-family:'Montserrat',sans-serif;font-size:12px;font-weight:600;cursor:pointer">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Client
+      </button>
+    </div>
+    <div id="inv-add-client-form" style="display:none;padding:16px 20px;border-bottom:1px solid var(--border);background:var(--bg3)">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:end">
+        <div class="form-group" style="margin:0"><div class="f-label">Name *</div><input class="f-input" id="nc-name" placeholder="Client name"></div>
+        <div class="form-group" style="margin:0"><div class="f-label">Email</div><input class="f-input" id="nc-email" placeholder="client@email.com" type="email"></div>
+        <div class="form-group" style="margin:0"><div class="f-label">Address</div><input class="f-input" id="nc-address" placeholder="Street, City, Country"></div>
+        <button onclick="saveNewClient()" class="btn-primary" style="height:38px;padding:0 16px;white-space:nowrap">Save</button>
+      </div>
+      <div id="nc-msg" style="display:none;font-size:12px;margin-top:6px;font-weight:600"></div>
+    </div>
+    <div id="inv-clients-list">
+      <div style="padding:24px;text-align:center;color:var(--text3);font-size:13px">No clients saved yet.</div>
+    </div>
+  </div>
+</div>
+
   </div>
 </div>
 
@@ -3600,6 +3820,7 @@ function invLimits() {
 async function loadInvoicePage() {
   await Promise.all([loadInvoices(), loadClients()]);
   updateInvStats();
+  loadInvProfilePreview();
 }
 
 async function loadInvoices() {
@@ -3682,17 +3903,28 @@ function closeInvoiceForm() {
 function addInvoiceLineItem(data) {
   invLineItemCount++;
   const id = invLineItemCount;
+  const today = new Date().toISOString().split('T')[0];
   const row = document.createElement('div');
   row.id = `inv-row-${id}`;
-  row.style.cssText = 'display:grid;grid-template-columns:1fr 80px 100px 36px;gap:8px;margin-bottom:8px;align-items:center';
+  row.style.cssText = 'display:grid;grid-template-columns:2fr 100px 70px 80px 100px 80px 36px;gap:6px;margin-bottom:6px;align-items:center';
   row.innerHTML = `
     <input class="f-input" id="inv-desc-${id}" placeholder="Description" value="${data ? (data.description||'') : ''}" style="margin:0" oninput="recalcInvoice()">
-    <input class="f-input" id="inv-qty-${id}" type="number" min="1" step="1" value="${data ? (data.qty||1) : 1}" placeholder="Qty" style="margin:0;text-align:center" oninput="recalcInvoice()">
-    <input class="f-input" id="inv-price-${id}" type="number" min="0" step="0.01" value="${data ? (data.unit_price||'') : ''}" placeholder="Unit Price" style="margin:0;text-align:right" oninput="recalcInvoice()">
+    <input class="f-input period-date" id="inv-date-${id}" type="date" value="${data ? (data.date||today) : today}" style="margin:0;font-size:11px" oninput="recalcInvoice()">
+    <input class="f-input" id="inv-qty-${id}" type="number" min="1" step="0.01" value="${data ? (data.qty||1) : 1}" style="margin:0;text-align:center" oninput="recalcInvoice()">
+    <select class="f-input" id="inv-unit-${id}" style="margin:0;cursor:pointer;font-size:11px;padding-left:6px">
+      <option value="ea" ${(!data||data.unit==='ea')?'selected':''}>ea</option>
+      <option value="h" ${(data&&data.unit==='h')?'selected':''}>h</option>
+      <option value="Stück" ${(data&&data.unit==='Stück')?'selected':''}>Stück</option>
+      <option value="Pauschal" ${(data&&data.unit==='Pauschal')?'selected':''}>Pauschal</option>
+      <option value="Tag" ${(data&&data.unit==='Tag')?'selected':''}>Tag</option>
+    </select>
+    <input class="f-input" id="inv-price-${id}" type="number" min="0" step="0.01" value="${data ? (data.unit_price||'') : ''}" placeholder="0.00" style="margin:0;text-align:right" oninput="recalcInvoice()">
+    <div id="inv-rowtotal-${id}" style="font-size:12px;font-weight:700;color:var(--text);text-align:right;padding-right:4px">—</div>
     <button onclick="removeInvRow(${id})" style="width:36px;height:36px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center" title="Remove">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>`;
   document.getElementById('inv-line-items').appendChild(row);
+  recalcInvoice();
 }
 
 function removeInvRow(id) {
@@ -3706,14 +3938,25 @@ function getLineItems() {
   document.querySelectorAll('[id^="inv-row-"]').forEach(row => {
     const id = row.id.replace('inv-row-', '');
     const desc = document.getElementById(`inv-desc-${id}`)?.value || '';
+    const date = document.getElementById(`inv-date-${id}`)?.value || '';
     const qty = parseFloat(document.getElementById(`inv-qty-${id}`)?.value) || 1;
+    const unit = document.getElementById(`inv-unit-${id}`)?.value || 'ea';
     const price = parseFloat(document.getElementById(`inv-price-${id}`)?.value) || 0;
-    if (desc || price) items.push({ description: desc, qty, unit_price: price, total: qty * price });
+    if (desc || price) items.push({ description: desc, date, qty, unit, unit_price: price, total: qty * price });
   });
   return items;
 }
 
 function recalcInvoice() {
+  const curr = document.getElementById('inv-currency')?.value || 'USD';
+  // Update per-row totals
+  document.querySelectorAll('[id^="inv-row-"]').forEach(row => {
+    const id = row.id.replace('inv-row-', '');
+    const qty = parseFloat(document.getElementById(`inv-qty-${id}`)?.value) || 0;
+    const price = parseFloat(document.getElementById(`inv-price-${id}`)?.value) || 0;
+    const el = document.getElementById(`inv-rowtotal-${id}`);
+    if (el) el.textContent = (qty && price) ? `${curr} ${(qty*price).toFixed(2)}` : '—';
+  });
   const items = getLineItems();
   const subtotal = items.reduce((s, i) => s + i.total, 0);
   const discountType = document.getElementById('inv-discount-type')?.value || 'pct';
@@ -3852,41 +4095,130 @@ async function deleteInvoice(id) {
   updateInvStats();
 }
 
+function getInvProfile() {
+  try { return JSON.parse(localStorage.getItem('MTF_INV_PROFILE') || '{}'); } catch(e) { return {}; }
+}
+
 function downloadInvoicePDF(id) {
   const inv = allInvoices.find(i => i.id === id);
   if (!inv) return;
-  const css = `*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;max-width:800px;margin:0 auto;padding:32px;font-size:12px;color:#1a1a1a}h1{font-size:20px;font-weight:800;margin-bottom:4px}.green{color:#00c896}.meta{font-size:11px;color:#777;margin-bottom:28px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:28px}.label{font-size:10px;color:#999;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}.val{font-size:13px;font-weight:600;color:#1a1a1a}table{width:100%;border-collapse:collapse;margin-bottom:20px}th{background:#f5f5f5;padding:8px 10px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;border-bottom:2px solid #e5e5e5}td{padding:8px 10px;border-bottom:1px solid #f0f0f0;font-size:12px}.r{text-align:right}.totals{margin-left:auto;width:240px}.tot-row{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;color:#555}.tot-total{display:flex;justify-content:space-between;font-size:16px;font-weight:800;padding:8px 0 0;border-top:2px solid #00c896;color:#1a1a1a}.notes{margin-top:20px;padding:12px 16px;background:#f9f9f9;border-radius:8px;font-size:11px;color:#555;line-height:1.6}.footer{margin-top:28px;text-align:center;font-size:10px;color:#bbb;border-top:1px solid #eee;padding-top:12px}.brand{color:#00c896;font-weight:800}@media print{@page{margin:10mm}}`;
-  const logoHtml = inv.logo ? `<img src="${inv.logo}" style="max-height:60px;max-width:160px;object-fit:contain;margin-bottom:16px">` : '';
-  const discAmt = inv.discount_type === 'pct' ? inv.subtotal * (inv.discount_val / 100) : Math.min(inv.discount_val, inv.subtotal);
-  const tax = (inv.subtotal - discAmt) * (inv.tax_rate / 100);
+  const p = getInvProfile();
   const curr = inv.currency;
-  const f = v => `${curr} ${parseFloat(v).toFixed(2)}`;
-  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${inv.invoice_number}</title><style>${css}</style></head><body>
-<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px">
-  <div>${logoHtml}<div style="font-size:26px;font-weight:800;color:#00c896">${llcName}</div><div style="font-size:11px;color:#777;margin-top:2px">${getTaxProfile().address||''}</div></div>
-  <div style="text-align:right"><div style="font-size:28px;font-weight:800;color:#1a1a1a">INVOICE</div><div style="font-size:13px;font-weight:700;color:#00c896;margin-top:4px">${inv.invoice_number}</div><div style="font-size:11px;color:#777;margin-top:4px">Status: <strong style="color:${inv.status==='paid'?'#00c896':inv.status==='sent'?'#3b82f6':'#888'}">${inv.status.toUpperCase()}</strong></div></div>
-</div>
-<div class="grid2">
-  <div><div class="label">Bill To</div><div class="val">${inv.client_name}</div>${inv.client_address?`<div style="font-size:11px;color:#777;margin-top:2px">${inv.client_address}</div>`:''}${inv.client_email?`<div style="font-size:11px;color:#777">${inv.client_email}</div>`:''}</div>
-  <div style="text-align:right"><div class="label">Issue Date</div><div class="val">${inv.issue_date}</div><div class="label" style="margin-top:8px">Due Date</div><div class="val">${inv.due_date}</div></div>
-</div>
-<table><thead><tr><th>Description</th><th class="r">Qty</th><th class="r">Unit Price</th><th class="r">Total</th></tr></thead><tbody>
-${(inv.line_items||[]).map(it=>`<tr><td>${it.description||''}</td><td class="r">${it.qty}</td><td class="r">${f(it.unit_price)}</td><td class="r">${f(it.total)}</td></tr>`).join('')}
-</tbody></table>
-<div class="totals">
-  <div class="tot-row"><span>Subtotal</span><span>${f(inv.subtotal)}</span></div>
-  ${discAmt>0?`<div class="tot-row"><span>Discount</span><span style="color:#e53e3e">-${f(discAmt)}</span></div>`:''}
-  ${inv.tax_rate>0?`<div class="tot-row"><span>Tax / VAT (${inv.tax_rate}%)</span><span>${f(tax)}</span></div>`:''}
-  <div class="tot-total"><span>Total</span><span style="color:#00c896">${f(inv.total)}</span></div>
-</div>
-${inv.notes?`<div class="notes"><strong>Notes:</strong> ${inv.notes}</div>`:''}
-<div class="footer">Generated by <span class="brand">MyTaxFly</span> · mytaxfly.com</div>
-</body></html>`;
+  const sym = { USD:'$', EUR:'€', GBP:'£', CHF:'CHF ', CAD:'CA$', AUD:'A$' }[curr] || curr+' ';
+  const f = v => `${sym}${parseFloat(v).toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+  const discAmt = inv.discount_type === 'pct' ? inv.subtotal * (inv.discount_val/100) : Math.min(inv.discount_val||0, inv.subtotal);
+  const taxable = inv.subtotal - discAmt;
+  const tax = taxable * ((inv.tax_rate||0)/100);
+  const logoHtml = inv.logo ? `<img src="${inv.logo}" style="max-height:55px;max-width:140px;object-fit:contain;display:block;margin-bottom:6px">` : '';
+
+  const css = `
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Helvetica Neue',Arial,sans-serif;font-size:11px;color:#1a1a1a;background:#fff;padding:0}
+    .page{padding:18mm 18mm 22mm 18mm;min-height:297mm;position:relative;display:flex;flex-direction:column}
+    .sender{font-size:9px;color:#555;line-height:1.5;margin-bottom:8mm}
+    .meta-table{margin-left:auto;margin-bottom:0;border-collapse:collapse}
+    .meta-table td{padding:3px 0 3px 16px;font-size:11px;vertical-align:top}
+    .meta-table td:first-child{font-weight:700;color:#1a1a1a;white-space:nowrap}
+    .recipient{font-size:11px;font-weight:700;line-height:1.6;margin-bottom:10mm}
+    h1{font-size:20px;font-weight:900;letter-spacing:1px;text-transform:uppercase;margin-bottom:5mm}
+    .notes-block{font-size:11px;line-height:1.65;margin-bottom:6mm;color:#333}
+    table{width:100%;border-collapse:collapse;margin-bottom:4mm}
+    thead th{background:#f0f0f0;border-top:2px solid #ccc;border-bottom:1px solid #ccc;padding:5px 8px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+    tbody td{padding:6px 8px;border-bottom:1px solid #e8e8e8;font-size:11px;vertical-align:middle}
+    .r{text-align:right}.c{text-align:center}
+    .totals-wrap{display:flex;justify-content:flex-end;margin-bottom:8mm}
+    .totals{width:220px}
+    .tot-row{display:flex;justify-content:space-between;padding:3px 0;font-size:11px;color:#444}
+    .tot-total{display:flex;justify-content:space-between;padding:6px 0 0;font-size:14px;font-weight:900;border-top:2px solid #1a1a1a;margin-top:4px}
+    .footer{margin-top:auto;border-top:1px solid #ccc;padding-top:4mm;font-size:9px;color:#555;display:flex;flex-wrap:wrap;justify-content:center;gap:6px 20px;text-align:center}
+    .footer strong{color:#1a1a1a}
+    @media print{@page{size:A4;margin:0}body{print-color-adjust:exact}}
+  `;
+
+  const rows = (inv.line_items||[]).map((it,i) => `
+    <tr>
+      <td class="c" style="color:#888;font-size:10px">${i+1}</td>
+      <td>${it.description||''}</td>
+      <td class="c">${it.date||''}</td>
+      <td class="r">${parseFloat(it.qty||1).toLocaleString('de-DE',{minimumFractionDigits:2})}</td>
+      <td class="c">${it.unit||'ea'}</td>
+      <td class="r">${f(it.unit_price||0)}</td>
+      <td class="c">${inv.tax_rate||0} %</td>
+      <td class="r">${f(it.total||0)}</td>
+    </tr>`).join('');
+
+  const footerParts = [
+    p.address ? `<span><strong>Adresse</strong> ${p.address}</span>` : '',
+    p.tax_id ? `<span><strong>Steuernummer</strong> ${p.tax_id}</span>` : '',
+    p.court ? `<span><strong>Amtsgericht</strong> ${p.court}</span>` : '',
+    p.email ? `<span><strong>E-Mail</strong> ${p.email}</span>` : '',
+    p.phone ? `<span><strong>Tel.</strong> ${p.phone}</span>` : '',
+    p.bank ? `<span><strong>Bank</strong> ${p.bank}</span>` : '',
+    p.bic ? `<span><strong>SWIFT/BIC</strong> ${p.bic}</span>` : '',
+    p.iban ? `<span><strong>IBAN</strong> ${p.iban}</span>` : '',
+  ].filter(Boolean).join('');
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${inv.invoice_number}</title><style>${css}</style></head><body><div class="page">
+  <!-- Header: sender left, logo right -->
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10mm">
+    <div class="sender">
+      <div style="font-size:10px;font-weight:700;color:#1a1a1a">${p.name||llcName||''}</div>
+      <div>${p.address||''}</div>
+    </div>
+    <div style="text-align:right">${logoHtml}</div>
+  </div>
+
+  <!-- Invoice meta + recipient -->
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10mm">
+    <div class="recipient">
+      <div>${inv.client_name}</div>
+      ${inv.client_address ? inv.client_address.split(',').map(l=>`<div>${l.trim()}</div>`).join('') : ''}
+      ${inv.client_email ? `<div style="font-weight:400;color:#555;font-size:10px">${inv.client_email}</div>` : ''}
+    </div>
+    <table class="meta-table">
+      <tr><td>Rechnungsnummer:</td><td>${inv.invoice_number}</td></tr>
+      <tr><td>Rechnungsdatum:</td><td>${inv.issue_date}</td></tr>
+      <tr><td>Fälligkeitsdatum:</td><td>${inv.due_date}</td></tr>
+    </table>
+  </div>
+
+  <h1>Rechnung</h1>
+
+  ${inv.notes ? `<div class="notes-block">${inv.notes.replace(/\n/g,'<br>')}</div>` : ''}
+
+  <table>
+    <thead>
+      <tr>
+        <th class="c" style="width:32px">Nr.</th>
+        <th>Beschreibung</th>
+        <th class="c" style="width:80px">Datum</th>
+        <th class="r" style="width:60px">Menge</th>
+        <th class="c" style="width:60px">Einheit</th>
+        <th class="r" style="width:90px">Einzelpreis</th>
+        <th class="c" style="width:55px">USt. %</th>
+        <th class="r" style="width:90px">Betrag</th>
+      </tr>
+    </thead>
+    <tbody>${rows}</tbody>
+  </table>
+
+  <div class="totals-wrap">
+    <div class="totals">
+      <div class="tot-row"><span>Nettobetrag</span><span>${f(inv.subtotal)}</span></div>
+      ${discAmt>0?`<div class="tot-row"><span>Rabatt</span><span>-${f(discAmt)}</span></div>`:''}
+      <div class="tot-row"><span>USt. ${inv.tax_rate||0} %</span><span>${f(tax)}</span></div>
+      <div class="tot-total"><span>Gesamtsumme</span><span>${f(inv.total)}</span></div>
+    </div>
+  </div>
+
+  <div class="footer">${footerParts}</div>
+</div></body></html>`;
+
   const el = document.createElement('div');
   el.innerHTML = html;
   document.body.appendChild(el);
   html2pdf().set({
-    margin: 8,
+    margin: 0,
     filename: `${inv.invoice_number}_${inv.client_name.replace(/[^a-zA-Z0-9]/g,'_')}.pdf`,
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: { scale: 2, useCORS: true },
@@ -4066,6 +4398,49 @@ function showNcMsg(msg, type) {
   el.style.display = 'block';
 }
 
+// --- Invoice Profile Modal ---
+function openInvProfileModal() {
+  const p = getInvProfile();
+  document.getElementById('ip-name').value = p.name || '';
+  document.getElementById('ip-address').value = p.address || '';
+  document.getElementById('ip-email').value = p.email || '';
+  document.getElementById('ip-phone').value = p.phone || '';
+  document.getElementById('ip-tax-id').value = p.tax_id || '';
+  document.getElementById('ip-court').value = p.court || '';
+  document.getElementById('ip-bank').value = p.bank || '';
+  document.getElementById('ip-bic').value = p.bic || '';
+  document.getElementById('ip-iban').value = p.iban || '';
+  document.getElementById('ip-saved').style.display = 'none';
+  document.getElementById('inv-profile-modal').style.display = 'flex';
+}
+function closeInvProfileModal() {
+  document.getElementById('inv-profile-modal').style.display = 'none';
+}
+function saveInvProfile() {
+  const p = {
+    name: document.getElementById('ip-name').value.trim(),
+    address: document.getElementById('ip-address').value.trim(),
+    email: document.getElementById('ip-email').value.trim(),
+    phone: document.getElementById('ip-phone').value.trim(),
+    tax_id: document.getElementById('ip-tax-id').value.trim(),
+    court: document.getElementById('ip-court').value.trim(),
+    bank: document.getElementById('ip-bank').value.trim(),
+    bic: document.getElementById('ip-bic').value.trim(),
+    iban: document.getElementById('ip-iban').value.trim(),
+  };
+  localStorage.setItem('MTF_INV_PROFILE', JSON.stringify(p));
+  document.getElementById('ip-saved').style.display = 'block';
+  // Update preview chip
+  const preview = document.getElementById('inv-profile-name-preview');
+  if (preview) preview.textContent = p.name || 'Not set';
+  setTimeout(() => closeInvProfileModal(), 1200);
+}
+function loadInvProfilePreview() {
+  const p = getInvProfile();
+  const preview = document.getElementById('inv-profile-name-preview');
+  if (preview) preview.textContent = p.name || 'Not set';
+}
+
 // Close client dropdown when clicking outside
 document.addEventListener('click', e => {
   if (!e.target.closest('#inv-client-name') && !e.target.closest('#inv-client-dropdown')) {
@@ -4217,207 +4592,49 @@ document.addEventListener('click', e => {
       <div id="acc-saved" style="display:none;font-size:12px;color:#00c896;text-align:center;margin-top:8px">✓ Saved successfully</div>
     </div>
   </div>
-      <div class="page page-outer" id="page-invoices">
-  <div class="page-title">Invoices</div>
-  <div class="page-sub">Create professional invoices — auto-synced with your income</div>
 
-  <!-- Top bar: stats + new button -->
-  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
-    <div style="display:flex;gap:12px;flex-wrap:wrap">
-      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 16px;min-width:110px">
-        <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">This Month</div>
-        <div id="inv-stat-month" style="font-size:18px;font-weight:800;color:var(--text)">0 / <span id="inv-stat-limit">3</span></div>
-        <div style="font-size:10px;color:var(--text3)">invoices used</div>
-      </div>
-      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 16px;min-width:110px">
-        <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Saved Clients</div>
-        <div id="inv-stat-clients" style="font-size:18px;font-weight:800;color:var(--text)">0 / <span id="inv-stat-client-limit">3</span></div>
-        <div style="font-size:10px;color:var(--text3)">clients used</div>
-      </div>
-      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 16px;min-width:110px">
-        <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Outstanding</div>
-        <div id="inv-stat-outstanding" style="font-size:18px;font-weight:800;color:var(--accent)">$0</div>
-        <div style="font-size:10px;color:var(--text3)">unpaid total</div>
-      </div>
+
+<!-- INVOICE PROFILE MODAL -->
+<div id="inv-profile-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:2000;align-items:center;justify-content:center;backdrop-filter:blur(4px)" onclick="if(event.target===this)closeInvProfileModal()">
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;width:min(600px,92vw);max-height:88vh;overflow-y:auto;position:relative">
+    <button onclick="closeInvProfileModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;line-height:1">✕</button>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      <div style="font-size:17px;font-weight:800;color:var(--text)">Invoice Sender Profile</div>
     </div>
-    <button class="btn-primary" onclick="openInvoiceForm()" style="display:flex;align-items:center;gap:7px;padding:11px 20px;font-size:13px">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      New Invoice
-    </button>
-  </div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:20px">This data appears on every PDF invoice you generate.</div>
 
-  <!-- Invoice form (hidden by default) -->
-  <div id="inv-form-wrap" style="display:none;background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:24px">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-      <div style="font-size:16px;font-weight:800;color:var(--text)">New Invoice</div>
-      <button onclick="closeInvoiceForm()" style="background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;line-height:1">✕</button>
-    </div>
-
-    <!-- Client section -->
-    <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Client</div>
+    <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Sender Info</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-      <div class="form-group" style="position:relative">
-        <div class="f-label">Client Name *</div>
-        <input class="f-input" id="inv-client-name" placeholder="Client or Company Name" oninput="filterClientSuggestions(this.value)" onfocus="filterClientSuggestions(this.value)" autocomplete="off">
-        <div id="inv-client-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--bg2);border:1px solid var(--border);border-radius:8px;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,0.4);max-height:160px;overflow-y:auto"></div>
-      </div>
-      <div class="form-group">
-        <div class="f-label">Client Email (optional)</div>
-        <input class="f-input" id="inv-client-email" placeholder="client@example.com" type="email">
-      </div>
-      <div class="form-group" style="grid-column:1/-1">
-        <div class="f-label">Client Address (optional)</div>
-        <input class="f-input" id="inv-client-address" placeholder="Street, City, Country">
-      </div>
+      <div class="form-group"><div class="f-label">Full Name / Company</div><input class="f-input" id="ip-name" placeholder="e.g. Furkan Karadeniz or My LLC"></div>
+      <div class="form-group"><div class="f-label">Address</div><input class="f-input" id="ip-address" placeholder="Saarlandstr. 68 · 67434 · Neustadt"></div>
+      <div class="form-group"><div class="f-label">E-Mail</div><input class="f-input" id="ip-email" placeholder="email@example.com" type="email"></div>
+      <div class="form-group"><div class="f-label">Phone</div><input class="f-input" id="ip-phone" placeholder="+49 155 6094 7139"></div>
     </div>
 
-    <!-- Invoice details -->
-    <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Invoice Details</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">
-      <div class="form-group">
-        <div class="f-label">Invoice # (auto)</div>
-        <input class="f-input" id="inv-number" placeholder="INV-2026-001" readonly style="opacity:0.7;cursor:not-allowed">
-      </div>
-      <div class="form-group">
-        <div class="f-label">Issue Date *</div>
-        <input class="f-input period-date" id="inv-issue-date" type="date">
-      </div>
-      <div class="form-group">
-        <div class="f-label">Due Date *</div>
-        <input class="f-input period-date" id="inv-due-date" type="date">
-      </div>
-      <div class="form-group">
-        <div class="f-label">Currency</div>
-        <select class="f-input" id="inv-currency" style="cursor:pointer">
-          <option value="USD">USD — US Dollar</option>
-          <option value="EUR">EUR — Euro</option>
-          <option value="GBP">GBP — British Pound</option>
-          <option value="CHF">CHF — Swiss Franc</option>
-          <option value="CAD">CAD — Canadian Dollar</option>
-          <option value="AUD">AUD — Australian Dollar</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <div class="f-label">Tax / VAT Rate (%)</div>
-        <input class="f-input" id="inv-tax-rate" type="number" min="0" max="100" step="0.1" placeholder="0" value="0" oninput="recalcInvoice()">
-      </div>
-      <div class="form-group">
-        <div class="f-label">Discount</div>
-        <div style="display:flex;gap:6px">
-          <select class="f-input" id="inv-discount-type" style="cursor:pointer;flex:0 0 70px;padding-left:8px" onchange="recalcInvoice()">
-            <option value="pct">%</option>
-            <option value="fixed">fixed</option>
-          </select>
-          <input class="f-input" id="inv-discount-val" type="number" min="0" step="0.01" placeholder="0" value="0" oninput="recalcInvoice()" style="flex:1">
-        </div>
-      </div>
+    <div style="height:1px;background:var(--border);margin:16px 0"></div>
+    <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Tax & Registration</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      <div class="form-group"><div class="f-label">Tax ID / Steuernummer / EIN</div><input class="f-input" id="ip-tax-id" placeholder="e.g. 3108030743 or 12-3456789"></div>
+      <div class="form-group"><div class="f-label">Court / Amtsgericht (optional)</div><input class="f-input" id="ip-court" placeholder="e.g. Neustadt an der Weinstraße"></div>
     </div>
 
-    <!-- Logo upload -->
-    <div style="margin-bottom:16px">
-      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Logo (optional)</div>
-      <div style="display:flex;align-items:center;gap:12px">
-        <div id="inv-logo-preview" style="width:60px;height:40px;border:1px dashed var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--bg3)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-        </div>
-        <label style="cursor:pointer;display:flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;color:var(--text2)">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Upload Logo
-          <input type="file" id="inv-logo-input" accept="image/*" style="display:none" onchange="previewInvoiceLogo(this)">
-        </label>
-        <button id="inv-logo-remove" onclick="removeInvoiceLogo()" style="display:none;background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer;text-decoration:underline">Remove</button>
-      </div>
+    <div style="height:1px;background:var(--border);margin:16px 0"></div>
+    <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Bank Details (shown in invoice footer)</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+      <div class="form-group"><div class="f-label">Bank Name</div><input class="f-input" id="ip-bank" placeholder="e.g. Sparkasse Südpfalz"></div>
+      <div class="form-group"><div class="f-label">SWIFT / BIC</div><input class="f-input" id="ip-bic" placeholder="e.g. SOLADES1SUW"></div>
+      <div class="form-group" style="grid-column:1/-1"><div class="f-label">IBAN</div><input class="f-input" id="ip-iban" placeholder="e.g. DE71548500101710424522"></div>
     </div>
 
-    <!-- Line items -->
-    <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Line Items</div>
-    <div id="inv-line-items">
-      <!-- rows inserted by JS -->
-    </div>
-    <button onclick="addInvoiceLineItem()" style="display:flex;align-items:center;gap:6px;background:none;border:1px dashed var(--border);border-radius:8px;padding:8px 14px;color:var(--accent);font-size:12px;font-weight:600;cursor:pointer;width:100%;justify-content:center;margin-bottom:16px;transition:background 0.15s" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='none'">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Add Line Item
-    </button>
-
-    <!-- Totals -->
-    <div style="border-top:1px solid var(--border);padding-top:14px;margin-bottom:20px">
-      <div style="display:flex;justify-content:flex-end">
-        <div style="width:260px">
-          <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:5px">
-            <span>Subtotal</span><span id="inv-subtotal">$0.00</span>
-          </div>
-          <div id="inv-discount-row" style="display:flex;justify-content:space-between;font-size:12px;color:var(--warn);margin-bottom:5px">
-            <span>Discount</span><span id="inv-discount-display">-$0.00</span>
-          </div>
-          <div id="inv-tax-row" style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:8px">
-            <span>Tax / VAT (<span id="inv-tax-rate-display">0</span>%)</span><span id="inv-tax-display">$0.00</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:800;color:var(--text);border-top:2px solid var(--border);padding-top:8px">
-            <span>Total</span><span id="inv-total" style="color:var(--accent)">$0.00</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Notes -->
-    <div class="form-group" style="margin-bottom:20px">
-      <div class="f-label">Notes / Payment Instructions (optional)</div>
-      <textarea class="f-input" id="inv-notes" rows="2" placeholder="e.g. Payment due within 30 days. Bank transfer to …" style="resize:vertical"></textarea>
-    </div>
-
-    <!-- Actions -->
-    <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <button class="btn-primary" onclick="saveInvoice('draft')" style="flex:1;min-width:120px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="btn-primary" style="flex:1;padding:12px" onclick="saveInvProfile()">
         <svg style="display:inline;vertical-align:-2px;margin-right:5px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d='M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z'/><polyline points='17 21 17 13 7 13 7 21'/><polyline points='7 3 7 8 15 8'/></svg>
-        Save as Draft
+        Save Profile
       </button>
-      <button onclick="saveInvoice('sent')" style="flex:1;min-width:120px;padding:12px;background:rgba(0,200,150,0.12);border:1px solid rgba(0,200,150,0.35);border-radius:10px;color:var(--accent);font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;cursor:pointer">
-        Mark as Sent
-      </button>
+      <button onclick="closeInvProfileModal()" style="padding:12px 20px;background:none;border:1px solid var(--border);border-radius:10px;color:var(--text2);font-family:'Montserrat',sans-serif;font-weight:600;cursor:pointer">Cancel</button>
     </div>
-    <div id="inv-form-msg" style="display:none;font-size:12px;margin-top:8px;text-align:center"></div>
-  </div>
-
-  <!-- Invoice list -->
-  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden">
-    <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
-      <div style="font-size:14px;font-weight:700;color:var(--text)">Invoice History</div>
-      <div style="display:flex;gap:6px">
-        <button id="inv-filter-all" onclick="setInvFilter('all',this)" class="btn-sec" style="padding:5px 12px;font-size:11px;background:var(--accent);color:#000;border-color:var(--accent)">All</button>
-        <button id="inv-filter-draft" onclick="setInvFilter('draft',this)" class="btn-sec" style="padding:5px 12px;font-size:11px">Draft</button>
-        <button id="inv-filter-sent" onclick="setInvFilter('sent',this)" class="btn-sec" style="padding:5px 12px;font-size:11px">Sent</button>
-        <button id="inv-filter-paid" onclick="setInvFilter('paid',this)" class="btn-sec" style="padding:5px 12px;font-size:11px">Paid</button>
-      </div>
-    </div>
-    <div id="inv-list">
-      <div style="padding:40px;text-align:center;color:var(--text3);font-size:13px">
-        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="display:block;margin:0 auto 10px;opacity:0.3"><rect x="2" y="3" width="20" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg>
-        No invoices yet. Create your first invoice above.
-      </div>
-    </div>
-  </div>
-
-  <!-- Clients section -->
-  <div style="margin-top:20px;background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden">
-    <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
-      <div style="font-size:14px;font-weight:700;color:var(--text)">Saved Clients</div>
-      <button onclick="openAddClientForm()" style="display:flex;align-items:center;gap:6px;background:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text2);font-family:'Montserrat',sans-serif;font-size:12px;font-weight:600;cursor:pointer">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Add Client
-      </button>
-    </div>
-    <div id="inv-add-client-form" style="display:none;padding:16px 20px;border-bottom:1px solid var(--border);background:var(--bg3)">
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:end">
-        <div class="form-group" style="margin:0"><div class="f-label">Name *</div><input class="f-input" id="nc-name" placeholder="Client name"></div>
-        <div class="form-group" style="margin:0"><div class="f-label">Email</div><input class="f-input" id="nc-email" placeholder="client@email.com" type="email"></div>
-        <div class="form-group" style="margin:0"><div class="f-label">Address</div><input class="f-input" id="nc-address" placeholder="Street, City, Country"></div>
-        <button onclick="saveNewClient()" class="btn-primary" style="height:38px;padding:0 16px;white-space:nowrap">Save</button>
-      </div>
-      <div id="nc-msg" style="display:none;font-size:12px;margin-top:6px;font-weight:600"></div>
-    </div>
-    <div id="inv-clients-list">
-      <div style="padding:24px;text-align:center;color:var(--text3);font-size:13px">No clients saved yet.</div>
-    </div>
+    <div id="ip-saved" style="display:none;font-size:12px;color:#00c896;text-align:center;margin-top:8px">✓ Profile saved</div>
   </div>
 </div>
 
