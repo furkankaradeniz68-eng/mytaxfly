@@ -4016,35 +4016,75 @@ async function saveInvoice(status) {
 }
 
 async function markInvoicePaid(id) {
-  const lim = invLimits();
   const inv = allInvoices.find(i => i.id === id);
   if (!inv) return;
   const { data: { user } } = await sb.auth.getUser();
+  if (!user) return;
+
+  // 1. Update invoice status
   await sb.from('invoices').update({ status: 'paid', paid_at: new Date().toISOString() }).eq('id', id);
-  // Auto-income sync (Pro+)
-  if (lim.autoSync) {
-    await sb.from('transactions').insert([{
-      user_id: user.id,
-      vendor: inv.client_name,
-      amount: inv.total,
-      currency: inv.currency,
-      date: new Date().toISOString().split('T')[0],
-      type: 'income',
-      category: 'Professional Services',
-      deductible: false,
-      deductible_percent: 0,
-      note: `Invoice ${inv.invoice_number} — auto-synced from MyTaxFly Invoices`,
-      source: 'invoice',
-      invoice_id: id
-    }]);
+
+  // 2. Create income transaction — embed [inv:id] tag in note so we can find it on delete
+  const today = new Date().toISOString().split('T')[0];
+  const noteTag = `[inv:${id}]`;
+  const txPayload = {
+    user_id: user.id,
+    vendor: inv.client_name,
+    amount: inv.total,
+    currency: inv.currency || 'USD',
+    date: today,
+    type: 'income',
+    category: 'Professional Services',
+    deductible: false,
+    deductible_percent: 0,
+    note: `${noteTag} Invoice ${inv.invoice_number}`,
+    entity_id: activeEntityId || null
+  };
+  const { data: txData, error: txErr } = await sb.from('transactions').insert([txPayload]).select().single();
+
+  // 3. Push into local transactions array so dashboard + documents update instantly
+  if (txData && !txErr) {
+    const localTx = { ...txPayload, _id: txData.id };
+    transactions.unshift(localTx);
+    refreshDashboard();
+    renderDocumentsPage();
   }
+
+  // 4. Reload invoices + stats
   await loadInvoices();
   updateInvStats();
-  if (lim.autoSync) showInvMsg('✓ Marked as Paid — income transaction added automatically!', 'ok');
+  showInvMsg('✓ Marked as Paid — income added to Dashboard & Documents!', 'ok');
 }
 
 async function deleteInvoice(id) {
-  if (!confirm('Delete this invoice? This cannot be undone.')) return;
+  if (!confirm('Delete this invoice?\n\nThis will also remove the related income transaction from your Dashboard and Documents.')) return;
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return;
+
+  // 1. Find linked transactions by [inv:id] tag in note field
+  const noteTag = `[inv:${id}]`;
+  // Find in local array first (fast path)
+  const linkedLocal = transactions.filter(t => (t.note || '').includes(noteTag));
+  // Also query Supabase to catch any that may not be in memory
+  const { data: linkedRemote } = await sb.from('transactions')
+    .select('id').like('note', `%${noteTag}%`).eq('user_id', user.id);
+
+  const remoteIds = (linkedRemote || []).map(r => r.id);
+
+  if (remoteIds.length > 0) {
+    await sb.from('transactions').delete().in('id', remoteIds).eq('user_id', user.id);
+  }
+
+  // Remove from local array by matching note tag
+  for (let i = transactions.length - 1; i >= 0; i--) {
+    if ((transactions[i].note || '').includes(noteTag)) transactions.splice(i, 1);
+  }
+  if (linkedLocal.length > 0 || remoteIds.length > 0) {
+    refreshDashboard();
+    renderDocumentsPage();
+  }
+
+  // 2. Delete the invoice itself
   await sb.from('invoices').delete().eq('id', id);
   await loadInvoices();
   updateInvStats();
