@@ -621,6 +621,220 @@ nav.scrolled .icon-btn svg {
   line-height:1.7;
 }
 
+/* INVOICE SECTION */
+.invoice-section {
+  padding:100px 60px;
+  background:var(--bg);
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+}
+.invoice-inner {
+  max-width:1200px;
+  margin:0 auto;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:80px;
+  align-items:center;
+}
+.invoice-features-list {
+  list-style:none;
+  margin:32px 0 40px;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+.invoice-features-list li {
+  display:flex;
+  align-items:flex-start;
+  gap:12px;
+  font-size:14px;
+  color:var(--text2);
+  line-height:1.55;
+}
+.invoice-features-list li .chk {
+  flex-shrink:0;
+  width:20px;
+  height:20px;
+  background:rgba(0,200,150,0.12);
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-top:1px;
+}
+.invoice-features-list li strong {
+  color:var(--text);
+}
+/* Mock invoice preview */
+.inv-mock {
+  background:#fff;
+  border-radius:16px;
+  padding:28px 28px 24px;
+  box-shadow:0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06);
+  font-family:'Montserrat',sans-serif;
+  position:relative;
+  overflow:hidden;
+}
+.inv-mock::before {
+  content:'';
+  position:absolute;
+  top:-40px;right:-40px;
+  width:120px;height:120px;
+  background:rgba(0,200,150,0.08);
+  border-radius:50%;
+}
+.inv-mock-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  margin-bottom:16px;
+}
+.inv-mock-company {
+  font-size:14px;
+  font-weight:800;
+  color:#1a1a1a;
+  margin-bottom:2px;
+}
+.inv-mock-meta {
+  font-size:9px;
+  color:#888;
+  line-height:1.6;
+}
+.inv-mock-logo {
+  width:44px;height:44px;
+  background:linear-gradient(135deg,#00c896,#0099ff);
+  border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:800;color:#fff;
+  letter-spacing:-0.3px;
+}
+.inv-mock-title {
+  font-size:22px;
+  font-weight:900;
+  color:#1a1a1a;
+  letter-spacing:1px;
+  margin-bottom:2px;
+}
+.inv-mock-num {
+  font-size:10px;
+  color:#666;
+  font-weight:600;
+}
+.inv-mock-divider {
+  height:2px;
+  background:#1a1a1a;
+  margin:12px 0;
+  border-radius:1px;
+}
+.inv-mock-divider-thin {
+  height:1px;
+  background:#e8e8e8;
+  margin:10px 0;
+}
+.inv-mock-billto-label {
+  font-size:8px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.8px;
+  color:#888;
+  margin-bottom:4px;
+}
+.inv-mock-billto-name {
+  font-size:12px;
+  font-weight:700;
+  color:#1a1a1a;
+  margin-bottom:2px;
+}
+.inv-mock-billto-info {
+  font-size:9px;
+  color:#666;
+  line-height:1.6;
+}
+.inv-mock-table-head {
+  display:grid;
+  grid-template-columns:1fr 60px 60px 70px;
+  gap:6px;
+  padding:5px 0;
+  border-bottom:1.5px solid #1a1a1a;
+  margin-bottom:6px;
+}
+.inv-mock-table-head span {
+  font-size:8px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+  color:#666;
+}
+.inv-mock-table-head span:last-child,
+.inv-mock-row span:last-child { text-align:right; }
+.inv-mock-table-head span:nth-child(2),
+.inv-mock-table-head span:nth-child(3),
+.inv-mock-row span:nth-child(2),
+.inv-mock-row span:nth-child(3) { text-align:center; }
+.inv-mock-row {
+  display:grid;
+  grid-template-columns:1fr 60px 60px 70px;
+  gap:6px;
+  padding:5px 0;
+  border-bottom:1px solid #f0f0f0;
+}
+.inv-mock-row span {
+  font-size:9px;
+  color:#333;
+}
+.inv-mock-total-block {
+  display:flex;
+  justify-content:flex-end;
+  margin-top:10px;
+}
+.inv-mock-total-inner {
+  width:160px;
+}
+.inv-mock-total-row {
+  display:flex;
+  justify-content:space-between;
+  font-size:9px;
+  color:#666;
+  padding:2px 0;
+}
+.inv-mock-total-final {
+  display:flex;
+  justify-content:space-between;
+  font-size:12px;
+  font-weight:900;
+  color:#1a1a1a;
+  border-top:2px solid #1a1a1a;
+  padding-top:6px;
+  margin-top:4px;
+}
+.inv-mock-footer {
+  margin-top:12px;
+  padding-top:8px;
+  border-top:1px solid #e8e8e8;
+  font-size:8px;
+  color:#aaa;
+  text-align:center;
+}
+.inv-plan-badges {
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:10px;
+}
+.inv-plan-badge {
+  font-size:11px;
+  font-weight:700;
+  padding:4px 10px;
+  border-radius:20px;
+  border:1px solid var(--border);
+  color:var(--text2);
+}
+.inv-plan-badge.active {
+  background:rgba(0,200,150,0.1);
+  border-color:rgba(0,200,150,0.4);
+  color:var(--accent);
+}
+
 /* PRICING */
 .pricing-section {
   padding:100px 60px;
@@ -975,6 +1189,8 @@ footer {
   .hero { padding:100px 30px 60px; }
   .section, .pricing-section { padding:80px 30px; }
   .features-section, .testimonial-section, .cta-section { padding:80px 30px; }
+  .invoice-section { padding:80px 30px; }
+  .invoice-inner { grid-template-columns:1fr; gap:48px; }
   .steps-grid, .features-grid, .pricing-grid, .testimonials-grid { grid-template-columns:1fr; }
   .pricing-card.featured { transform:none; }
   .footer-inner { grid-template-columns:1fr 1fr; gap:40px; }
@@ -1167,6 +1383,7 @@ footer {
     <li><a href="#tax-forms" style="color:#00c896;font-weight:600">IRS Forms</a></li>
     <li><a href="#how"><span id="t-nav-how"><span id="t-how-label">How it works</span></span></a></li>
     <li><a href="#features"><span id="t-nav-features"><span id="t-feat-label">Features</span></span></a></li>
+    <li><a href="#invoicing">Invoicing</a></li>
     <li><a href="#pricing"><span id="t-nav-pricing">Pricing</span></a></li>
   </ul>
     <div class="nav-cta">
@@ -1457,6 +1674,139 @@ footer {
   </div>
 </div>
 
+<!-- INVOICE SECTION -->
+<section class="invoice-section" id="invoicing">
+  <div class="invoice-inner">
+
+    <!-- LEFT: text + feature list -->
+    <div class="fade-up">
+      <div class="section-label">Invoicing</div>
+      <h2 class="section-title" style="font-size:36px;line-height:1.2;margin-bottom:16px">Create professional<br>invoices in seconds.</h2>
+      <p class="section-sub" style="margin:0 0 0">Send, track, and export PDF invoices directly from your MyTaxFly dashboard — no extra tools needed.</p>
+
+      <ul class="invoice-features-list">
+        <li>
+          <span class="chk"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span><strong>Professional PDF Export</strong> — polished layout with your logo, company info, and bank details</span>
+        </li>
+        <li>
+          <span class="chk"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span><strong>Multi-currency</strong> — USD, EUR, GBP, CHF, CAD, AUD and more</span>
+        </li>
+        <li>
+          <span class="chk"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span><strong>Tax / VAT line &amp; Discount</strong> — per invoice, fully configurable</span>
+        </li>
+        <li>
+          <span class="chk"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span><strong>Client management</strong> — save clients, autofill in seconds</span>
+        </li>
+        <li>
+          <span class="chk"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span><strong>Invoice history</strong> — Draft, Sent, Paid status tracking</span>
+        </li>
+        <li>
+          <span class="chk"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span><strong>Auto income sync</strong> — paid invoices flow directly into your bookkeeping <span style="font-size:11px;background:rgba(0,200,150,0.12);color:#00c896;border-radius:4px;padding:1px 7px;font-weight:700;margin-left:2px">Pro+</span></span>
+        </li>
+      </ul>
+
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <a href="#pricing" class="btn-primary" style="display:inline-flex;padding:13px 28px;font-size:14px">Start invoicing →</a>
+        <a href="./dashboard.html" style="font-size:13px;color:var(--text2);text-decoration:none">See it in dashboard ↗</a>
+      </div>
+
+      <div class="inv-plan-badges" style="margin-top:24px">
+        <span style="font-size:11px;color:var(--text3);align-self:center">Available on:</span>
+        <span class="inv-plan-badge active">Basic · 3 invoices/mo</span>
+        <span class="inv-plan-badge active">Pro · 25/mo + Auto-sync</span>
+        <span class="inv-plan-badge active">Business · Unlimited</span>
+      </div>
+    </div>
+
+    <!-- RIGHT: mock invoice preview -->
+    <div class="fade-up" style="transition-delay:0.15s">
+      <div class="inv-mock">
+        <div class="inv-mock-header">
+          <div>
+            <div class="inv-mock-company">Karadeniz Ventures LLC</div>
+            <div class="inv-mock-meta">Delaware, USA &nbsp;|&nbsp; EIN: 88-1234567<br>furkan@mytaxfly.com</div>
+          </div>
+          <div class="inv-mock-logo">MTF</div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:4px">
+          <div class="inv-mock-title">INVOICE</div>
+          <div style="text-align:right">
+            <div style="font-size:11px;font-weight:700;color:#1a1a1a">#INV-2026-0012</div>
+            <div style="font-size:9px;color:#888">2026-07-28</div>
+          </div>
+        </div>
+        <div class="inv-mock-divider"></div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:12px">
+          <div>
+            <div class="inv-mock-billto-label">Bill To:</div>
+            <div class="inv-mock-billto-name">TechStart Berlin GmbH</div>
+            <div class="inv-mock-billto-info">Friedrichstrasse 68<br>10117 Berlin, Germany<br>accounts@techstart-berlin.de</div>
+            <div style="margin-top:6px;font-size:8px;color:#888"><strong style="color:#1a1a1a;font-size:8px">Due Date:</strong> 2026-08-27</div>
+          </div>
+          <div>
+            <div class="inv-mock-billto-label">Project / Notes:</div>
+            <div class="inv-mock-billto-info">Web Platform Development<br>Phase 3 — July 2026</div>
+          </div>
+        </div>
+
+        <div class="inv-mock-divider-thin"></div>
+        <div class="inv-mock-table-head">
+          <span>Service Description</span>
+          <span>QTY</span>
+          <span>Rate</span>
+          <span>Total</span>
+        </div>
+        <div class="inv-mock-row">
+          <span>Full-Stack Development</span>
+          <span>28 h</span>
+          <span>$125.00</span>
+          <span>$3,500.00</span>
+        </div>
+        <div class="inv-mock-row">
+          <span>API Integration</span>
+          <span>10 h</span>
+          <span>$125.00</span>
+          <span>$1,250.00</span>
+        </div>
+        <div class="inv-mock-row">
+          <span>QA Testing &amp; Bug Fixes</span>
+          <span>6 h</span>
+          <span>$100.00</span>
+          <span>$600.00</span>
+        </div>
+
+        <div class="inv-mock-total-block">
+          <div class="inv-mock-total-inner">
+            <div class="inv-mock-total-row"><span>Subtotal:</span><span>$5,350.00</span></div>
+            <div class="inv-mock-total-row"><span>Discount (5%):</span><span>-$267.50</span></div>
+            <div class="inv-mock-total-row"><span>Sales Tax (0%):</span><span>$0.00</span></div>
+            <div class="inv-mock-total-final"><span>TOTAL DUE:</span><span>$5,082.50</span></div>
+          </div>
+        </div>
+
+        <div class="inv-mock-footer">
+          Bank: Mercury Bank &nbsp;|&nbsp; SWIFT: MRBKUS33 &nbsp;|&nbsp; Wire Ref: INV-2026-0012
+        </div>
+
+        <!-- "Live" badge -->
+        <div style="position:absolute;top:16px;right:16px;background:rgba(0,200,150,0.15);border:1px solid rgba(0,200,150,0.4);border-radius:20px;padding:3px 10px;font-size:9px;font-weight:700;color:#00c896;letter-spacing:.5px">● LIVE PREVIEW</div>
+      </div>
+
+      <!-- Small caption -->
+      <p style="text-align:center;font-size:12px;color:var(--text3);margin-top:16px">↑ Export this as a PDF in one click</p>
+    </div>
+
+  </div>
+</section>
+
 <!-- PRICING -->
 <!-- Basic monthly: https://buy.stripe.com/test_14AeVeeZ48Cagcb0pweEo05 -->
 <!-- Basic yearly: YOUR_BASIC_YEARLY_STRIPE_LINK -->
@@ -1496,6 +1846,7 @@ footer {
           <li>Financial Dashboard</li>
           <li>PDF &amp; CSV Export</li>
           <li>IRS Deadline Alerts</li>
+          <li style="color:var(--accent)"><svg style="display:inline;vertical-align:-3px;margin-right:5px" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg>3 Invoices/month · 3 Clients</li>
           <li class="dim">AI Tax Advisor Chat</li>
           <li class="dim">IRS Form 1120 &amp; 5472 Export</li>
           <li class="dim">Bank Sync</li>
@@ -1518,6 +1869,8 @@ footer {
           <li>AI Tax Advisor Chat</li>
           <li>Unlimited Transactions</li>
           <li><svg style="display:inline;vertical-align:-3px;margin-right:5px" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>IRS Form 1120 &amp; 5472 Export</li>
+          <li><svg style="display:inline;vertical-align:-3px;margin-right:5px" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg>25 Invoices/month · 25 Clients</li>
+          <li><svg style="display:inline;vertical-align:-3px;margin-right:5px" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Auto Income Sync from Invoices</li>
           <li>Priority Support</li>
           <li>Accountant Export Link</li>
           <li class="dim">Bank Sync</li>
@@ -1540,6 +1893,8 @@ footer {
           <li>Multi-Entity (up to 5 LLCs)</li>
           <li><svg style="display:inline;vertical-align:-3px;margin-right:5px" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Bank Sync</li>
           <li>Accountant Read-Only Access</li>
+          <li><svg style="display:inline;vertical-align:-3px;margin-right:5px" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg>Unlimited Invoices &amp; Clients</li>
+          <li><svg style="display:inline;vertical-align:-3px;margin-right:5px" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Overdue Tracking &amp; Recurring Invoices</li>
         </ul>
         <a href="https://buy.stripe.com/test_9B65kvcrcfGI6yE2iDbAs00?locale=en" data-monthly="https://buy.stripe.com/test_9B65kvcrcfGI6yE2iDbAs00?locale=en" data-yearly="https://buy.stripe.com/test_3cIeV5bn8eCEaOUaP9bAs01?locale=en" class="btn-plan" id="btn-biz"><span id="t-btn-biz">Get Business →</span></a>
       </div>
