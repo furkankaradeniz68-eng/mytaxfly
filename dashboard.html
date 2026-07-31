@@ -478,6 +478,13 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
   /* Invoices stats row → 2×2 grid */
   .inv-stats-row { display:grid !important; grid-template-columns:1fr 1fr; gap:10px !important; flex-wrap:unset !important; }
   .inv-stats-row > div { min-width:0 !important; }
+
+  /* Invoice list card — mobile */
+  .inv-list-card { flex-direction:column !important; align-items:stretch !important; gap:8px !important; padding:12px 14px !important; }
+  .inv-list-card-top { flex:unset !important; width:100%; }
+  .inv-list-card-meta { white-space:normal !important; }
+  .inv-list-card-buttons { flex-wrap:wrap; justify-content:flex-end; }
+  .inv-list-card-buttons button { height:34px !important; }
 }
 
 /* Mobile elements — hidden on desktop */
@@ -4709,16 +4716,18 @@ function renderInvoiceList() {
         <button onclick="cancelInvoice('${inv.id}')" title="Issue Cancellation Invoice" style="width:32px;height:32px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#ef4444">${cancelIcon}</button>`;
     }
 
-    return `<div style="display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--border);transition:background 0.12s;${rowOpacity}" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
-      <div style="flex:1;min-width:0">
-        <div style="font-size:13px;font-weight:700;color:var(--text)">${inv.invoice_number} · ${inv.client_name}${inv.cancels_invoice ? ` <span style="font-size:10px;background:rgba(239,68,68,0.12);color:#ef4444;border-radius:4px;padding:1px 6px;font-weight:700">CANCELS ${inv.cancels_invoice}</span>` : ''}</div>
-        <div style="font-size:11px;color:var(--text3);margin-top:2px">Issued: ${inv.issue_date} · Due: ${inv.due_date}</div>
+    return `<div class="inv-list-card" style="display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--border);transition:background 0.12s;${rowOpacity}" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+      <div class="inv-list-card-top" style="flex:1;min-width:0;display:flex;align-items:center;gap:12px">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${inv.invoice_number} · ${inv.client_name}${inv.cancels_invoice ? ` <span style="font-size:10px;background:rgba(239,68,68,0.12);color:#ef4444;border-radius:4px;padding:1px 6px;font-weight:700">CANCELS ${inv.cancels_invoice}</span>` : ''}</div>
+          <div class="inv-list-card-meta">Issued: ${inv.issue_date} · Due: ${inv.due_date}</div>
+        </div>
+        <div class="inv-list-card-amount" style="text-align:right;flex-shrink:0">
+          <div style="font-size:14px;font-weight:800;color:${isCancelled?'#ef4444':'var(--accent)'};${amountStyle}">${isCancelled?'−':''}${inv.currency} ${Math.abs(parseFloat(inv.total)).toFixed(2)}</div>
+          <div style="font-size:10px;font-weight:700;color:${sCol};text-transform:uppercase;letter-spacing:.5px;margin-top:2px">${sLabel}</div>
+        </div>
       </div>
-      <div style="text-align:right;flex-shrink:0">
-        <div style="font-size:14px;font-weight:800;color:${isCancelled?'#ef4444':'var(--accent)'};${amountStyle}">${isCancelled?'−':''}${inv.currency} ${Math.abs(parseFloat(inv.total)).toFixed(2)}</div>
-        <div style="font-size:10px;font-weight:700;color:${sCol};text-transform:uppercase;letter-spacing:.5px;margin-top:2px">${sLabel}</div>
-      </div>
-      <div style="display:flex;gap:6px;flex-shrink:0;margin-left:8px">${buttons}</div>
+      <div class="inv-list-card-buttons" style="display:flex;gap:6px;flex-shrink:0">${buttons}</div>
     </div>`;
   }).join('');
 }
