@@ -234,6 +234,16 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
 
   @media(max-width:900px){.stats-grid{grid-template-columns:repeat(2,1fr)}.two-col{grid-template-columns:1fr}.form-row{grid-template-columns:1fr}}
 
+  /* ── Invoice form — base (desktop) classes ─────────────────── */
+  .inv-client-grid  { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
+  .inv-details-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:16px; }
+  .inv-line-row     { display:grid; grid-template-columns:2fr 100px 70px 80px 100px 80px 36px; gap:6px; margin-bottom:6px; align-items:center; }
+  .ilr-desc { display:contents; } /* children slot directly into parent grid */
+  .ilr-nums { display:contents; }
+  .inv-totals-box { width:260px; }
+  /* Desktop: total cell in line-item row */
+  .ilr-total { font-size:12px; font-weight:700; color:var(--text); text-align:right; padding-right:4px; }
+
   /* PERIOD FILTER */
   .period-bar{display:flex;align-items:center;gap:10px;margin-bottom:24px;flex-wrap:wrap;}
   .period-switcher{position:relative;display:inline-block;}
@@ -418,6 +428,56 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
   .mobile-nav-btn.active { color:var(--accent); }
   .mobile-nav-btn svg { width:20px; height:20px; }
   .mobile-nav-icon { font-size:18px; }
+
+  /* ── Invoice form — mobile overrides ──────────────────────── */
+  #inv-form-wrap { padding:14px !important; }
+
+  /* Client grid → single column */
+  .inv-client-grid { grid-template-columns:1fr !important; }
+
+  /* Invoice details 3-col → 2-col */
+  .inv-details-grid { grid-template-columns:1fr 1fr !important; }
+
+  /* Hide the line-item column header row on mobile */
+  #inv-line-header { display:none !important; }
+
+  /* Each line item → stacked card */
+  .inv-line-row {
+    display:flex !important;
+    flex-direction:column;
+    gap:8px;
+    background:var(--bg3);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:10px;
+    margin-bottom:8px;
+  }
+  .ilr-desc {
+    display:flex !important;
+    flex-direction:column;
+    gap:6px;
+  }
+  /* Date below description, compact */
+  .ilr-desc input[type="date"] { font-size:11px; }
+
+  /* Numbers row: Qty | Unit | Price | =Total | ×Delete */
+  .ilr-nums {
+    display:flex !important;
+    gap:6px;
+    align-items:center;
+  }
+  .ilr-qty  { width:58px !important; min-width:0; flex-shrink:0; text-align:center; }
+  .ilr-unit { width:72px !important; min-width:0; flex-shrink:0; }
+  .ilr-price { flex:1 !important; min-width:0; }
+  .ilr-total { flex-shrink:0; min-width:52px; font-size:12px; font-weight:700; color:var(--text); text-align:right; }
+  .ilr-del  { flex-shrink:0; }
+
+  /* Totals box → full width */
+  .inv-totals-box { width:100% !important; }
+
+  /* Invoices stats row → 2×2 grid */
+  .inv-stats-row { display:grid !important; grid-template-columns:1fr 1fr; gap:10px !important; flex-wrap:unset !important; }
+  .inv-stats-row > div { min-width:0 !important; }
 }
 
 /* Mobile elements — hidden on desktop */
@@ -1066,7 +1126,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
 
   <!-- Top bar: stats + buttons -->
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
-    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+    <div class="inv-stats-row" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
       <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 16px;min-width:110px">
         <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">This Month</div>
         <div id="inv-stat-month" style="font-size:18px;font-weight:800;color:var(--text)">0 / <span id="inv-stat-limit">3</span></div>
@@ -1107,7 +1167,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
 
     <!-- Client section -->
     <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Client</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+    <div class="inv-client-grid">
       <div class="form-group" style="position:relative">
         <div class="f-label">Client Name *</div>
         <input class="f-input" id="inv-client-name" placeholder="Client or Company Name" oninput="filterClientSuggestions(this.value)" onfocus="filterClientSuggestions(this.value)" autocomplete="off">
@@ -1125,7 +1185,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
 
     <!-- Invoice details -->
     <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Invoice Details</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">
+    <div class="inv-details-grid">
       <div class="form-group">
         <div class="f-label">Invoice # (auto)</div>
         <input class="f-input" id="inv-number" placeholder="INV-2026-001" readonly style="opacity:0.7;cursor:not-allowed">
@@ -1167,7 +1227,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
 
     <!-- Line items -->
     <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Line Items</div>
-    <div style="display:grid;grid-template-columns:2fr 100px 70px 80px 100px 80px 36px;gap:6px;margin-bottom:4px;padding:0 2px">
+    <div id="inv-line-header" style="display:grid;grid-template-columns:2fr 100px 70px 80px 100px 80px 36px;gap:6px;margin-bottom:4px;padding:0 2px">
       <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.4px">Description</div>
       <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.4px">Date</div>
       <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;text-align:center">Qty</div>
@@ -1185,7 +1245,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
     <!-- Totals -->
     <div style="border-top:1px solid var(--border);padding-top:14px;margin-bottom:20px">
       <div style="display:flex;justify-content:flex-end">
-        <div style="width:260px">
+        <div class="inv-totals-box">
           <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:5px">
             <span>Subtotal</span><span id="inv-subtotal">$0.00</span>
           </div>
@@ -4141,23 +4201,28 @@ function addInvoiceLineItem(data) {
   const today = new Date().toISOString().split('T')[0];
   const row = document.createElement('div');
   row.id = `inv-row-${id}`;
-  row.style.cssText = 'display:grid;grid-template-columns:2fr 100px 70px 80px 100px 80px 36px;gap:6px;margin-bottom:6px;align-items:center';
+  row.className = 'inv-line-row';
+  // Desktop layout is handled by .inv-line-row CSS class (7-col grid via display:contents children)
   row.innerHTML = `
-    <input class="f-input" id="inv-desc-${id}" placeholder="Description" value="${data ? (data.description||'') : ''}" style="margin:0" oninput="recalcInvoice()">
-    <input class="f-input period-date" id="inv-date-${id}" type="date" value="${data ? (data.date||today) : today}" style="margin:0;font-size:11px" oninput="recalcInvoice()">
-    <input class="f-input" id="inv-qty-${id}" type="number" min="1" step="0.01" value="${data ? (data.qty||1) : 1}" style="margin:0;text-align:center" oninput="recalcInvoice()">
-    <select class="f-input" id="inv-unit-${id}" style="margin:0;cursor:pointer;font-size:11px;padding-left:6px">
-      <option value="ea" ${(!data||data.unit==='ea')?'selected':''}>ea</option>
-      <option value="h" ${(data&&data.unit==='h')?'selected':''}>h</option>
-      <option value="Stück" ${(data&&data.unit==='Stück')?'selected':''}>Stück</option>
-      <option value="Pauschal" ${(data&&data.unit==='Pauschal')?'selected':''}>Pauschal</option>
-      <option value="Tag" ${(data&&data.unit==='Tag')?'selected':''}>Tag</option>
-    </select>
-    <input class="f-input" id="inv-price-${id}" type="number" min="0" step="0.01" value="${data ? (data.unit_price||'') : ''}" placeholder="0.00" style="margin:0;text-align:right" oninput="recalcInvoice()">
-    <div id="inv-rowtotal-${id}" style="font-size:12px;font-weight:700;color:var(--text);text-align:right;padding-right:4px">—</div>
-    <button onclick="removeInvRow(${id})" style="width:36px;height:36px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center" title="Remove">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </button>`;
+    <div class="ilr-desc">
+      <input class="f-input" id="inv-desc-${id}" placeholder="Description" value="${data ? (data.description||'') : ''}" style="margin:0" oninput="recalcInvoice()">
+      <input class="f-input period-date" id="inv-date-${id}" type="date" value="${data ? (data.date||today) : today}" style="margin:0;font-size:11px" oninput="recalcInvoice()">
+    </div>
+    <div class="ilr-nums">
+      <input class="f-input ilr-qty" id="inv-qty-${id}" type="number" min="1" step="0.01" value="${data ? (data.qty||1) : 1}" style="margin:0;text-align:center" oninput="recalcInvoice()">
+      <select class="f-input ilr-unit" id="inv-unit-${id}" style="margin:0;cursor:pointer;font-size:11px;padding-left:6px" onchange="recalcInvoice()">
+        <option value="ea" ${(!data||data.unit==='ea')?'selected':''}>ea</option>
+        <option value="h" ${(data&&data.unit==='h')?'selected':''}>h</option>
+        <option value="pc" ${(data&&data.unit==='pc')?'selected':''}>pc</option>
+        <option value="flat" ${(data&&data.unit==='flat')?'selected':''}>flat</option>
+        <option value="day" ${(data&&data.unit==='day')?'selected':''}>day</option>
+      </select>
+      <input class="f-input ilr-price" id="inv-price-${id}" type="number" min="0" step="0.01" value="${data ? (data.unit_price||'') : ''}" placeholder="0.00" style="margin:0;text-align:right" oninput="recalcInvoice()">
+      <div class="ilr-total" id="inv-rowtotal-${id}">—</div>
+      <button class="ilr-del" onclick="removeInvRow(${id})" style="width:36px;height:36px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0" title="Remove">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>`;
   document.getElementById('inv-line-items').appendChild(row);
   recalcInvoice();
 }
@@ -4321,7 +4386,7 @@ async function deleteInvoice(id) {
   const inv = allInvoices.find(i => i.id === id);
   if (!inv) return;
   if (inv.status !== 'draft') {
-    showInvMsg('Only draft invoices can be deleted. Use the Cancel (×) button to issue a Stornorechnung.', 'warn');
+    showInvMsg('Only draft invoices can be deleted. Use the Cancel (×) button to issue a Cancellation Invoice.', 'warn');
     return;
   }
   if (!confirm('Delete this draft invoice? This cannot be undone.')) return;
@@ -4330,29 +4395,66 @@ async function deleteInvoice(id) {
   updateInvStats();
 }
 
+function showCancelInvoiceConfirm(inv, onConfirm) {
+  // Remove any existing dialog
+  const existing = document.getElementById('mtf-cancel-confirm');
+  if (existing) existing.remove();
+
+  const isPaid = inv.status === 'paid';
+  const ov = document.createElement('div');
+  ov.id = 'mtf-cancel-confirm';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(4px)';
+
+  ov.innerHTML = `
+    <div style="background:var(--bg2);border:1px solid rgba(239,68,68,0.3);border-radius:16px;padding:28px;width:min(420px,100%);box-shadow:0 20px 60px rgba(0,0,0,0.5)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+        <div style="width:36px;height:36px;background:rgba(239,68,68,0.1);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+        </div>
+        <div>
+          <div style="font-size:16px;font-weight:800;color:var(--text)">Cancel Invoice</div>
+          <div style="font-size:12px;color:var(--text3)">${inv.invoice_number} · ${inv.client_name}</div>
+        </div>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:20px">
+        <div style="font-size:11px;color:var(--text2);line-height:1.9">
+          <div style="display:flex;gap:8px;align-items:flex-start"><span style="color:#ef4444;margin-top:1px">✕</span><span>The original invoice will be marked as <strong style="color:var(--text)">CANCELLED</strong></span></div>
+          <div style="display:flex;gap:8px;align-items:flex-start"><span style="color:var(--accent);margin-top:1px">+</span><span>A Cancellation Invoice with the negative amount will be created</span></div>
+          <div style="display:flex;gap:8px;align-items:flex-start"><span style="color:var(--text3);margin-top:1px">≡</span><span>Both remain in your records for compliance</span></div>
+          ${isPaid ? `<div style="display:flex;gap:8px;align-items:flex-start"><span style="color:#f59e0b;margin-top:1px">−</span><span>The income will be <strong style="color:var(--text)">deducted from revenue</strong> (not added to expenses)</span></div>` : ''}
+        </div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button id="mtf-cc-cancel" style="flex:1;padding:12px;background:none;border:1px solid var(--border);border-radius:10px;color:var(--text3);font-family:'Montserrat',sans-serif;font-size:13px;font-weight:600;cursor:pointer">Keep Invoice</button>
+        <button id="mtf-cc-confirm" style="flex:1;padding:12px;background:#ef4444;border:none;border-radius:10px;color:#fff;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;cursor:pointer">Cancel Invoice →</button>
+      </div>
+    </div>`;
+
+  document.body.appendChild(ov);
+  ov.addEventListener('click', e => { if (e.target === ov) ov.remove(); });
+  document.getElementById('mtf-cc-cancel').onclick = () => ov.remove();
+  document.getElementById('mtf-cc-confirm').onclick = () => { ov.remove(); onConfirm(); };
+}
+
 async function cancelInvoice(id) {
   const inv = allInvoices.find(i => i.id === id);
   if (!inv) return;
   const { data: { user } } = await sb.auth.getUser();
   if (!user) return;
 
-  const confirmed = confirm(
-    `Issue a Cancellation Invoice (Stornorechnung) for ${inv.invoice_number}?\n\n` +
-    `• The original invoice will be marked as CANCELLED\n` +
-    `• A Stornorechnung with the negative amount will be created\n` +
-    `• Both remain in your records for compliance\n` +
-    (inv.status === 'paid' ? `• The income transaction will be reversed automatically` : '')
-  );
-  if (!confirmed) return;
+  showCancelInvoiceConfirm(inv, async () => { await doCancelInvoice(id, inv, user); });
+}
 
-  // 1. Generate storno invoice number
-  const stornoNumber = `STORNO-${inv.invoice_number}`;
+async function doCancelInvoice(id, inv, user) {
+
+  // 1. Generate cancellation invoice number
+  const cancelNumber = `CANCEL-${inv.invoice_number}`;
   const today = new Date().toISOString().split('T')[0];
 
-  // 2. Create Stornorechnung as new invoice (negative total, storno status)
-  const stornoPayload = {
+  // 2. Create Cancellation Invoice (negative total)
+  const cancelPayload = {
     user_id: user.id,
-    invoice_number: stornoNumber,
+    invoice_number: cancelNumber,
     client_name: inv.client_name,
     client_email: inv.client_email || null,
     client_address: inv.client_address || null,
@@ -4365,46 +4467,36 @@ async function cancelInvoice(id) {
     subtotal: -(inv.subtotal || 0),
     total: -(inv.total || 0),
     status: 'storno',
-    notes: `Cancellation of invoice ${inv.invoice_number} — Stornierung der Rechnung ${inv.invoice_number}`,
+    notes: `Cancellation of invoice ${inv.invoice_number}`,
     line_items: (inv.line_items || []).map(it => ({ ...it, total: -(it.total || 0), unit_price: -(it.unit_price || 0) })),
-    cancels_invoice: inv.invoice_number  // requires: ALTER TABLE invoices ADD COLUMN IF NOT EXISTS cancels_invoice text;
+    cancels_invoice: inv.invoice_number
   };
-  // Insert storno invoice — strip cancels_invoice if column doesn't exist yet
-  const { error: stornoErr } = await sb.from('invoices').insert([stornoPayload]);
-  if (stornoErr && stornoErr.message && stornoErr.message.includes('cancels_invoice')) {
-    const { cancels_invoice: _c, ...safePayload } = stornoPayload;
+  const { error: cancelErr } = await sb.from('invoices').insert([cancelPayload]);
+  if (cancelErr && cancelErr.message && cancelErr.message.includes('cancels_invoice')) {
+    const { cancels_invoice: _c, ...safePayload } = cancelPayload;
     await sb.from('invoices').insert([safePayload]);
   }
 
   // 3. Mark original invoice as cancelled
   await sb.from('invoices').update({ status: 'cancelled' }).eq('id', id);
 
-  // 4. If was paid: reverse income transaction
+  // 4. If was paid: add NEGATIVE INCOME entry (reduces revenue, NOT added to expenses)
   if (inv.status === 'paid') {
-    const noteTag = `[inv:${id}]`;
-    const { data: linkedRemote } = await sb.from('transactions')
-      .select('id').like('note', `%${noteTag}%`).eq('user_id', user.id);
-    const remoteIds = (linkedRemote || []).map(r => r.id);
-    if (remoteIds.length > 0) {
-      await sb.from('transactions').delete().in('id', remoteIds).eq('user_id', user.id);
-    }
-    // Also create a reversal expense transaction for audit trail
-    await sb.from('transactions').insert([{
+    const { data: reversalData } = await sb.from('transactions').insert([{
       user_id: user.id,
       vendor: inv.client_name,
-      amount: inv.total,
+      amount: -(inv.total),          // negative → subtracts from income
       currency: inv.currency || 'USD',
       date: today,
-      type: 'expense',
+      type: 'income',                // stays as income type — NOT expense
       category: 'Professional Services',
       deductible: false,
       deductible_percent: 0,
-      note: `[storno:${id}] Cancellation of invoice ${inv.invoice_number}`,
+      note: `[storno:${id}] Cancellation of ${inv.invoice_number}`,
       entity_id: activeEntityId || null
-    }]);
-    // Remove from local transactions array
-    for (let i = transactions.length - 1; i >= 0; i--) {
-      if ((transactions[i].note || '').includes(noteTag)) transactions.splice(i, 1);
+    }]).select().single();
+    if (reversalData) {
+      transactions.unshift({ ...reversalData, _id: reversalData.id });
     }
     refreshDashboard();
     renderDocumentsPage();
@@ -4412,7 +4504,7 @@ async function cancelInvoice(id) {
 
   await loadInvoices();
   updateInvStats();
-  showInvMsg(`✓ Stornorechnung ${stornoNumber} created. Original invoice cancelled.`, 'ok');
+  showInvMsg(`✓ Cancellation Invoice ${cancelNumber} issued. Original invoice cancelled.`, 'ok');
 }
 
 function getInvProfile() {
@@ -4609,17 +4701,17 @@ function renderInvoiceList() {
         <button onclick="openInvoiceForm(${JSON.stringify(inv).replace(/"/g,'&quot;')})" title="Edit" style="width:32px;height:32px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2)">${editIcon}</button>
         <button onclick="deleteInvoice('${inv.id}')" title="Delete Draft" style="width:32px;height:32px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--warn)">${trashIcon}</button>`;
     } else {
-      // Sent / Paid: mark paid (if sent), PDF, edit (if sent), CANCEL (Stornorechnung)
+      // Sent / Paid: mark paid (if sent), PDF, edit (if sent), CANCEL
       buttons = `
         ${inv.status === 'sent' ? `<button onclick="markInvoicePaid('${inv.id}')" title="Mark as Paid" style="padding:6px 10px;background:rgba(0,200,150,0.1);border:1px solid rgba(0,200,150,0.3);border-radius:7px;color:#00c896;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">✓ Paid</button>` : ''}
         <button onclick="downloadInvoicePDF('${inv.id}')" title="Download PDF" style="width:32px;height:32px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2)">${pdfIcon}</button>
         ${inv.status === 'sent' ? `<button onclick="openInvoiceForm(${JSON.stringify(inv).replace(/"/g,'&quot;')})" title="Edit" style="width:32px;height:32px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2)">${editIcon}</button>` : ''}
-        <button onclick="cancelInvoice('${inv.id}')" title="Issue Cancellation Invoice (Stornorechnung)" style="width:32px;height:32px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#ef4444" title="Stornieren">${cancelIcon}</button>`;
+        <button onclick="cancelInvoice('${inv.id}')" title="Issue Cancellation Invoice" style="width:32px;height:32px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#ef4444">${cancelIcon}</button>`;
     }
 
     return `<div style="display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--border);transition:background 0.12s;${rowOpacity}" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
       <div style="flex:1;min-width:0">
-        <div style="font-size:13px;font-weight:700;color:var(--text)">${inv.invoice_number} · ${inv.client_name}${inv.cancels_invoice ? ` <span style="font-size:10px;background:rgba(239,68,68,0.12);color:#ef4444;border-radius:4px;padding:1px 6px;font-weight:700">STORNO of ${inv.cancels_invoice}</span>` : ''}</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text)">${inv.invoice_number} · ${inv.client_name}${inv.cancels_invoice ? ` <span style="font-size:10px;background:rgba(239,68,68,0.12);color:#ef4444;border-radius:4px;padding:1px 6px;font-weight:700">CANCELS ${inv.cancels_invoice}</span>` : ''}</div>
         <div style="font-size:11px;color:var(--text3);margin-top:2px">Issued: ${inv.issue_date} · Due: ${inv.due_date}</div>
       </div>
       <div style="text-align:right;flex-shrink:0">
