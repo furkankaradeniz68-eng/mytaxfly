@@ -1765,6 +1765,16 @@ async function launchApp(user){
     buildReportPeriodMenu();
     const [pFrom,pTo]=getPeriodRange('month');
     periodFrom=pFrom; periodTo=pTo;
+    // ── Sync cloud profile → localStorage (so reads stay synchronous) ──
+    const cloudMeta = user.user_metadata || {};
+    if (cloudMeta.tax_profile)  localStorage.setItem(TAX_PROFILE_KEY,     JSON.stringify(cloudMeta.tax_profile));
+    if (cloudMeta.entities)     localStorage.setItem('mtf_entities',       JSON.stringify(cloudMeta.entities));
+    if (cloudMeta.inv_profile)  localStorage.setItem('MTF_INV_PROFILE',    JSON.stringify(cloudMeta.inv_profile));
+    if (cloudMeta.user_name)    localStorage.setItem('MTF_USER_NAME',      cloudMeta.user_name);
+    // Re-read userName from potentially-synced value
+    userName = localStorage.getItem('MTF_USER_NAME') || cloudMeta.full_name || cloudMeta.name || user.email.split('@')[0];
+    document.getElementById('dash-title').textContent = `Welcome, ${userName}`;
+
     loadTaxProfile();
     loadChatSessions();
     initCookieBanner();
@@ -2749,7 +2759,7 @@ function loadTaxProfile() {
   }
 }
 
-function saveTaxProfile() {
+async function saveTaxProfile() {
   const g = id => document.getElementById(id)?.value?.trim() || '';
   const p = {
     ein: g('tp-ein'), address: g('tp-address'), city: g('tp-city'),
@@ -2757,7 +2767,10 @@ function saveTaxProfile() {
     shName: g('tp-sh-name'), shCountry: g('tp-sh-country'),
     shFtin: g('tp-sh-ftin'), shRes: g('tp-sh-res')
   };
+  // Write to localStorage (fast, synchronous)
   localStorage.setItem(TAX_PROFILE_KEY, JSON.stringify(p));
+  // Write to Supabase user_metadata (cloud sync, non-blocking)
+  sb.auth.updateUser({ data: { tax_profile: p } }).catch(e => console.warn('Tax profile cloud save failed:', e.message));
   // Hide setup form — profile is now complete
   const sec = document.getElementById('tax-profile-section');
   if (sec) sec.style.display = 'none';
@@ -3558,12 +3571,14 @@ function saveAccountModal() {
     shFtin: g('acc-sh-ftin'), shRes: g('acc-sh-res')
   };
   localStorage.setItem(TAX_PROFILE_KEY, JSON.stringify(p));
+  // Sync tax profile to cloud
+  sb.auth.updateUser({ data: { tax_profile: p } }).catch(e => console.warn('Tax profile cloud save failed:', e.message));
   // Save name and update global + Supabase user metadata
   const newName = g('acc-name');
   if (newName) {
     userName = newName;
     localStorage.setItem('MTF_USER_NAME', newName);
-    sb.auth.updateUser({ data: { full_name: newName } });
+    sb.auth.updateUser({ data: { full_name: newName, user_name: newName } });
     // Update any displayed name in the UI
     document.querySelectorAll('.user-name-display').forEach(el => el.textContent = newName);
   }
@@ -3612,6 +3627,7 @@ function loadEntities() {
 
 function saveEntities() {
   localStorage.setItem('mtf_entities', JSON.stringify(entities));
+  sb.auth.updateUser({ data: { entities } }).catch(e => console.warn('Entities cloud save failed:', e.message));
 }
 
 function renderEntitySwitcher() {
@@ -4853,7 +4869,7 @@ function previewProfileLogo(input) {
     const lp = document.getElementById('ip-logo-preview');
     lp.innerHTML = `<img src="${e.target.result}" style="max-width:100%;max-height:100%;object-fit:contain">`;
     document.getElementById('ip-logo-remove').style.display = 'inline';
-    // Store temporarily in profile
+    // Logo stays only in localStorage (base64 can be large — not synced to cloud)
     const p = getInvProfile();
     p.logo = e.target.result;
     localStorage.setItem('MTF_INV_PROFILE', JSON.stringify(p));
@@ -4868,6 +4884,9 @@ function removeProfileLogo() {
   const p = getInvProfile();
   delete p.logo;
   localStorage.setItem('MTF_INV_PROFILE', JSON.stringify(p));
+  // Sync updated profile (without logo) to cloud
+  const { logo: _logo, ...cloudProfile } = p;
+  sb.auth.updateUser({ data: { inv_profile: cloudProfile } }).catch(e => console.warn('InvProfile cloud save failed:', e.message));
 }
 function closeInvProfileModal() {
   document.getElementById('inv-profile-modal').style.display = 'none';
@@ -4888,6 +4907,9 @@ function saveInvProfile() {
   };
   if (!p.logo) delete p.logo; // don't store null key
   localStorage.setItem('MTF_INV_PROFILE', JSON.stringify(p));
+  // Sync to cloud (without logo — base64 too large for user_metadata)
+  const { logo: _l, ...cloudInvProfile } = p;
+  sb.auth.updateUser({ data: { inv_profile: cloudInvProfile } }).catch(e => console.warn('InvProfile cloud save failed:', e.message));
   document.getElementById('ip-saved').style.display = 'block';
   // Update preview chip
   const preview = document.getElementById('inv-profile-name-preview');
