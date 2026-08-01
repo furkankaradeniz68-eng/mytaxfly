@@ -1453,6 +1453,7 @@ function buildReportPeriodMenu(){
     {val:`q4_${y}`,label:`Q4 · Oct–Dec`},
     {div:true},
     {val:`year_${y}`,label:`This Year ${y}`,default:true},
+    {val:`year_${y-1}`,label:`Last Year ${y-1}`},
     {div:true},
     {val:'all',label:'All Time'},
     {val:'custom',label:'Custom Range'},
@@ -1486,6 +1487,7 @@ function applyReportCustomRange(){
   const t=document.getElementById('report-custom-to').value;
   if(!f||!t){alert('Please select both dates.');return;}
   reportPeriodFrom=new Date(f); reportPeriodTo=new Date(t);
+  document.getElementById('report-period-label-text').textContent=`${f} → ${t}`;
   document.getElementById('report-custom-range').classList.remove('visible');
 }
 
@@ -1511,6 +1513,9 @@ function selectPeriod(val,label){
     document.querySelectorAll('.stat-change').forEach(el=>{
       if(!el.id) el.textContent=label;
     });
+    // Update dash-llc subtitle
+    const llcEl=document.getElementById('dash-llc');
+    if(llcEl) llcEl.textContent=`${llcName||'My LLC'} · ${label}`;
     refreshDashboard();
   }
 }
@@ -1523,6 +1528,8 @@ function applyCustomRange(){
   const label=`${f} → ${t}`;
   document.getElementById('period-label-text').textContent=label;
   document.querySelectorAll('.stat-change').forEach(el=>{if(!el.id)el.textContent=label;});
+  const llcEl=document.getElementById('dash-llc');
+  if(llcEl) llcEl.textContent=`${llcName||'My LLC'} · ${label}`;
   document.getElementById('custom-range').classList.remove('visible');
   refreshDashboard();
 }
@@ -1789,10 +1796,17 @@ async function launchApp(user){
     document.querySelectorAll('.stat-change').forEach(el=>{if(!el.id)el.textContent='This Month';});
     // ── Sync cloud profile → localStorage (so reads stay synchronous) ──
     const cloudMeta = user.user_metadata || {};
-    if (cloudMeta.tax_profile)  localStorage.setItem(TAX_PROFILE_KEY,     JSON.stringify(cloudMeta.tax_profile));
-    if (cloudMeta.entities)     localStorage.setItem('mtf_entities',       JSON.stringify(cloudMeta.entities));
-    if (cloudMeta.inv_profile)  localStorage.setItem('MTF_INV_PROFILE',    JSON.stringify(cloudMeta.inv_profile));
-    if (cloudMeta.user_name)    localStorage.setItem('MTF_USER_NAME',      cloudMeta.user_name);
+    if (cloudMeta.tax_profile)   localStorage.setItem(TAX_PROFILE_KEY,     JSON.stringify(cloudMeta.tax_profile));
+    if (cloudMeta.entities)      localStorage.setItem('mtf_entities',       JSON.stringify(cloudMeta.entities));
+    if (cloudMeta.inv_profile)   localStorage.setItem('MTF_INV_PROFILE',    JSON.stringify(cloudMeta.inv_profile));
+    if (cloudMeta.user_name)     localStorage.setItem('MTF_USER_NAME',      cloudMeta.user_name);
+    // Restore chat sessions from cloud if local is empty
+    if (cloudMeta.chat_sessions && cloudMeta.chat_sessions.length) {
+      const local = localStorage.getItem(CHATS_KEY);
+      if (!local || JSON.parse(local).length === 0) {
+        localStorage.setItem(CHATS_KEY, JSON.stringify(cloudMeta.chat_sessions));
+      }
+    }
     // Re-read userName from potentially-synced value
     userName = localStorage.getItem('MTF_USER_NAME') || cloudMeta.full_name || cloudMeta.name || user.email.split('@')[0];
     document.getElementById('dash-title').textContent = `Welcome, ${userName}`;
@@ -2414,7 +2428,20 @@ async function runDemo(){
 const CHATS_KEY = 'MTF_CHATS';
 const WELCOME_MSG = "Hi! I'm your AI bookkeeping assistant for MyTaxFly. Ask me anything about your LLC taxes, deductions, or bookkeeping.";
 
-function saveChatSessions(){ localStorage.setItem(CHATS_KEY, JSON.stringify(chatSessions)); }
+function saveChatSessions(){
+  localStorage.setItem(CHATS_KEY, JSON.stringify(chatSessions));
+  // Cloud sync: last 3 sessions, max 20 messages each, size-guarded
+  try {
+    const slim = chatSessions.slice(0,3).map(s=>({
+      id:s.id, title:s.title, createdAt:s.createdAt,
+      history:(s.history||[]).slice(-20)
+    }));
+    const json = JSON.stringify(slim);
+    if(json.length < 60000) { // ~60KB guard — stay within user_metadata limits
+      sb.auth.updateUser({ data: { chat_sessions: slim } }).catch(()=>{});
+    }
+  } catch(e){}
+}
 
 function loadChatSessions(){
   try{ chatSessions = JSON.parse(localStorage.getItem(CHATS_KEY)||'[]'); }catch(e){ chatSessions=[]; }
@@ -4410,10 +4437,26 @@ async function deleteInvoice(id) {
     showInvMsg('Only draft invoices can be deleted. Use the Cancel (×) button to issue a Cancellation Invoice.', 'warn');
     return;
   }
-  if (!confirm('Delete this draft invoice? This cannot be undone.')) return;
-  await sb.from('invoices').delete().eq('id', id);
-  await loadInvoices();
-  updateInvStats();
+  const modal = document.createElement('div');
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(4px)';
+  modal.innerHTML=`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;max-width:360px;width:100%;text-align:center">
+    <div style="width:44px;height:44px;background:rgba(229,62,62,0.1);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e53e3e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></div>
+    <div style="font-size:16px;font-weight:700;margin-bottom:8px">Delete Draft Invoice?</div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:24px">${inv.invoice_number} · ${inv.client_name||'Draft'}<br>This action cannot be undone.</div>
+    <div style="display:flex;gap:10px">
+      <button id="inv-del-cancel" style="flex:1;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Montserrat',sans-serif;font-size:13px;font-weight:600;cursor:pointer">Cancel</button>
+      <button id="inv-del-confirm" style="flex:1;padding:10px;background:#e53e3e;border:none;border-radius:10px;color:#fff;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:600;cursor:pointer">Delete</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+  document.getElementById('inv-del-cancel').onclick = () => modal.remove();
+  modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
+  document.getElementById('inv-del-confirm').onclick = async () => {
+    modal.remove();
+    await sb.from('invoices').delete().eq('id', id);
+    await loadInvoices();
+    updateInvStats();
+  };
 }
 
 function showCancelInvoiceConfirm(inv, onConfirm) {
@@ -4813,11 +4856,28 @@ async function saveNewClient() {
 }
 
 async function deleteClient(id) {
-  if (!confirm('Remove this client?')) return;
-  await sb.from('clients').delete().eq('id', id);
-  allClients = allClients.filter(c => c.id !== id);
-  renderClientsList();
-  updateInvStats();
+  const client = allClients.find(c => c.id === id);
+  const modal = document.createElement('div');
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(4px)';
+  modal.innerHTML=`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;max-width:360px;width:100%;text-align:center">
+    <div style="width:44px;height:44px;background:rgba(229,62,62,0.1);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e53e3e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/></svg></div>
+    <div style="font-size:16px;font-weight:700;margin-bottom:8px">Remove Client?</div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:24px">${client?.name || 'This client'} will be removed.<br>Existing invoices are not affected.</div>
+    <div style="display:flex;gap:10px">
+      <button id="cl-del-cancel" style="flex:1;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Montserrat',sans-serif;font-size:13px;font-weight:600;cursor:pointer">Cancel</button>
+      <button id="cl-del-confirm" style="flex:1;padding:10px;background:#e53e3e;border:none;border-radius:10px;color:#fff;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:600;cursor:pointer">Remove</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+  document.getElementById('cl-del-cancel').onclick = () => modal.remove();
+  modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
+  document.getElementById('cl-del-confirm').onclick = async () => {
+    modal.remove();
+    await sb.from('clients').delete().eq('id', id);
+    allClients = allClients.filter(c => c.id !== id);
+    renderClientsList();
+    updateInvStats();
+  };
 }
 
 function renderClientsList() {
