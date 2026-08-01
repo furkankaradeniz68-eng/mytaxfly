@@ -977,10 +977,10 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
         </div>
         <div style="font-size:13px;color:var(--text2);margin-bottom:16px">Export your data pre-filled into <strong style="color:var(--text)">Form 1120</strong> and <strong style="color:var(--text)">Form 5472</strong> — the two IRS forms every foreign-owned US LLC must file. Your numbers, in the right fields, ready for your CPA.</div>
         <!-- Export buttons directly in this card -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px">
           <div style="position:relative">
-            <button class="btn-primary" style="width:100%;padding:14px 10px;font-size:13px;font-weight:700;background:linear-gradient(135deg,#00c896,#00a87a)" onclick="gatedAction(exportForm1120,'pro')">
-              <svg style="display:inline;vertical-align:-3px;margin-right:6px" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <button class="btn-primary" style="width:100%;padding:13px 8px;font-size:12px;font-weight:700;background:linear-gradient(135deg,#00c896,#00a87a)" onclick="gatedAction(exportForm1120,'pro')">
+              <svg style="display:inline;vertical-align:-3px;margin-right:5px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
               Pro Forma 1120
             </button>
             <div id="irs-lock-1120" style="display:none;position:absolute;inset:0;background:rgba(13,15,20,0.85);border-radius:10px;align-items:center;justify-content:center;gap:8px;cursor:pointer;backdrop-filter:blur(2px)" onclick="showUpgradeModal('pro')">
@@ -988,11 +988,20 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
             </div>
           </div>
           <div style="position:relative">
-            <button class="btn-primary" style="width:100%;padding:14px 10px;font-size:13px;font-weight:700;background:linear-gradient(135deg,#00c896,#00a87a)" onclick="gatedAction(exportForm5472,'pro')">
-              <svg style="display:inline;vertical-align:-3px;margin-right:6px" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <button class="btn-primary" style="width:100%;padding:13px 8px;font-size:12px;font-weight:700;background:linear-gradient(135deg,#00c896,#00a87a)" onclick="gatedAction(exportForm5472,'pro')">
+              <svg style="display:inline;vertical-align:-3px;margin-right:5px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
               Form 5472
             </button>
             <div id="irs-lock-5472" style="display:none;position:absolute;inset:0;background:rgba(13,15,20,0.85);border-radius:10px;align-items:center;justify-content:center;gap:8px;cursor:pointer;backdrop-filter:blur(2px)" onclick="showUpgradeModal('pro')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x='5' y='11' width='14' height='10' rx='2'/><path d='M8 11V7a4 4 0 0 1 8 0v4'/></svg><span style="font-size:12px;font-weight:700;color:var(--text)">Pro — <span style="color:#00c896">Upgrade →</span></span>
+            </div>
+          </div>
+          <div style="position:relative">
+            <button class="btn-primary" style="width:100%;padding:13px 8px;font-size:12px;font-weight:700;background:linear-gradient(135deg,#7c3aed,#5b21b6)" onclick="gatedAction(exportFilingPackage,'pro')">
+              <svg style="display:inline;vertical-align:-3px;margin-right:5px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+              Filing Package
+            </button>
+            <div id="irs-lock-package" style="display:none;position:absolute;inset:0;background:rgba(13,15,20,0.85);border-radius:10px;align-items:center;justify-content:center;gap:8px;cursor:pointer;backdrop-filter:blur(2px)" onclick="showUpgradeModal('pro')">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x='5' y='11' width='14' height='10' rx='2'/><path d='M8 11V7a4 4 0 0 1 8 0v4'/></svg><span style="font-size:12px;font-weight:700;color:var(--text)">Pro — <span style="color:#00c896">Upgrade →</span></span>
             </div>
           </div>
@@ -2914,173 +2923,228 @@ ${filtered.map(t => `<tr><td>${t.date}</td><td>${t.vendor}</td><td>${t.type}</td
 }
 
 // ── COOKIE BANNER ─────────────────────────────────────────
+// ── Shared helper: build the clean-style HTML for Form 1120 ──────────────────
+function buildForm1120HTML(p, filtered, taxYear) {
+  const inc    = filtered.filter(t => t.type==='income').reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
+  const exp    = filtered.filter(t => t.type==='expense').reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
+  const profit = inc - exp;
+  const cats   = {};
+  filtered.filter(t=>t.type==='expense').forEach(t=>{ cats[t.category]=(cats[t.category]||0)+parseFloat(t.amount||0); });
+  const advertising = Object.entries(cats).filter(([k])=>/market|advertis/i.test(k)).reduce((s,[,v])=>s+v,0);
+  const wages       = Object.entries(cats).filter(([k])=>/salary|wage|payroll|contractor/i.test(k)).reduce((s,[,v])=>s+v,0);
+  const rent        = Object.entries(cats).filter(([k])=>/rent/i.test(k)).reduce((s,[,v])=>s+v,0);
+  const otherDed    = Math.max(0, exp - advertising - wages - rent);
+  const corpName    = llcName || p.llcName || '';
+  const fmt = (n) => n ? '$'+Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0}) : '—';
+  const fmtAmt = (n,pos=true) => {
+    if (!n||n===0) return '<span style="color:#aaa">—</span>';
+    return `<span style="color:${pos?'#16a34a':'#dc2626'};font-weight:600">${pos?'+':'-'}${Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0})}</span>`;
+  };
+  const row = (ln,desc,val,bold,pos=true) => `<tr style="border-bottom:1px solid #eee"><td style="padding:5px 8px;font-size:10px;color:#888;width:32px;white-space:nowrap">${ln}</td><td style="padding:5px 8px;font-size:11px;${bold?'font-weight:700':'color:#333'}">${desc}</td><td style="padding:5px 10px;text-align:right;font-size:11px;white-space:nowrap">${val!==null?fmtAmt(val,pos):'<span style="color:#aaa">—</span>'}</td></tr>`;
+  const sHead = (t) => `<tr><td colspan="3" style="padding:6px 10px;font-size:11px;font-weight:700;background:#f5f5f5;border-left:3px solid #00c896;border-bottom:1px solid #ddd">${t}</td></tr>`;
+
+  return `<div style="font-family:Arial,sans-serif;max-width:780px;color:#1a1a1a;font-size:12px;padding:32px 36px;background:#fff">
+  <div style="text-align:center;margin-bottom:24px">
+    <div style="font-size:20px;font-weight:900;color:#00c896">MyTaxFly</div>
+    <div style="display:inline-block;background:#00c896;color:#fff;font-size:9px;font-weight:700;padding:2px 10px;border-radius:20px;letter-spacing:.5px;margin:4px 0">PRE-FILLED WORKING DRAFT</div>
+    <div style="font-size:14px;font-weight:800;margin-top:4px">Pro Forma Form 1120 — U.S. Corporation Income Tax Return</div>
+    <div style="font-size:10px;color:#888;margin-top:2px">Tax Year ${taxYear} · Foreign-Owned Single-Member LLC (Disregarded Entity) · Review with your CPA before filing</div>
+  </div>
+
+  <div style="background:#f5f5f5;padding:14px 16px;border-radius:6px;margin-bottom:18px">
+    <table style="width:100%;border-collapse:collapse">
+      <tr>
+        <td style="width:50%;padding:3px 8px 3px 0;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">A — Name of Corporation</div><div style="font-size:13px;font-weight:800">${corpName}</div></td>
+        <td style="width:25%;padding:3px 8px;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">B — EIN</div><div style="font-size:12px;font-weight:700;font-family:monospace">${p.ein}</div></td>
+        <td style="width:25%;padding:3px 0 3px 8px;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">D — Total Assets</div><div style="font-size:12px;font-weight:700">${fmt(inc)}</div></td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px 3px 0;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">Address</div><div style="font-size:11px">${p.address||''} ${p.city||''}</div></td>
+        <td style="padding:3px 8px;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">C — Date Incorporated</div><div style="font-size:11px">${p.incDate||''}</div></td>
+        <td style="padding:3px 0 3px 8px;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">Tax Year</div><div style="font-size:11px">Jan 1 – Dec 31, ${taxYear}</div></td>
+      </tr>
+    </table>
+    <div style="margin-top:8px;font-size:10px;color:#555">☑ PRO FORMA — attached to Form 5472 per Reg. §1.6038A-2(a). Do not file separately.</div>
+  </div>
+
+  <table style="width:100%;border-collapse:collapse;margin-bottom:16px">
+    ${sHead('Income')}
+    ${row('1a','Gross receipts or sales',inc>0?inc:null,false)}
+    ${row('1b','Returns and allowances',null,false)}
+    ${row('1c','Balance (gross receipts)',inc>0?inc:null,true)}
+    ${row('2','Cost of goods sold',null,false)}
+    ${row('3','Gross profit',inc>0?inc:null,true)}
+    ${row('4–10','Other income (dividends, interest, rents, royalties, gains)',null,false)}
+    ${row('11','Total Income',inc>0?inc:null,true)}
+    ${sHead('Deductions')}
+    ${row('12','Compensation of officers',null,false)}
+    ${row('13','Salaries and wages',wages>0?wages:null,false,false)}
+    ${row('16','Rents',rent>0?rent:null,false,false)}
+    ${row('22','Advertising',advertising>0?advertising:null,false,false)}
+    ${row('26','Other deductions (software, professional services, processing fees — see transaction list)',otherDed>0?otherDed:null,false,false)}
+    ${row('27','Total Deductions',exp>0?exp:null,true,false)}
+    ${row('28','Taxable Income before NOL (line 11 − line 27)',profit,true,profit>=0)}
+    ${sHead('Tax & Payments')}
+    ${row('30','Taxable income',profit>0?profit:null,true,profit>=0)}
+    ${row('31','Total tax (corporate income tax — N/A for disregarded entity)',0,false)}
+  </table>
+
+  <div style="background:#f0fdf4;border:2px solid #00c896;border-radius:8px;padding:16px;margin:16px 0;text-align:center">
+    <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Net Profit / Loss — Tax Year ${taxYear}</div>
+    <div style="font-size:32px;font-weight:900;color:${profit>=0?'#16a34a':'#dc2626'}">${profit>=0?'+':''}\$${Math.abs(profit).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0})}</div>
+    <div style="font-size:10px;color:#777;margin-top:6px">Gross Revenue \$${inc.toLocaleString()} · Total Deductions \$${exp.toLocaleString()}</div>
+  </div>
+
+  <div style="border:1px solid #ddd;border-radius:6px;padding:12px 14px;margin-top:16px">
+    <div style="font-size:11px;font-weight:700;margin-bottom:8px">Sign Here</div>
+    <div style="font-size:10px;color:#555;margin-bottom:10px;line-height:1.5">Under penalties of perjury, I declare that I have examined this return, including accompanying schedules and statements, and to the best of my knowledge and belief, it is true, correct, and complete.</div>
+    <table style="width:100%;border-collapse:collapse">
+      <tr>
+        <td style="border-bottom:1px solid #999;padding-bottom:16px;width:45%;font-size:10px;color:#888">Signature of officer</td>
+        <td style="width:5%"></td>
+        <td style="border-bottom:1px solid #999;padding-bottom:16px;width:22%;font-size:10px;color:#888">Date</td>
+        <td style="width:5%"></td>
+        <td style="border-bottom:1px solid #999;padding-bottom:16px;width:23%;font-size:10px;color:#888">Title</td>
+      </tr>
+    </table>
+  </div>
+
+  <div style="margin-top:14px;padding:10px 14px;background:#fff8f0;border:1px solid #f6ad55;border-radius:6px;font-size:10px;color:#744210;line-height:1.5">
+    <strong>⚠ Important:</strong> This is a pre-filled working draft generated by <strong>MyTaxFly</strong>. It is NOT a filed tax return. Review all figures with a qualified CPA before filing. This pro forma Form 1120 must be paper-filed with Form 5472 attached to: IRS, P.O. Box 409101, Ogden, UT 84409.
+  </div>
+  <div style="margin-top:12px;text-align:center;font-size:10px;color:#bbb;border-top:1px solid #eee;padding-top:10px">Generated by <strong style="color:#00c896">MyTaxFly</strong> · mytaxfly.com · Tax Year ${taxYear}</div>
+</div>`;
+}
+
+// ── Shared helper: build the clean-style HTML for Form 5472 ──────────────────
+function buildForm5472HTML(p, filtered, taxYear) {
+  const inc     = filtered.filter(t=>t.type==='income').reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
+  const exp     = filtered.filter(t=>t.type==='expense').reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
+  const corpName = llcName || p.llcName || '';
+  const fmtAmt = (n,pos=true) => {
+    if (!n||n===0) return '<span style="color:#aaa">—</span>';
+    return `<span style="color:${pos?'#16a34a':'#dc2626'};font-weight:600">${pos?'+':'-'}\$${Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</span>`;
+  };
+  const txRows = filtered.map(t => {
+    const isInc = t.type==='income';
+    const amt = parseFloat(t.amount)||0;
+    return `<tr style="border-bottom:1px solid #eee">
+      <td style="padding:5px 8px;font-size:10px;color:#888">${t.date||''}</td>
+      <td style="padding:5px 8px;font-size:11px">${t.vendor||''}</td>
+      <td style="padding:5px 8px;font-size:10px;color:#555">${t.type}</td>
+      <td style="padding:5px 8px;font-size:10px;color:#555">${t.category||''}</td>
+      <td style="padding:5px 10px;text-align:right;font-size:11px;white-space:nowrap">${fmtAmt(amt,isInc)}</td>
+    </tr>`;
+  }).join('');
+
+  return `<div style="font-family:Arial,sans-serif;max-width:780px;color:#1a1a1a;font-size:12px;padding:32px 36px;background:#fff">
+  <div style="text-align:center;margin-bottom:24px">
+    <div style="font-size:20px;font-weight:900;color:#00c896">MyTaxFly</div>
+    <div style="display:inline-block;background:#00c896;color:#fff;font-size:9px;font-weight:700;padding:2px 10px;border-radius:20px;letter-spacing:.5px;margin:4px 0">PRE-FILLED WORKING DRAFT</div>
+    <div style="font-size:14px;font-weight:800;margin-top:4px">Form 5472 — Information Return (25% Foreign-Owned U.S. Corporation)</div>
+    <div style="font-size:10px;color:#888;margin-top:2px">Tax Year ${taxYear} · Rev. December 2023 · Sections 6038A and 6038C · Review with your CPA before filing</div>
+  </div>
+
+  <div style="background:#f5f5f5;padding:14px 16px;border-radius:6px;margin-bottom:18px">
+    <div style="font-size:11px;font-weight:700;border-left:3px solid #00c896;padding-left:8px;margin-bottom:10px">Part I — Reporting Corporation</div>
+    <table style="width:100%;border-collapse:collapse">
+      <tr>
+        <td style="width:50%;padding:3px 8px 3px 0;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">1a — Name of Reporting Corporation</div><div style="font-size:13px;font-weight:800">${corpName}</div></td>
+        <td style="width:25%;padding:3px 8px;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">1b — EIN</div><div style="font-size:12px;font-weight:700;font-family:monospace">${p.ein}</div></td>
+        <td style="width:25%;padding:3px 0 3px 8px;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">1c — Total Assets</div><div style="font-size:12px;font-weight:700">\$${inc.toLocaleString()}</div></td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px 3px 0;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">Address</div><div style="font-size:11px">${p.address||''} ${p.city||''}</div></td>
+        <td style="padding:3px 8px;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">1d — Business Activity</div><div style="font-size:11px">${p.activity||'Consulting / Services'}</div></td>
+        <td style="padding:3px 0 3px 8px;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">1m — Date Incorporated</div><div style="font-size:11px">${p.incDate||''}</div></td>
+      </tr>
+    </table>
+    <div style="margin-top:8px;font-size:10px;color:#555">☑ (3) Foreign-owned domestic disregarded entity (DE) treated as corporation per §6038A · Total gross payments: <strong>\$${(inc+exp).toLocaleString()}</strong></div>
+  </div>
+
+  <div style="background:#f5f5f5;padding:14px 16px;border-radius:6px;margin-bottom:18px">
+    <div style="font-size:11px;font-weight:700;border-left:3px solid #00c896;padding-left:8px;margin-bottom:10px">Part II — 25% Foreign Shareholder</div>
+    <table style="width:100%;border-collapse:collapse">
+      <tr>
+        <td style="width:50%;padding:3px 8px 3px 0;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">4a — Name &amp; Address</div><div style="font-size:12px;font-weight:700">${p.shName||'[Shareholder Name]'}</div></td>
+        <td style="width:25%;padding:3px 8px;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">4b(3) — Foreign Tax ID (FTIN)</div><div style="font-size:12px;font-weight:700;font-family:monospace">${p.shFtin||'[FTIN]'}</div></td>
+        <td style="width:25%;padding:3px 0 3px 8px;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">Ownership %</div><div style="font-size:12px;font-weight:700">100%</div></td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px 3px 0;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">4d — Country of Citizenship</div><div style="font-size:11px">${p.shCountry||'[Country]'}</div></td>
+        <td colspan="2" style="padding:3px 0 3px 8px;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">4e — Country of Tax Residence</div><div style="font-size:11px">${p.shRes||'[Country]'}</div></td>
+      </tr>
+    </table>
+  </div>
+
+  <div style="margin-bottom:18px">
+    <div style="font-size:11px;font-weight:700;border-left:3px solid #00c896;padding-left:8px;background:#f5f5f5;padding:6px 10px;margin-bottom:8px">Part IV — Monetary Transactions Between LLC and Foreign Owner</div>
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr style="background:#f5f5f5;border-bottom:2px solid #ddd">
+        <th style="padding:6px 10px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:#555;width:50px">Line</th>
+        <th style="padding:6px 10px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:#555">Description</th>
+        <th style="padding:6px 10px;text-align:right;font-size:10px;font-weight:700;text-transform:uppercase;color:#555">Amount (USD)</th>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid #eee"><td style="padding:5px 8px;font-size:10px;color:#888">9b</td><td style="padding:5px 8px;font-size:11px">Amounts received for services — Revenue from clients</td><td style="padding:5px 10px;text-align:right;font-size:11px">\$${inc.toLocaleString('en-US',{minimumFractionDigits:2})}</td></tr>
+        <tr style="border-bottom:1px solid #eee"><td style="padding:5px 8px;font-size:10px;color:#888">17</td><td style="padding:5px 8px;font-size:11px">Amounts paid — Operating expenses (see transaction list below)</td><td style="padding:5px 10px;text-align:right;font-size:11px;color:#dc2626">(\$${exp.toLocaleString('en-US',{minimumFractionDigits:2})})</td></tr>
+        <tr style="background:#f9f9f9;border-top:2px solid #aaa"><td style="padding:6px 8px;font-size:10px;font-weight:700">19</td><td style="padding:6px 8px;font-size:11px;font-weight:700">Total (lines 4a–18)</td><td style="padding:6px 10px;text-align:right;font-size:11px;font-weight:700">\$${(inc+exp).toLocaleString('en-US',{minimumFractionDigits:2})}</td></tr>
+      </tbody>
+    </table>
+    <div style="font-size:10px;color:#744210;background:#fff8f0;border:1px solid #f6ad55;border-radius:4px;padding:8px 10px;margin-top:6px">
+      <strong>⚠ Part IV Note:</strong> Your CPA must review and classify which transactions represent direct owner↔LLC flows (capital contributions, distributions, loans). Third-party expenses are generally not reportable here and belong on supporting schedules.
+    </div>
+  </div>
+
+  <div style="margin-bottom:18px">
+    <div style="font-size:11px;font-weight:700;border-left:3px solid #00c896;padding-left:8px;background:#f5f5f5;padding:6px 10px;margin-bottom:8px">Attached: Transaction List (${filtered.length} transactions)</div>
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr style="background:#f5f5f5;border-bottom:2px solid #ddd">
+        <th style="padding:5px 8px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:#555">Date</th>
+        <th style="padding:5px 8px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:#555">Vendor / Description</th>
+        <th style="padding:5px 8px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:#555">Type</th>
+        <th style="padding:5px 8px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:#555">Category</th>
+        <th style="padding:5px 10px;text-align:right;font-size:10px;font-weight:700;text-transform:uppercase;color:#555">Amount</th>
+      </thead>
+      <tbody>${txRows}</tbody>
+    </table>
+  </div>
+
+  <div style="border:1px solid #ddd;border-radius:6px;padding:12px 14px;margin-top:16px">
+    <div style="font-size:11px;font-weight:700;margin-bottom:8px">Sign Here</div>
+    <div style="font-size:10px;color:#555;margin-bottom:10px;line-height:1.5">Under penalties of perjury, I declare that I have examined this return, including accompanying schedules and statements, and to the best of my knowledge and belief, it is true, correct, and complete.</div>
+    <table style="width:100%;border-collapse:collapse">
+      <tr>
+        <td style="border-bottom:1px solid #999;padding-bottom:16px;width:45%;font-size:10px;color:#888">Signature of officer</td>
+        <td style="width:5%"></td>
+        <td style="border-bottom:1px solid #999;padding-bottom:16px;width:22%;font-size:10px;color:#888">Date</td>
+        <td style="width:5%"></td>
+        <td style="border-bottom:1px solid #999;padding-bottom:16px;width:23%;font-size:10px;color:#888">Title</td>
+      </tr>
+    </table>
+  </div>
+
+  <div style="margin-top:14px;padding:10px 14px;background:#fff8f0;border:1px solid #f6ad55;border-radius:6px;font-size:10px;color:#744210;line-height:1.5">
+    <strong>⚠ Important:</strong> This is a pre-filled working draft generated by <strong>MyTaxFly</strong>. It is NOT a filed tax return. Form 5472 must be attached to a Pro Forma Form 1120 and mailed to: IRS, P.O. Box 409101, Ogden, UT 84409. Failure to file on time results in a $25,000 penalty per form (§6038A). Filing deadline: April 15, ${taxYear+1}.
+  </div>
+  <div style="margin-top:12px;text-align:center;font-size:10px;color:#bbb;border-top:1px solid #eee;padding-top:10px">Generated by <strong style="color:#00c896">MyTaxFly</strong> · mytaxfly.com · Tax Year ${taxYear}</div>
+</div>`;
+}
+
 function exportForm1120() {
   const p = getTaxProfile();
   if (!p.ein) { alert('Please complete your LLC profile first (EIN is required).'); return; }
   const filtered = getReportFilteredTx();
   const taxYear = reportPeriodFrom ? reportPeriodFrom.getFullYear() : new Date().getFullYear() - 1;
-  const inc = filtered.filter(t => t.type === 'income').reduce((s, t) => s + (parseFloat(t.amount)||0), 0);
-  const exp = filtered.filter(t => t.type === 'expense').reduce((s, t) => s + (parseFloat(t.amount)||0), 0);
-  const profit = inc - exp;
-  const cats = {};
-  filtered.filter(t => t.type === 'expense').forEach(t => { cats[t.category] = (cats[t.category]||0) + parseFloat(t.amount||0); });
-  const advertising = Object.entries(cats).filter(([k]) => /market|advertis/i.test(k)).reduce((s,[,v])=>s+v,0);
-  const wages = Object.entries(cats).filter(([k]) => /salary|wage|payroll/i.test(k)).reduce((s,[,v])=>s+v,0);
-  const rent = Object.entries(cats).filter(([k]) => /rent/i.test(k)).reduce((s,[,v])=>s+v,0);
-  const otherDed = Math.max(0, exp - advertising - wages - rent);
-  const D = (n) => n > 0 ? fmtIRS(n) : (n < 0 ? `(${fmtIRS(Math.abs(n))})` : '');
-  const B = 'border:1px solid #000;';
-  const AMT = 'border:1px solid #000;background:#d8d8d8;text-align:right;padding:1px 5px;font-family:Courier New,monospace;font-size:8pt;white-space:nowrap;width:108px;';
-  const AMT0 = 'border:1px solid #000;background:#d8d8d8;width:108px;';
-  const LN = 'font-size:7.5pt;font-weight:bold;padding:1px 4px;text-align:center;width:24px;border-right:1px solid #999;white-space:nowrap;';
-  const DESC = 'font-size:7.5pt;padding:1px 5px;border-bottom:1px solid #ccc;';
-  const DESCb = 'font-size:7.5pt;padding:1px 5px;border-bottom:1px solid #ccc;font-weight:bold;';
-  const SHEAD = 'background:#555;color:#fff;font-weight:bold;font-size:7.5pt;padding:2px 6px;letter-spacing:.3px;';
-  const row = (ln, desc, val, bold) => `<tr style="height:17px"><td style="${LN}">${ln}</td><td style="${bold?DESCb:DESC}">${desc}</td><td style="${val?AMT:AMT0}">${val||''}</td></tr>`;
-  const sHead = (t) => `<tr><td colspan="3" style="${SHEAD}">${t}</td></tr>`;
   const corpName = llcName || p.llcName || '';
-
   const wrap = document.createElement('div');
-  wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;background:#fff;';
+  wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:820px;background:#fff;';
   const form = document.createElement('div');
-  form.style.cssText = 'font-family:Arial,Helvetica,sans-serif;font-size:8pt;color:#000;width:100%;box-sizing:border-box;padding:18px 22px;background:#fff;';
-
-  form.innerHTML = `
-<table style="width:100%;border-collapse:collapse;border:2px solid #000;">
-  <tr>
-    <td style="width:110px;padding:5px 8px;border-right:2px solid #000;vertical-align:middle;">
-      <div style="font-size:7.5pt;font-weight:bold;line-height:1;">Form</div>
-      <div style="font-size:40pt;font-weight:900;line-height:1;font-style:italic;letter-spacing:-2px;">1120</div>
-      <div style="font-size:6pt;line-height:1.4;margin-top:2px;">Department of the Treasury<br>Internal Revenue Service</div>
-    </td>
-    <td style="text-align:center;padding:6px 10px;vertical-align:top;border-right:2px solid #000;">
-      <div style="font-size:12pt;font-weight:900;margin-bottom:3px;">U.S. Corporation Income Tax Return</div>
-      <div style="font-size:7pt;">For calendar year ${taxYear}, or tax year beginning _______, ${taxYear}, ending _______, 20____</div>
-      <div style="font-size:6.5pt;margin-top:3px;color:#333;">&#9658; Go to <em>www.irs.gov/Form1120</em> for instructions and the latest information.</div>
-    </td>
-    <td style="width:120px;padding:5px 8px;vertical-align:top;text-align:right;">
-      <div style="font-size:7pt;font-weight:bold;">OMB No. 1545-0123</div>
-      <div style="border:2px solid #000;display:inline-block;padding:3px 10px;margin-top:5px;font-size:13pt;font-weight:900;">${taxYear}</div>
-    </td>
-  </tr>
-</table>
-<table style="width:100%;border-collapse:collapse;border:1px solid #000;border-top:none;">
-  <tr>
-    <td style="padding:3px 6px;border-right:1px solid #000;border-bottom:1px solid #000;width:52%;">
-      <div style="font-size:6.5pt;color:#444;">A &nbsp;Name (see instructions)</div>
-      <div style="font-size:9pt;font-weight:bold;padding:1px 0;">${corpName}</div>
-    </td>
-    <td colspan="2" style="padding:3px 6px;border-bottom:1px solid #000;">
-      <div style="font-size:6.5pt;color:#444;">B &nbsp;Employer identification number</div>
-      <div style="font-size:9pt;font-weight:bold;font-family:Courier New,monospace;padding:1px 0;">${p.ein}</div>
-    </td>
-  </tr>
-  <tr>
-    <td style="padding:3px 6px;border-right:1px solid #000;border-bottom:1px solid #000;">
-      <div style="font-size:6.5pt;color:#444;">Number, street, and room or suite no. (If a P.O. box, see instructions.)</div>
-      <div style="font-size:8pt;padding:1px 0;">${p.address||''}</div>
-    </td>
-    <td style="padding:3px 6px;border-right:1px solid #000;border-bottom:1px solid #000;width:24%;">
-      <div style="font-size:6.5pt;color:#444;">C &nbsp;Date incorporated</div>
-      <div style="font-size:8pt;padding:1px 0;">${p.incDate||''}</div>
-    </td>
-    <td style="padding:3px 6px;border-bottom:1px solid #000;width:24%;">
-      <div style="font-size:6.5pt;color:#444;">D &nbsp;Total assets (see instructions)</div>
-      <div style="font-size:8pt;font-family:Courier New,monospace;padding:1px 0;">$ ${D(inc)}</div>
-    </td>
-  </tr>
-  <tr>
-    <td style="padding:3px 6px;border-right:1px solid #000;">
-      <div style="font-size:6.5pt;color:#444;">City or town, state or province, country, and ZIP or foreign postal code</div>
-      <div style="font-size:8pt;padding:1px 0;">${p.city||''}</div>
-    </td>
-    <td colspan="2" style="padding:3px 6px;font-size:7pt;vertical-align:middle;">
-      E &nbsp;Check if: &nbsp;
-      <span style="${B}display:inline-block;width:9px;height:9px;vertical-align:middle;"></span> (1) Initial return &nbsp;&nbsp;
-      <span style="${B}display:inline-block;width:9px;height:9px;vertical-align:middle;"></span> (2) Final return &nbsp;&nbsp;
-      <span style="${B}display:inline-block;width:9px;height:9px;vertical-align:middle;"></span> (3) Name change &nbsp;&nbsp;
-      <span style="${B}display:inline-block;width:9px;height:9px;vertical-align:middle;"></span> (4) Address change
-    </td>
-  </tr>
-</table>
-<table style="width:100%;border-collapse:collapse;border:1px solid #000;border-top:none;">
-  ${sHead('Income')}
-  ${row('1a','Gross receipts or sales',D(inc))}
-  ${row('1b','Returns and allowances','')}
-  ${row('1c','Balance. Subtract line 1b from line 1a',D(inc),true)}
-  ${row('2','Cost of goods sold (attach Form 1125-A)','')}
-  ${row('3','Gross profit. Subtract line 2 from line 1c',D(inc),true)}
-  ${row('4','Dividends and inclusions (Schedule C, line 23)','')}
-  ${row('5','Interest','')}
-  ${row('6','Gross rents','')}
-  ${row('7','Gross royalties','')}
-  ${row('8','Capital gain net income (attach Schedule D (Form 1120))','')}
-  ${row('9','Net gain or (loss) from Form 4797, Part II, line 17 (attach Form 4797)','')}
-  ${row('10','Other income (see instructions—attach statement)','')}
-  ${row('11','Total income. Add lines 3 through 10',D(inc),true)}
-  ${sHead('Deductions (See instructions for limitations on deductions.)')}
-  ${row('12','Compensation of officers (see instructions—attach Form 1125-E)',wages>0?D(wages):'')}
-  ${row('13','Salaries and wages (less employment credits)','')}
-  ${row('14','Repairs and maintenance','')}
-  ${row('15','Bad debts','')}
-  ${row('16','Rents',rent>0?D(rent):'')}
-  ${row('17','Taxes and licenses','')}
-  ${row('18','Interest (see instructions)','')}
-  ${row('19','Charitable contributions','')}
-  ${row('20','Depreciation from Form 4562 not claimed on Form 1125-A or elsewhere on return','')}
-  ${row('21','Depletion','')}
-  ${row('22','Advertising',advertising>0?D(advertising):'')}
-  ${row('23','Pension, profit-sharing, etc., plans','')}
-  ${row('24','Employee benefit programs','')}
-  ${row('25','Reserved for future use','')}
-  ${row('26','Other deductions (attach statement)',otherDed>0?D(otherDed):'')}
-  ${row('27','Total deductions. Add lines 12 through 26',D(exp),true)}
-  ${row('28','Taxable income before net operating loss deduction and special deductions. Subtract line 27 from line 11',D(profit),true)}
-  ${sHead('Tax, Refundable Credits, and Payments')}
-  ${row('29a','Net operating loss (NOL) deduction (see instructions)','')}
-  ${row('29b','Special deductions (Schedule C, line 24)','')}
-  ${row('29c','Add lines 29a and 29b','')}
-  ${row('30','Taxable income. Subtract line 29c from line 28. See instructions',D(profit>0?profit:0),true)}
-  ${row('31','Total tax (Schedule J, Part I, line 11)','')}
-  ${row('32','Reserved for future use','')}
-  ${row('33','Total payments and credits (Schedule J, Part III, line 23)','')}
-  ${row('34','Estimated tax penalty. See instructions','')}
-  ${row('35','Amount owed. If line 33 is smaller than the total of lines 31 and 34, enter amount owed','')}
-  ${row('36','Overpayment. If line 33 is larger than the total of lines 31 and 34, enter overpayment','')}
-  ${row('37','Enter the amount from line 36 you want: Credited to next year\'s estimated tax &#9658; &nbsp; &nbsp; &nbsp; &nbsp; Refunded &#9658;','')}
-</table>
-<table style="width:100%;border-collapse:collapse;border:1px solid #000;border-top:none;">
-  <tr><td colspan="4" style="${SHEAD}">Sign Here &nbsp;&nbsp; <span style="font-size:6.5pt;font-weight:normal;">Under penalties of perjury, I declare that I have examined this return, including accompanying schedules and statements, and to the best of my knowledge and belief, it is true, correct, and complete. Declaration of preparer (other than taxpayer) is based on all information of which preparer has any knowledge.</span></td></tr>
-  <tr>
-    <td style="padding:8px 6px;border-right:1px solid #000;width:60%;vertical-align:bottom;">
-      <table style="width:100%;border-collapse:collapse;">
-        <tr>
-          <td style="border-bottom:1px solid #000;width:50%;font-size:6.5pt;padding-bottom:14px;">Signature of officer</td>
-          <td style="width:4%;"></td>
-          <td style="border-bottom:1px solid #000;width:22%;font-size:6.5pt;padding-bottom:14px;">Date</td>
-          <td style="width:4%;"></td>
-          <td style="border-bottom:1px solid #000;width:20%;font-size:6.5pt;padding-bottom:14px;">Title</td>
-        </tr>
-      </table>
-    </td>
-    <td style="padding:6px 8px;font-size:7pt;width:40%;vertical-align:top;">
-      <div style="font-weight:bold;margin-bottom:4px;">Paid Preparer Use Only</div>
-      <table style="width:100%;border-collapse:collapse;">
-        <tr><td style="font-size:6.5pt;border-bottom:1px solid #ccc;padding:2px 0;">Preparer's name</td><td style="font-size:6.5pt;border-bottom:1px solid #ccc;text-align:right;">PTIN</td></tr>
-        <tr><td colspan="2" style="font-size:6.5pt;border-bottom:1px solid #ccc;padding:2px 0;">Firm's name &nbsp;&nbsp;&nbsp; EIN</td></tr>
-        <tr><td colspan="2" style="font-size:6.5pt;padding:2px 0;">Phone no.</td></tr>
-      </table>
-    </td>
-  </tr>
-</table>
-<div style="margin-top:8px;padding:5px 8px;border:1px solid #999;background:#f5f5f5;font-size:6.5pt;color:#555;line-height:1.4;">
-  <strong>PRO FORMA DOCUMENT:</strong> This is a working draft pre-filled by MyTaxFly for reference purposes only. It is NOT a filed tax return. Review all figures with a qualified CPA or enrolled agent before filing. Dollar amounts rounded per IRS instructions. Tax Year ${taxYear}.
-</div>`;
-
+  form.innerHTML = buildForm1120HTML(p, filtered, taxYear);
   wrap.appendChild(form);
   document.body.appendChild(wrap);
   html2pdf().set({
-    margin: [8,8,8,8],
+    margin: [0,0,0,0],
     filename: `Form1120_${corpName.replace(/[^a-zA-Z0-9]/g,'_')}_${taxYear}.pdf`,
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: { scale: 2, useCORS: true },
@@ -3093,185 +3157,67 @@ function exportForm5472() {
   if (!p.ein) { alert('Please complete your LLC profile first (EIN is required).'); return; }
   const filtered = getReportFilteredTx();
   const taxYear = reportPeriodFrom ? reportPeriodFrom.getFullYear() : new Date().getFullYear() - 1;
-  const inc = filtered.filter(t => t.type === 'income').reduce((s, t) => s + (parseFloat(t.amount)||0), 0);
-  const exp = filtered.filter(t => t.type === 'expense').reduce((s, t) => s + (parseFloat(t.amount)||0), 0);
-  const D = (n) => n > 0 ? fmtIRS(n) : (n < 0 ? `(${fmtIRS(Math.abs(n))})` : '');
-  const B = 'border:1px solid #000;';
-  const AMT = 'border:1px solid #000;background:#d8d8d8;text-align:right;padding:1px 5px;font-family:Courier New,monospace;font-size:8pt;white-space:nowrap;width:108px;';
-  const AMT0 = 'border:1px solid #000;background:#d8d8d8;width:108px;';
-  const LN = 'font-size:7.5pt;font-weight:bold;padding:1px 4px;text-align:center;width:24px;border-right:1px solid #999;white-space:nowrap;';
-  const DESC = 'font-size:7.5pt;padding:1px 5px;border-bottom:1px solid #ccc;';
-  const DESCb = 'font-size:7.5pt;padding:1px 5px;border-bottom:1px solid #ccc;font-weight:bold;';
-  const SHEAD = 'background:#555;color:#fff;font-weight:bold;font-size:7.5pt;padding:2px 6px;letter-spacing:.3px;';
-  const row = (ln, desc, val, bold) => `<tr style="height:17px"><td style="${LN}">${ln}</td><td style="${bold?DESCb:DESC}">${desc}</td><td style="${val?AMT:AMT0}">${val||''}</td></tr>`;
-  const row2 = (ln, desc, val, bold) => `<tr style="height:17px"><td style="${LN}"></td><td style="${bold?DESCb:DESC}"><span style="font-weight:bold;">${ln}</span> &nbsp;${desc}</td><td style="${val?AMT:AMT0}">${val||''}</td></tr>`;
-  const sHead = (t) => `<tr><td colspan="3" style="${SHEAD}">${t}</td></tr>`;
   const corpName = llcName || p.llcName || '';
-
   const wrap = document.createElement('div');
-  wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;background:#fff;';
+  wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:820px;background:#fff;';
   const form = document.createElement('div');
-  form.style.cssText = 'font-family:Arial,Helvetica,sans-serif;font-size:8pt;color:#000;width:100%;box-sizing:border-box;padding:18px 22px;background:#fff;';
-
-  form.innerHTML = `
-<table style="width:100%;border-collapse:collapse;border:2px solid #000;">
-  <tr>
-    <td style="width:110px;padding:5px 8px;border-right:2px solid #000;vertical-align:middle;">
-      <div style="font-size:7.5pt;font-weight:bold;line-height:1;">Form</div>
-      <div style="font-size:40pt;font-weight:900;line-height:1;font-style:italic;letter-spacing:-2px;">5472</div>
-      <div style="font-size:6pt;line-height:1.4;margin-top:2px;">Department of the Treasury<br>Internal Revenue Service</div>
-    </td>
-    <td style="text-align:center;padding:6px 10px;vertical-align:top;border-right:2px solid #000;">
-      <div style="font-size:10pt;font-weight:900;margin-bottom:3px;">Information Return of a 25% Foreign-Owned U.S. Corporation</div>
-      <div style="font-size:8pt;font-weight:700;">or a Foreign Corporation Engaged in a U.S. Trade or Business</div>
-      <div style="font-size:6.5pt;margin-top:3px;">(Under Sections 6038A and 6038C of the Internal Revenue Code)</div>
-      <div style="font-size:6pt;margin-top:2px;color:#333;">&#9658; Go to <em>www.irs.gov/Form5472</em> for instructions and the latest information. Rev. December 2023</div>
-    </td>
-    <td style="width:120px;padding:5px 8px;vertical-align:top;text-align:right;">
-      <div style="font-size:7pt;font-weight:bold;">OMB No. 1545-0123</div>
-      <div style="border:2px solid #000;display:inline-block;padding:3px 10px;margin-top:5px;font-size:13pt;font-weight:900;">${taxYear}</div>
-    </td>
-  </tr>
-</table>
-<table style="width:100%;border-collapse:collapse;border:1px solid #000;border-top:none;">
-  <tr><td colspan="3" style="${SHEAD}">Part I &nbsp;&nbsp; Reporting Corporation</td></tr>
-  <tr style="height:17px">
-    <td colspan="3" style="font-size:6.5pt;padding:2px 6px;border-bottom:1px solid #ccc;background:#eee;">
-      Check the box that applies: &nbsp;
-      <span style="${B}display:inline-block;width:9px;height:9px;vertical-align:middle;"></span> (1) U.S. corporation &nbsp;
-      <span style="${B}display:inline-block;width:9px;height:9px;vertical-align:middle;"></span> (2) Foreign corporation engaged in U.S. trade or business &nbsp;
-      <span style="font-weight:bold;">${B}display:inline-block;width:9px;height:9px;vertical-align:middle;background:#333;"></span> (3) Foreign-owned domestic disregarded entity (DE)
-    </td>
-  </tr>
-  <tr style="height:17px">
-    <td style="${'font-size:7.5pt;padding:1px 5px;border-bottom:1px solid #ccc;border-right:1px solid #ccc;'}">
-      <span style="font-size:6.5pt;color:#444;">1a &nbsp;Name of reporting corporation</span><br>
-      <span style="font-size:9pt;font-weight:bold;">${corpName}</span>
-    </td>
-    <td style="${'font-size:7.5pt;padding:1px 5px;border-bottom:1px solid #ccc;border-right:1px solid #ccc;width:30%;'}">
-      <span style="font-size:6.5pt;color:#444;">1b &nbsp;Employer identification number</span><br>
-      <span style="font-size:9pt;font-weight:bold;font-family:Courier New,monospace;">${p.ein}</span>
-    </td>
-    <td style="${'font-size:7.5pt;padding:1px 5px;border-bottom:1px solid #ccc;width:22%;'}">
-      <span style="font-size:6.5pt;color:#444;">1c &nbsp;Total assets</span><br>
-      <span style="font-size:8pt;font-family:Courier New,monospace;">$ ${D(inc)}</span>
-    </td>
-  </tr>
-  <tr style="height:17px">
-    <td style="font-size:7.5pt;padding:1px 5px;border-bottom:1px solid #ccc;border-right:1px solid #ccc;">
-      <span style="font-size:6.5pt;color:#444;">Street address</span><br>${p.address||''}
-    </td>
-    <td style="font-size:7.5pt;padding:1px 5px;border-bottom:1px solid #ccc;border-right:1px solid #ccc;">
-      <span style="font-size:6.5pt;color:#444;">1d &nbsp;Principal business activity</span><br>${p.activity||''}
-    </td>
-    <td style="font-size:7.5pt;padding:1px 5px;border-bottom:1px solid #ccc;">
-      <span style="font-size:6.5pt;color:#444;">1e &nbsp;Country of incorporation</span><br>${p.country||'United States'}
-    </td>
-  </tr>
-  <tr style="height:17px">
-    <td style="font-size:7.5pt;padding:1px 5px;border-bottom:1px solid #ccc;border-right:1px solid #ccc;">
-      <span style="font-size:6.5pt;color:#444;">City, state, and ZIP or foreign postal code</span><br>${p.city||''}
-    </td>
-    <td style="font-size:7.5pt;padding:1px 5px;border-bottom:1px solid #ccc;border-right:1px solid #ccc;">
-      <span style="font-size:6.5pt;color:#444;">1f &nbsp;Total gross payments (see instructions)</span><br>
-      <span style="font-family:Courier New,monospace;">$ ${D(inc+exp)}</span>
-    </td>
-    <td style="font-size:7.5pt;padding:1px 5px;border-bottom:1px solid #ccc;">
-      <span style="font-size:6.5pt;color:#444;">1m &nbsp;Date of incorporation</span><br>${p.incDate||''}
-    </td>
-  </tr>
-  <tr style="height:17px">
-    <td colspan="3" style="font-size:7pt;padding:2px 6px;border-bottom:1px solid #ccc;">
-      1g &nbsp;Total number of Forms 5472 filed for the tax year: &nbsp;<strong>1</strong> &nbsp;&nbsp;&nbsp;
-      1j &nbsp;Check if initial year filing: <span style="${B}display:inline-block;width:9px;height:9px;vertical-align:middle;margin-right:4px;"></span>
-    </td>
-  </tr>
-</table>
-<table style="width:100%;border-collapse:collapse;border:1px solid #000;border-top:none;">
-  <tr><td colspan="3" style="${SHEAD}">Part II &nbsp;&nbsp; 25% Foreign Shareholder</td></tr>
-  <tr style="height:17px">
-    <td style="font-size:7.5pt;padding:1px 5px;border-bottom:1px solid #ccc;border-right:1px solid #ccc;width:40%;">
-      <span style="font-size:6.5pt;color:#444;">2a &nbsp;Name and address of 25% foreign shareholder</span><br>${p.shName||''}
-    </td>
-    <td style="font-size:7.5pt;padding:1px 5px;border-bottom:1px solid #ccc;border-right:1px solid #ccc;width:30%;">
-      <span style="font-size:6.5pt;color:#444;">2b(3) &nbsp;Foreign tax ID number (FTIN)</span><br>${p.shFtin||''}
-    </td>
-    <td style="font-size:7.5pt;padding:1px 5px;border-bottom:1px solid #ccc;width:30%;">
-      <span style="font-size:6.5pt;color:#444;">2c &nbsp;% ownership</span><br>100%
-    </td>
-  </tr>
-  <tr style="height:17px">
-    <td style="font-size:7.5pt;padding:1px 5px;border-right:1px solid #ccc;">
-      <span style="font-size:6.5pt;color:#444;">2d &nbsp;Country of citizenship</span><br>${p.shCountry||''}
-    </td>
-    <td colspan="2" style="font-size:7.5pt;padding:1px 5px;">
-      <span style="font-size:6.5pt;color:#444;">2e &nbsp;Country of tax residence</span><br>${p.shRes||''}
-    </td>
-  </tr>
-</table>
-<table style="width:100%;border-collapse:collapse;border:1px solid #000;border-top:none;">
-  <tr><td colspan="3" style="${SHEAD}">Part IV &nbsp;&nbsp; Monetary Transactions Between Reporting Corporation and Foreign Related Party</td></tr>
-  <tr style="height:14px"><td colspan="3" style="font-size:6.5pt;padding:1px 6px;background:#eee;border-bottom:1px solid #ccc;font-style:italic;">Enter amounts for the tax year. See instructions for Part IV. Report transactions in functional currency of the reporting corporation.</td></tr>
-  ${row2('4a','Sales of inventory','')}
-  ${row2('4b','Purchases of inventory','')}
-  ${row2('5a','Platform contribution transactions','')}
-  ${row2('5b','Cost sharing transactions','')}
-  ${row2('6a','Sales of tangible property other than inventory','')}
-  ${row2('6b','Purchases of tangible property other than inventory','')}
-  ${row2('7a','Rents/royalties paid','')}
-  ${row2('7b','Rents/royalties received','')}
-  ${row2('8a','Sales, assignments, or grants of intangible property rights','')}
-  ${row2('8b','Purchases, assignments, or acquisitions of intangible property rights','')}
-  ${row2('9a','Amounts paid for services','')}
-  ${row2('9b','Amounts received for services',D(inc))}
-  ${row2('10','Commissions paid','')}
-  ${row2('11','Commissions received','')}
-  ${row2('12a','Amounts borrowed (see instructions)','')}
-  ${row2('12b','Amounts loaned (see instructions)','')}
-  ${row2('13a','Interest paid','')}
-  ${row2('13b','Interest received','')}
-  ${row2('14a','Premiums paid for insurance or reinsurance','')}
-  ${row2('14b','Premiums received for insurance or reinsurance','')}
-  ${row2('15','Dividends paid','')}
-  ${row2('16','Dividends received','')}
-  ${row2('17','Amounts paid in connection with cost-sharing arrangement',D(exp))}
-  ${row2('18','Amounts received in connection with cost-sharing arrangement','')}
-  ${row('19','Total. Add all amounts reported on lines 4a through 18',D(inc+exp),true)}
-</table>
-<table style="width:100%;border-collapse:collapse;border:1px solid #000;border-top:none;">
-  <tr><td colspan="2" style="${SHEAD}">Sign Here</td></tr>
-  <tr>
-    <td style="padding:8px 6px;border-right:1px solid #000;font-size:7pt;width:60%;">
-      Under penalties of perjury, I declare that I have examined this return, including accompanying schedules and statements, and to the best of my knowledge and belief, it is true, correct, and complete.<br><br>
-      <table style="width:100%;border-collapse:collapse;">
-        <tr>
-          <td style="border-bottom:1px solid #000;width:48%;font-size:6.5pt;padding-bottom:14px;">Signature of officer</td>
-          <td style="width:4%;"></td>
-          <td style="border-bottom:1px solid #000;width:22%;font-size:6.5pt;padding-bottom:14px;">Date</td>
-          <td style="width:4%;"></td>
-          <td style="border-bottom:1px solid #000;width:22%;font-size:6.5pt;padding-bottom:14px;">Title</td>
-        </tr>
-      </table>
-    </td>
-    <td style="padding:6px 8px;font-size:7pt;vertical-align:top;">
-      <div style="font-weight:bold;margin-bottom:4px;">Paid Preparer Use Only</div>
-      <table style="width:100%;border-collapse:collapse;">
-        <tr><td style="font-size:6.5pt;border-bottom:1px solid #ccc;padding:2px 0;">Preparer's name</td><td style="font-size:6.5pt;border-bottom:1px solid #ccc;text-align:right;">PTIN</td></tr>
-        <tr><td colspan="2" style="font-size:6.5pt;border-bottom:1px solid #ccc;padding:2px 0;">Firm's name &nbsp;&nbsp;&nbsp; EIN</td></tr>
-        <tr><td colspan="2" style="font-size:6.5pt;padding:2px 0;">Phone no.</td></tr>
-      </table>
-    </td>
-  </tr>
-</table>
-<div style="margin-top:8px;padding:5px 8px;border:1px solid #999;background:#f5f5f5;font-size:6.5pt;color:#555;line-height:1.4;">
-  <strong>PRO FORMA DOCUMENT:</strong> This is a working draft pre-filled by MyTaxFly for reference purposes only. It is NOT a filed tax return. Forms 5472 must be attached to a Pro Forma 1120 and mailed to: IRS, P.O. Box 409101, Ogden, UT 84409. Review all figures with a qualified CPA before filing. Tax Year ${taxYear}.
-</div>`;
-
+  form.innerHTML = buildForm5472HTML(p, filtered, taxYear);
   wrap.appendChild(form);
   document.body.appendChild(wrap);
   html2pdf().set({
-    margin: [8,8,8,8],
+    margin: [0,0,0,0],
     filename: `Form5472_${corpName.replace(/[^a-zA-Z0-9]/g,'_')}_${taxYear}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  }).from(form).save().then(() => document.body.removeChild(wrap));
+}
+
+function exportFilingPackage() {
+  const p = getTaxProfile();
+  if (!p.ein) { alert('Please complete your LLC profile first (EIN is required).'); return; }
+  const filtered = getReportFilteredTx();
+  const taxYear = reportPeriodFrom ? reportPeriodFrom.getFullYear() : new Date().getFullYear() - 1;
+  const corpName = llcName || p.llcName || '';
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:820px;background:#fff;';
+  const form = document.createElement('div');
+  // Cover page + Form 1120 + page break + Form 5472
+  const inc  = filtered.filter(t=>t.type==='income').reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
+  const exp  = filtered.filter(t=>t.type==='expense').reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
+  const coverHTML = `<div style="font-family:Arial,sans-serif;padding:60px 48px;background:#fff;text-align:center;min-height:600px;display:flex;flex-direction:column;align-items:center;justify-content:center">
+    <div style="font-size:28px;font-weight:900;color:#00c896;margin-bottom:6px">MyTaxFly</div>
+    <div style="display:inline-block;background:#00c896;color:#fff;font-size:10px;font-weight:700;padding:3px 14px;border-radius:20px;letter-spacing:.5px;margin-bottom:20px">ANNUAL FILING PACKAGE</div>
+    <div style="font-size:22px;font-weight:800;color:#111;margin-bottom:8px">IRS Tax Filing Package</div>
+    <div style="font-size:14px;color:#555;margin-bottom:32px">Foreign-Owned Single-Member LLC (Disregarded Entity) · Tax Year ${taxYear}</div>
+    <table style="border-collapse:collapse;font-size:13px;margin:0 auto">
+      <tr><td style="padding:6px 14px;font-weight:700;color:#555;text-align:right;border-bottom:1px solid #eee">Entity</td><td style="padding:6px 14px;color:#111;border-bottom:1px solid #eee">${corpName}</td></tr>
+      <tr><td style="padding:6px 14px;font-weight:700;color:#555;text-align:right;border-bottom:1px solid #eee">EIN</td><td style="padding:6px 14px;color:#111;font-family:monospace;border-bottom:1px solid #eee">${p.ein}</td></tr>
+      <tr><td style="padding:6px 14px;font-weight:700;color:#555;text-align:right;border-bottom:1px solid #eee">Tax Year</td><td style="padding:6px 14px;color:#111;border-bottom:1px solid #eee">January 1 – December 31, ${taxYear}</td></tr>
+      <tr><td style="padding:6px 14px;font-weight:700;color:#555;text-align:right;border-bottom:1px solid #eee">Revenue</td><td style="padding:6px 14px;color:#16a34a;font-weight:700;border-bottom:1px solid #eee">+\$${inc.toLocaleString()}</td></tr>
+      <tr><td style="padding:6px 14px;font-weight:700;color:#555;text-align:right;border-bottom:1px solid #eee">Deductions</td><td style="padding:6px 14px;color:#dc2626;font-weight:700;border-bottom:1px solid #eee">-\$${exp.toLocaleString()}</td></tr>
+      <tr><td style="padding:6px 14px;font-weight:700;color:#555;text-align:right;border-bottom:1px solid #eee">Net Profit</td><td style="padding:6px 14px;color:${(inc-exp)>=0?'#16a34a':'#dc2626'};font-weight:900;font-size:16px;border-bottom:1px solid #eee">${(inc-exp)>=0?'+':''}\$${(inc-exp).toLocaleString()}</td></tr>
+      <tr><td style="padding:6px 14px;font-weight:700;color:#555;text-align:right">Filing Deadline</td><td style="padding:6px 14px;color:#111">April 15, ${taxYear+1}</td></tr>
+    </table>
+    <div style="margin-top:32px;background:#f5f5f5;border-radius:8px;padding:16px 24px;font-size:12px;color:#555;max-width:400px;text-align:left">
+      <div style="font-weight:700;margin-bottom:8px">Contents of this package:</div>
+      <div style="margin-bottom:4px">① Pro Forma Form 1120 — U.S. Corporation Income Tax Return</div>
+      <div>② Form 5472 — Information Return (25% Foreign-Owned U.S. Corporation)</div>
+    </div>
+    <div style="margin-top:24px;font-size:11px;color:#f59e0b;background:#fffbea;border:1px solid #f6ad55;border-radius:6px;padding:10px 16px;max-width:400px">
+      ⚠ Pre-filled working draft. Review with your CPA before filing. Not tax advice.
+    </div>
+  </div>`;
+  form.innerHTML = coverHTML
+    + `<div style="page-break-before:always"></div>`
+    + buildForm1120HTML(p, filtered, taxYear)
+    + `<div style="page-break-before:always"></div>`
+    + buildForm5472HTML(p, filtered, taxYear);
+  wrap.appendChild(form);
+  document.body.appendChild(wrap);
+  html2pdf().set({
+    margin: [0,0,0,0],
+    filename: `FilingPackage_${corpName.replace(/[^a-zA-Z0-9]/g,'_')}_${taxYear}.pdf`,
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: { scale: 2, useCORS: true },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
@@ -3332,9 +3278,13 @@ function applyPlanGating(plan){
   const navAiLock = document.getElementById('nav-ai-lock');
   if(navAiLock) navAiLock.style.display = lvl < PLAN_LEVEL['pro'] ? 'inline' : 'none';
 
-  // ── IRS Export button ──
+  // ── IRS Export buttons ──
   const irsLock = document.getElementById('irs-export-lock');
   if(irsLock) irsLock.style.display = lvl < PLAN_LEVEL['pro'] ? 'flex' : 'none';
+  ['irs-lock-1120','irs-lock-5472','irs-lock-package'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.style.display = lvl < PLAN_LEVEL['pro'] ? 'flex' : 'none';
+  });
 
   // ── Entity Switcher (Business) ──
   const es = document.getElementById('entity-switcher');
