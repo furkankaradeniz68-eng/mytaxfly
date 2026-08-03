@@ -28,6 +28,20 @@
     .note{font-size:11px;color:#4a5568;line-height:1.6}
     .pw-hint{font-size:11px;color:#4a5568;text-align:left;margin-top:-10px;margin-bottom:16px}
   </style>
+<!-- Meta Pixel -->
+<script>
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+n.push=n;n.loaded=!0;n.version="2.0";n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+document,"script","https://connect.facebook.net/en_US/fbevents.js");
+fbq("init","898464922187303");
+fbq("track","PageView");
+fbq("track","Purchase",{currency:"USD",value:9.00});
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></noscript>
+<!-- End Meta Pixel -->
 </head>
 <body>
   <div class="card">
@@ -102,18 +116,24 @@
       btn.disabled = true;
       document.getElementById('btn-text').textContent = 'Creating account...';
 
-      // Check active subscription
-      const { data: sub } = await sb
-        .from('subscriptions')
-        .select('status,plan')
-        .eq('email', email)
-        .eq('status', 'active')
-        .single();
+      // Check active subscription — poll up to 12s because webhook may not have fired yet
+      document.getElementById('btn-text').textContent = 'Activating subscription...';
+      let sub = null;
+      for (let i = 0; i < 6; i++) {
+        const { data } = await sb
+          .from('subscriptions')
+          .select('status,plan')
+          .eq('email', email)
+          .eq('status', 'active')
+          .single();
+        if (data) { sub = data; break; }
+        if (i < 5) await new Promise(r => setTimeout(r, 2000)); // wait 2s between retries
+      }
 
       if (!sub) {
         btn.disabled = false;
         document.getElementById('btn-text').textContent = 'Create Account & Go to Dashboard →';
-        return showError('No active subscription found for this email. Please complete checkout first or contact info@mytaxfly.com');
+        return showError('Subscription not found for this email. It can take a moment — please try again in 30 seconds. If this persists, contact info@mytaxfly.com');
       }
 
       // Create Supabase account
