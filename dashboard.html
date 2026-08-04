@@ -653,7 +653,13 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
       <label class="form-label" id="t-label-email">Email</label>
       <input class="form-input" id="login-email" type="email" placeholder="you@example.com">
       <label class="form-label" id="t-label-pw">Password</label>
-      <input class="form-input" id="login-password" type="password" placeholder="••••••••">
+      <div style="position:relative">
+        <input class="form-input" id="login-password" type="password" placeholder="••••••••" style="padding-right:44px">
+        <button type="button" onclick="togglePw('login-password',this)" tabindex="-1" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;color:var(--text3);display:flex;align-items:center">
+          <svg class="eye-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <svg class="eye-off-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+        </button>
+      </div>
       <button class="btn-primary" id="btn-login" onclick="handleLogin()"><span id="t-signin-btn">Sign In →</span></button>
       <div style="text-align:center;margin-top:12px">
         <a href="#" onclick="showForgotPassword()" style="font-size:12px;color:var(--text2);text-decoration:none">Forgot password?</a>
@@ -698,7 +704,13 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
       <label class="form-label">Email</label>
       <input class="form-input" id="reg-email" type="email" placeholder="you@example.com">
       <label class="form-label">Password</label>
-      <input class="form-input" id="reg-password" type="password" placeholder="min. 8 characters">
+      <div style="position:relative">
+        <input class="form-input" id="reg-password" type="password" placeholder="min. 8 characters" style="padding-right:44px">
+        <button type="button" onclick="togglePw('reg-password',this)" tabindex="-1" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;color:var(--text3);display:flex;align-items:center">
+          <svg class="eye-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <svg class="eye-off-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+        </button>
+      </div>
       <label class="form-label" id="t-label-llc">LLC Name (optional)</label>
       <input class="form-input" id="reg-llc" type="text" placeholder="e.g. Acme Ventures LLC">
       <div class="login-agree">
@@ -1570,6 +1582,23 @@ function showError(msg){
 
 let mfaFactorId=null, mfaChallengeId=null;
 
+function togglePw(inputId, btn) {
+  const input = document.getElementById(inputId);
+  const eyeOn  = btn.querySelector('.eye-icon');
+  const eyeOff = btn.querySelector('.eye-off-icon');
+  if (input.type === 'password') {
+    input.type = 'text';
+    eyeOn.style.display  = 'none';
+    eyeOff.style.display = 'block';
+    btn.style.color = 'var(--accent)';
+  } else {
+    input.type = 'password';
+    eyeOn.style.display  = 'block';
+    eyeOff.style.display = 'none';
+    btn.style.color = 'var(--text3)';
+  }
+}
+
 function showForgotPassword(){
   document.getElementById('form-login').style.display='none';
   document.getElementById('form-forgot').style.display='block';
@@ -1877,10 +1906,22 @@ function showSetNewPasswordForm(){
       <h2 style="text-align:center;font-size:18px;font-weight:700;color:var(--text1);margin-bottom:6px">Set New Password</h2>
       <div style="font-size:12px;color:var(--text2);text-align:center;margin-bottom:20px">Enter your new password below.</div>
       <div class="form-group"><label class="form-label">New Password</label>
-        <input class="form-input" id="new-password-input" type="password" placeholder="Min. 8 characters" autocomplete="new-password">
+        <div style="position:relative">
+          <input class="form-input" id="new-password-input" type="password" placeholder="Min. 8 characters" autocomplete="new-password" style="padding-right:44px">
+          <button type="button" onclick="togglePw('new-password-input',this)" tabindex="-1" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;color:var(--text3);display:flex;align-items:center">
+            <svg class="eye-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg class="eye-off-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+          </button>
+        </div>
       </div>
       <div class="form-group"><label class="form-label">Confirm Password</label>
-        <input class="form-input" id="new-password-confirm" type="password" placeholder="Repeat password">
+        <div style="position:relative">
+          <input class="form-input" id="new-password-confirm" type="password" placeholder="Repeat password" style="padding-right:44px">
+          <button type="button" onclick="togglePw('new-password-confirm',this)" tabindex="-1" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;color:var(--text3);display:flex;align-items:center">
+            <svg class="eye-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg class="eye-off-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+          </button>
+        </div>
       </div>
       <button class="btn-primary" id="btn-set-password" onclick="submitNewPassword()"><span>Save New Password →</span></button>
       <div id="new-password-msg" style="margin-top:12px;font-size:13px;text-align:center"></div>
