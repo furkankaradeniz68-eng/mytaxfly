@@ -1996,6 +1996,7 @@ async function addTransaction(r){
 
 let advisorMode = false;          // true when advisor is viewing a client
 let advisorCurrentClientId = null;
+let isAdvisorUser = false;        // true when logged in AS an advisor
 
 async function fetchUserRole() {
   try {
@@ -2009,6 +2010,7 @@ async function fetchUserRole() {
 }
 
 async function launchAdvisorView(user) {
+  isAdvisorUser = true;
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'none';
   document.getElementById('advisor-screen').classList.add('visible');
@@ -2290,12 +2292,12 @@ function filterAdvisorClients(query) {
 let clientAdvisorId = null;
 
 async function checkClientAdvisorChat(userId) {
+  if (isAdvisorUser) return; // advisors never see "My Advisor Chat"
   try {
     const { data } = await sb
       .from('advisor_clients')
       .select('advisor_id')
       .eq('client_id', userId)
-      .eq('status', 'active')
       .single();
     if (data?.advisor_id) {
       clientAdvisorId = data.advisor_id;
