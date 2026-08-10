@@ -884,14 +884,15 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
     <div class="nav-item" onclick="showPage('upload',this)"><span class="nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1='12' y1='5' x2='12' y2='19'/><line x1='5' y1='12' x2='19' y2='12'/></svg></span> <span id="t-nav-add">Add Transaction</span></div>
     <div class="nav-item" id="nav-ai-item" onclick="gatedNav('chat',this,'pro')"><span class="nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d='M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z'/></svg></span> <span id="t-nav-ai">AI Advisor</span><span id="nav-ai-lock" style="display:none;margin-left:auto;font-size:10px;opacity:0.5">🔒</span></div>
     <div class="nav-item" onclick="showPage('reports',this)"><span class="nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1='18' y1='20' x2='18' y2='10'/><line x1='12' y1='20' x2='12' y2='4'/><line x1='6' y1='20' x2='6' y2='14'/></svg></span> <span id="t-nav-reports">Export Reports</span></div>
-    <a href="/forms/IRS-Forms-MyTaxFly.zip" download style="display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--text2);font-size:12px;font-weight:500;padding:7px 24px 7px 20px;margin-top:2px;transition:color 0.2s;border-left:2px solid transparent" onmouseover="this.style.color='#00c896'" onmouseout="this.style.color=''">
+    <a id="nav-irs-zip" href="/forms/IRS-Forms-MyTaxFly.zip" download style="display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--text2);font-size:12px;font-weight:500;padding:7px 24px 7px 20px;margin-top:2px;transition:color 0.2s;border-left:2px solid transparent" onmouseover="this.style.color='#00c896'" onmouseout="this.style.color=''">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
       <span>Download IRS Forms (ZIP)</span>
     </a>
     <div class="nav-item" onclick="showPage('invoices',this)" id="nav-invoices-item"><span class="nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg></span> Invoices</div>
     <div class="nav-divider"></div>
     <div class="nav-item" id="nav-docs-item" onclick="showPage('documents',this)"><span class="nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span> Documents</div>
-    <div class="nav-item" id="nav-notes-item" onclick="showPage('notes',this)" style="display:none"><span class="nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span> Client Notes <span id="notes-badge" class="nav-badge" style="display:none">0</span></div>
+    <div class="nav-item" id="nav-notes-item" onclick="showPage('notes',this)" style="display:none"><span class="nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span> <span id="nav-notes-label">My Client Chat</span> <span id="notes-badge" class="nav-badge" style="display:none">0</span></div>
+    <div class="nav-item" id="nav-advisor-chat-item" onclick="showPage('notes',this)" style="display:none"><span class="nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span> My Advisor Chat <span id="advisor-chat-badge" class="nav-badge" style="display:none">0</span></div>
     <div class="nav-item" onclick="showPage('legal',this)"><span class="nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d='M12 2H2v20h20V2h-10'/><line x1='8' y1='6' x2='16' y2='6'/><line x1='8' y1='10' x2='16' y2='10'/><line x1='8' y1='14' x2='12' y2='14'/></svg></span> <span id="t-nav-legal">Legal</span></div>
     <a href="/" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:#00c896;font-size:12px;font-weight:600;padding:6px 24px;margin-top:2px;transition:opacity 0.2s" onmouseover="this.style.opacity='0.75'" onmouseout="this.style.opacity='1'">← Back to mytaxfly.com</a>
     </div><!-- /nav-scroll -->
@@ -1251,7 +1252,7 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
 
       <div class="page" id="page-notes">
         <div style="margin-bottom:20px">
-          <h2 style="font-size:20px;font-weight:700;margin-bottom:4px">Client Notes</h2>
+          <h2 style="font-size:20px;font-weight:700;margin-bottom:4px" id="notes-page-title">My Client Chat</h2>
           <div style="font-size:13px;color:var(--text3)" id="notes-client-label">Leave notes or messages for your client</div>
         </div>
         <div class="card" style="display:flex;flex-direction:column;">
@@ -2159,9 +2160,12 @@ async function openClientView(clientId, clientName) {
   document.getElementById('readonly-client-name').textContent = clientName;
   document.getElementById('readonly-banner').classList.add('visible');
 
-  // Show notes nav item
+  // Show notes nav item (advisor label)
   const notesNavItem = document.getElementById('nav-notes-item');
   if (notesNavItem) notesNavItem.style.display = '';
+  // Hide IRS ZIP download in advisor mode
+  const irsZip = document.getElementById('nav-irs-zip');
+  if (irsZip) irsZip.style.display = 'none';
 
   // Filter sidebar: only Dashboard, AI Advisor, Export Reports, Documents, Notes
   const allowedSections = ['dashboard', 'chat', 'reports', 'documents', 'notes'];
@@ -2214,11 +2218,14 @@ function backToAdvisorList() {
   if (notesPollingInterval) { clearInterval(notesPollingInterval); notesPollingInterval = null; }
   updateNotesBadge(0);
 
-  // Hide notes nav item, restore all others
+  // Hide notes nav item, restore IRS zip, restore all others
   const notesNavItem = document.getElementById('nav-notes-item');
   if (notesNavItem) notesNavItem.style.display = 'none';
+  const irsZip = document.getElementById('nav-irs-zip');
+  if (irsZip) irsZip.style.display = '';
   document.querySelectorAll('.sidebar .nav-item').forEach(item => {
     if (item.id === 'nav-notes-item') return;
+    if (item.id === 'nav-advisor-chat-item') return; // client-only
     item.style.display = '';
   });
 
@@ -2276,6 +2283,38 @@ function filterAdvisorClients(query) {
   });
 }
 
+// ── CLIENT-SIDE ADVISOR CHAT CHECK ───────────────────────────────────────────
+let clientAdvisorId = null;
+
+async function checkClientAdvisorChat(userId) {
+  try {
+    const { data } = await sb
+      .from('advisor_clients')
+      .select('advisor_id')
+      .eq('client_id', userId)
+      .eq('status', 'active')
+      .single();
+    if (data?.advisor_id) {
+      clientAdvisorId = data.advisor_id;
+      // Show "My Advisor Chat" nav item
+      const el = document.getElementById('nav-advisor-chat-item');
+      if (el) el.style.display = '';
+      // Check unread messages from advisor
+      const { count } = await sb
+        .from('client_notes')
+        .select('id', { count: 'exact', head: true })
+        .eq('client_id', userId)
+        .eq('author_role', 'advisor')
+        .eq('read_by_client', false);
+      if (count > 0) {
+        const badge = document.getElementById('advisor-chat-badge');
+        if (badge) { badge.textContent = count > 99 ? '99+' : count; badge.style.display = 'inline-flex'; }
+      }
+    }
+  } catch(e) { /* no advisor assigned — silently skip */ }
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 // ── CLIENT NOTES ─────────────────────────────────────────────────────────────
 let notesPollingInterval = null;
 
@@ -2328,27 +2367,78 @@ function updateNotesBadge(count) {
   }
 }
 
+async function loadClientAdvisorNotes() {
+  const wrap = document.getElementById('notes-messages');
+  if (!wrap || !clientAdvisorId) return;
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return;
+  try {
+    const { data, error } = await sb
+      .from('client_notes')
+      .select('id, message, author_role, created_at, read_by_client')
+      .eq('client_id', user.id)
+      .eq('advisor_id', clientAdvisorId)
+      .order('created_at', { ascending: true });
+    if (error) throw error;
+    const notes = data || [];
+    if (notes.length === 0) {
+      wrap.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--text3);font-size:13px">No messages from your advisor yet.</div>';
+    } else {
+      wrap.innerHTML = notes.map(n => {
+        const isAdvisor = n.author_role === 'advisor';
+        const time = new Date(n.created_at).toLocaleString('en-US', {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+        return `<div class="note-bubble ${isAdvisor ? 'client' : 'advisor'}">
+          ${n.message.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')}
+          <div class="note-meta">${isAdvisor ? 'Advisor' : 'You'} · ${time}</div>
+        </div>`;
+      }).join('');
+    }
+    wrap.scrollTop = wrap.scrollHeight;
+    // Mark advisor messages as read
+    const unreadIds = notes.filter(n => n.author_role === 'advisor' && !n.read_by_client).map(n => n.id);
+    if (unreadIds.length > 0) {
+      await sb.from('client_notes').update({ read_by_client: true }).in('id', unreadIds);
+      const badge = document.getElementById('advisor-chat-badge');
+      if (badge) badge.style.display = 'none';
+    }
+  } catch(e) { console.error('loadClientAdvisorNotes error:', e); }
+}
+
 async function sendAdvisorNote() {
   const input = document.getElementById('notes-input');
   const msg = (input?.value || '').trim();
-  if (!msg || !advisorCurrentClientId) return;
+  if (!msg) return;
   const { data: { user } } = await sb.auth.getUser();
   if (!user) return;
   input.value = '';
   input.style.height = '44px';
   try {
-    const { error } = await sb.from('client_notes').insert({
-      advisor_id: user.id,
-      client_id: advisorCurrentClientId,
-      message: msg,
-      author_role: 'advisor',
-      read_by_client: false
-    });
-    if (error) throw error;
-    await loadClientNotes(advisorCurrentClientId);
+    if (advisorMode && advisorCurrentClientId) {
+      // Advisor sending to client
+      const { error } = await sb.from('client_notes').insert({
+        advisor_id: user.id,
+        client_id: advisorCurrentClientId,
+        message: msg,
+        author_role: 'advisor',
+        read_by_client: false
+      });
+      if (error) throw error;
+      await loadClientNotes(advisorCurrentClientId);
+    } else if (clientAdvisorId) {
+      // Client replying to advisor
+      const { error } = await sb.from('client_notes').insert({
+        advisor_id: clientAdvisorId,
+        client_id: user.id,
+        message: msg,
+        author_role: 'client',
+        read_by_advisor: false
+      });
+      if (error) throw error;
+      await loadClientAdvisorNotes();
+    }
   } catch(e) {
     console.error('sendAdvisorNote error:', e);
-    input.value = msg; // restore on error
+    input.value = msg;
   }
 }
 
@@ -2442,6 +2532,9 @@ async function launchApp(user){
     ]);
     applyPlanGating(plan);
     document.getElementById('data-loader').classList.remove('visible');
+
+    // ── Check if this client has an advisor assigned → show "My Advisor Chat" ──
+    checkClientAdvisorChat(user.id);
   } catch(err) {
     console.error('launchApp error:', err);
     showError('Error: ' + (err?.message || String(err)));
@@ -2536,7 +2629,20 @@ function switchLegal(doc,el){
 function showPage(name,el){
   if(name==='documents') setTimeout(renderDocumentsPage,10);
   if(name==='invoices') setTimeout(loadInvoicePage,10);
-  if(name==='notes' && advisorCurrentClientId) setTimeout(() => loadClientNotes(advisorCurrentClientId), 10);
+  if(name==='notes') {
+    const titleEl = document.getElementById('notes-page-title');
+    const labelEl = document.getElementById('nav-notes-label');
+    if (advisorMode && advisorCurrentClientId) {
+      // Advisor viewing a client
+      if (titleEl) titleEl.textContent = 'My Client Chat';
+      if (labelEl) labelEl.textContent = 'My Client Chat';
+      setTimeout(() => loadClientNotes(advisorCurrentClientId), 10);
+    } else if (clientAdvisorId) {
+      // Client viewing their advisor chat
+      if (titleEl) titleEl.textContent = 'My Advisor Chat';
+      setTimeout(() => loadClientAdvisorNotes(), 10);
+    }
+  }
   // Show advisor export banner when on reports page in advisor mode
   if(name==='reports'){
     const b=document.getElementById('advisor-report-banner');
