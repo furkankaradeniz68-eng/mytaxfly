@@ -4098,6 +4098,17 @@ function applyAppTranslations(lang){
 window.addEventListener('DOMContentLoaded', () => {
   const lang = localStorage.getItem('mtf_lang') || 'en';
   setAppLang(lang);
+
+  // ── Advisor tab visibility ──────────────────────────────────────────────
+  // Show advisor tab on white label domains OR if ?advisor param is present.
+  // Hide on mytaxfly.com (the public product).
+  const isMainSite = /^(www\.)?mytaxfly\.com$/.test(location.hostname);
+  const forceAdvisor = new URLSearchParams(location.search).has('advisor');
+  const advisorTab = document.getElementById('tab-advisor');
+  if (advisorTab) {
+    advisorTab.style.display = (!isMainSite || forceAdvisor) ? '' : 'none';
+  }
+  // ───────────────────────────────────────────────────────────────────────
 });
 
 
