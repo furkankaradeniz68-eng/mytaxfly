@@ -170,6 +170,8 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
 body.advisor-viewing #topbar-actions{display:none !important;}
 body.advisor-viewing .sidebar{top:44px;}
 body.advisor-viewing #app{padding-top:44px;}
+body.advisor-viewing #entity-switcher{display:none !important;}
+body.advisor-viewing #nav-advisor-chat-item{display:none !important;}
 /* SKELETON LOADER */
 #data-loader{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:500;pointer-events:none;opacity:0;transition:opacity 0.3s;}
 #data-loader.visible{opacity:1;pointer-events:all;}
@@ -2171,6 +2173,7 @@ async function openClientView(clientId, clientName) {
   const allowedSections = ['dashboard', 'chat', 'reports', 'documents', 'notes'];
   document.querySelectorAll('.sidebar .nav-item').forEach(item => {
     if (item.id === 'nav-notes-item') return; // already shown above
+    if (item.id === 'nav-advisor-chat-item') { item.style.display = 'none'; return; } // client-only
     const onclick = item.getAttribute('onclick') || '';
     const allowed = allowedSections.some(s => onclick.includes(`'${s}'`) || onclick.includes(`"${s}"`));
     item.style.display = allowed ? '' : 'none';
