@@ -4105,9 +4105,11 @@ window.addEventListener('DOMContentLoaded', () => {
   const isMainSite = /^(www\.)?mytaxfly\.com$/.test(location.hostname);
   const forceAdvisor = new URLSearchParams(location.search).has('advisor');
   const advisorTab = document.getElementById('tab-advisor');
-  if (advisorTab) {
-    advisorTab.style.display = (!isMainSite || forceAdvisor) ? '' : 'none';
-  }
+  const loginTabs  = document.querySelector('.login-tabs');
+  const showAdvisor = !isMainSite || forceAdvisor;
+  if (advisorTab) advisorTab.style.display = showAdvisor ? '' : 'none';
+  // Hide the entire tab bar (and its background) when only one tab is shown
+  if (loginTabs) loginTabs.style.display = showAdvisor ? '' : 'none';
   // ───────────────────────────────────────────────────────────────────────
 });
 
