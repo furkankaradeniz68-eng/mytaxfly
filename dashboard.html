@@ -2303,11 +2303,14 @@ async function launchApp(user){
   if(btnLogin){ btnLogin.disabled=false; const s=btnLogin.querySelector('span'); if(s) s.textContent='Sign In →'; }
 
   try {
-    // ── Role check — Advisor gets their own view ──
-    const role = await fetchUserRole();
-    if (role === 'advisor') {
-      await launchAdvisorView(user);
-      return;
+    // ── Role check — only route to advisor portal when advisor tab was used ──
+    const advisorTabActive = document.getElementById('tab-advisor')?.classList.contains('active');
+    if (advisorTabActive) {
+      const role = await fetchUserRole();
+      if (role === 'advisor') {
+        await launchAdvisorView(user);
+        return;
+      }
     }
 
     const meta=user.user_metadata||{};
