@@ -108,8 +108,21 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
 .advisor-body{max-width:1100px;margin:0 auto;padding:40px 32px;}
 .advisor-title{font-size:26px;font-weight:800;color:var(--text1);margin-bottom:4px;}
 .advisor-sub{font-size:14px;color:var(--text2);margin-bottom:32px;}
-.advisor-stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:32px;}
-.advisor-stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 24px;}
+.advisor-client-count{background:var(--bg3);border:1px solid var(--border);border-radius:99px;padding:4px 14px;font-size:12px;font-weight:700;color:var(--text2);white-space:nowrap;}
+/* Nav badge */
+.nav-badge{display:inline-flex;align-items:center;justify-content:center;background:#e53e3e;color:#fff;font-size:10px;font-weight:800;border-radius:99px;min-width:17px;height:17px;padding:0 4px;margin-left:auto;line-height:1;}
+/* Notes page */
+.notes-chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 200px);min-height:400px;}
+.notes-chat-messages{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:4px 0 16px;}
+.note-bubble{max-width:72%;padding:10px 14px;border-radius:14px;font-size:13px;line-height:1.6;}
+.note-bubble.advisor{align-self:flex-end;background:rgba(0,200,150,0.12);border:1px solid rgba(0,200,150,0.25);color:var(--text1);border-bottom-right-radius:4px;}
+.note-bubble.client{align-self:flex-start;background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-bottom-left-radius:4px;}
+.note-meta{font-size:10px;color:var(--text3);margin-top:4px;}
+.notes-input-row{display:flex;gap:8px;margin-top:12px;}
+.notes-input-row textarea{flex:1;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 14px;color:var(--text1);font-family:'Montserrat',sans-serif;font-size:13px;resize:none;height:44px;outline:none;transition:border-color 0.2s;line-height:1.5;}
+.notes-input-row textarea:focus{border-color:var(--accent);}
+.notes-send-btn{background:var(--accent);border:none;border-radius:10px;padding:0 18px;color:#080b10;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:opacity 0.2s;white-space:nowrap;}
+.notes-send-btn:hover{opacity:0.85;}
 .advisor-stat-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:8px;}
 .advisor-stat-val{font-size:28px;font-weight:800;color:var(--accent);}
 .advisor-clients-grid{display:flex;flex-direction:column;gap:12px;}
@@ -803,23 +816,12 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
     </div>
   </div>
   <div class="advisor-body">
-    <div class="advisor-title" id="advisor-greeting">Your Clients</div>
-    <div class="advisor-sub" id="advisor-sub">Select a client to view their dashboard and transactions</div>
-    <div class="advisor-stats-row">
-      <div class="advisor-stat-card">
-        <div class="advisor-stat-label">Total Clients</div>
-        <div class="advisor-stat-val" id="adv-stat-clients">—</div>
-      </div>
-      <div class="advisor-stat-card">
-        <div class="advisor-stat-label">With Transactions</div>
-        <div class="advisor-stat-val" id="adv-stat-revenue">—</div>
-      </div>
-      <div class="advisor-stat-card">
-        <div class="advisor-stat-label">Needs Attention</div>
-        <div class="advisor-stat-val" id="adv-stat-active">—</div>
-      </div>
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:4px">
+      <div class="advisor-title" id="advisor-greeting">Your Clients</div>
+      <div class="advisor-client-count"><span id="adv-stat-clients">—</span> Clients</div>
     </div>
-    <div style="margin-bottom:16px">
+    <div class="advisor-sub" id="advisor-sub">Select a client to view their dashboard and transactions</div>
+    <div style="margin-bottom:20px">
       <input type="text" id="advisor-search" placeholder="🔍  Search clients by name or email…" oninput="filterAdvisorClients(this.value)" style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:11px 16px;color:var(--text1);font-family:'Montserrat',sans-serif;font-size:13px;outline:none;transition:border-color 0.2s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
     </div>
     <div class="advisor-clients-grid" id="advisor-clients-grid">
@@ -873,6 +875,7 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
     <div class="nav-item" onclick="showPage('invoices',this)" id="nav-invoices-item"><span class="nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg></span> Invoices</div>
     <div class="nav-divider"></div>
     <div class="nav-item" id="nav-docs-item" onclick="showPage('documents',this)"><span class="nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span> Documents</div>
+    <div class="nav-item" id="nav-notes-item" onclick="showPage('notes',this)" style="display:none"><span class="nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span> Client Notes <span id="notes-badge" class="nav-badge" style="display:none">0</span></div>
     <div class="nav-item" onclick="showPage('legal',this)"><span class="nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d='M12 2H2v20h20V2h-10'/><line x1='8' y1='6' x2='16' y2='6'/><line x1='8' y1='10' x2='16' y2='10'/><line x1='8' y1='14' x2='12' y2='14'/></svg></span> <span id="t-nav-legal">Legal</span></div>
     <a href="/" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:#00c896;font-size:12px;font-weight:600;padding:6px 24px;margin-top:2px;transition:opacity 0.2s" onmouseover="this.style.opacity='0.75'" onmouseout="this.style.opacity='1'">← Back to mytaxfly.com</a>
     </div><!-- /nav-scroll -->
@@ -1223,6 +1226,24 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
           </div>
           <div id="doc-list-full"></div>
           <div id="doc-count" style="font-size:11px;color:var(--text3);margin-top:12px;text-align:center"></div>
+        </div>
+      </div>
+
+      <div class="page" id="page-notes">
+        <div style="margin-bottom:20px">
+          <h2 style="font-size:20px;font-weight:700;margin-bottom:4px">Client Notes</h2>
+          <div style="font-size:13px;color:var(--text3)" id="notes-client-label">Leave notes or messages for your client</div>
+        </div>
+        <div class="card" style="display:flex;flex-direction:column;">
+          <div class="notes-chat-wrap">
+            <div class="notes-chat-messages" id="notes-messages">
+              <div style="text-align:center;padding:40px 0;color:var(--text3);font-size:13px">No notes yet — start the conversation below.</div>
+            </div>
+            <div class="notes-input-row">
+              <textarea id="notes-input" placeholder="Write a note for your client…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAdvisorNote();}"></textarea>
+              <button class="notes-send-btn" onclick="sendAdvisorNote()">Send →</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1990,8 +2011,6 @@ async function loadAdvisorClients(advisorId) {
     if (acErr || !acRows || acRows.length === 0) {
       grid.innerHTML = '<div class="advisor-empty">No clients assigned yet.<br><span style="font-size:12px;margin-top:8px;display:block">Contact MyTaxFly to add clients to your account.</span></div>';
       document.getElementById('adv-stat-clients').textContent = '0';
-      document.getElementById('adv-stat-revenue').textContent = '0';
-      document.getElementById('adv-stat-active').textContent = '0';
       return;
     }
 
@@ -2030,11 +2049,7 @@ async function loadAdvisorClients(advisorId) {
       if (statusMap[p.id] === 'active') activeCount++;
     });
 
-    const withTx = (profiles || []).filter(p => statsPerClient[p.id]?.revenue > 0 || statsPerClient[p.id]?.expenses > 0).length;
-    const needsAttention = (profiles || []).filter(p => (statusMap[p.id] || 'active') !== 'active').length;
     document.getElementById('adv-stat-clients').textContent = (profiles || []).length;
-    document.getElementById('adv-stat-revenue').textContent = withTx;
-    document.getElementById('adv-stat-active').textContent = needsAttention;
 
     // Render client cards
     if (!profiles || profiles.length === 0) {
@@ -2099,13 +2114,27 @@ async function openClientView(clientId, clientName) {
   document.getElementById('readonly-client-name').textContent = clientName;
   document.getElementById('readonly-banner').classList.add('visible');
 
-  // Filter sidebar: only Dashboard, AI Advisor, Export Reports, Documents
-  const allowedSections = ['dashboard', 'chat', 'reports', 'documents'];
+  // Show notes nav item
+  const notesNavItem = document.getElementById('nav-notes-item');
+  if (notesNavItem) notesNavItem.style.display = '';
+
+  // Filter sidebar: only Dashboard, AI Advisor, Export Reports, Documents, Notes
+  const allowedSections = ['dashboard', 'chat', 'reports', 'documents', 'notes'];
   document.querySelectorAll('.sidebar .nav-item').forEach(item => {
+    if (item.id === 'nav-notes-item') return; // already shown above
     const onclick = item.getAttribute('onclick') || '';
     const allowed = allowedSections.some(s => onclick.includes(`'${s}'`) || onclick.includes(`"${s}"`));
     item.style.display = allowed ? '' : 'none';
   });
+
+  // Update notes client label
+  const notesLabel = document.getElementById('notes-client-label');
+  if (notesLabel) notesLabel.textContent = `Notes & messages with ${clientName}`;
+
+  // Load notes + start polling
+  await checkUnreadNotes(clientId);
+  if (notesPollingInterval) clearInterval(notesPollingInterval);
+  notesPollingInterval = setInterval(() => checkUnreadNotes(advisorCurrentClientId), 30000);
 
   // Disable all edit/delete/add buttons
   document.querySelectorAll('.btn-primary, .btn-icon-danger, [onclick*="deleteTransaction"], [onclick*="openInvoiceForm"], [onclick*="addClient"]').forEach(el => {
@@ -2136,8 +2165,15 @@ function backToAdvisorList() {
   document.getElementById('readonly-banner').classList.remove('visible');
   document.getElementById('advisor-screen').classList.add('visible');
 
-  // Restore all sidebar nav items
+  // Stop notes polling + reset badge
+  if (notesPollingInterval) { clearInterval(notesPollingInterval); notesPollingInterval = null; }
+  updateNotesBadge(0);
+
+  // Hide notes nav item, restore all others
+  const notesNavItem = document.getElementById('nav-notes-item');
+  if (notesNavItem) notesNavItem.style.display = 'none';
   document.querySelectorAll('.sidebar .nav-item').forEach(item => {
+    if (item.id === 'nav-notes-item') return;
     item.style.display = '';
   });
 
@@ -2157,6 +2193,101 @@ function filterAdvisorClients(query) {
     card.style.display = (!q || name.includes(q) || email.includes(q)) ? '' : 'none';
   });
 }
+
+// ── CLIENT NOTES ─────────────────────────────────────────────────────────────
+let notesPollingInterval = null;
+
+async function loadClientNotes(clientId) {
+  const wrap = document.getElementById('notes-messages');
+  if (!wrap) return;
+  try {
+    const { data, error } = await sb
+      .from('client_notes')
+      .select('id, message, author_role, created_at, read_by_advisor')
+      .eq('client_id', clientId)
+      .order('created_at', { ascending: true });
+    if (error) throw error;
+    const notes = data || [];
+    if (notes.length === 0) {
+      wrap.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--text3);font-size:13px">No notes yet — start the conversation below.</div>';
+    } else {
+      wrap.innerHTML = notes.map(n => {
+        const isAdvisor = n.author_role === 'advisor';
+        const time = new Date(n.created_at).toLocaleString('en-US', {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+        return `<div class="note-bubble ${isAdvisor ? 'advisor' : 'client'}">
+          ${n.message.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')}
+          <div class="note-meta">${isAdvisor ? 'You' : 'Client'} · ${time}</div>
+        </div>`;
+      }).join('');
+    }
+    wrap.scrollTop = wrap.scrollHeight;
+    // Mark unread client messages as read
+    const unreadIds = notes.filter(n => n.author_role === 'client' && !n.read_by_advisor).map(n => n.id);
+    if (unreadIds.length > 0) {
+      await sb.from('client_notes').update({ read_by_advisor: true }).in('id', unreadIds);
+      updateNotesBadge(0);
+    }
+    // Update badge with unread count (for next poll)
+    const unread = notes.filter(n => n.author_role === 'client' && !n.read_by_advisor).length;
+    updateNotesBadge(unread);
+  } catch(e) {
+    console.error('loadClientNotes error:', e);
+  }
+}
+
+function updateNotesBadge(count) {
+  const badge = document.getElementById('notes-badge');
+  if (!badge) return;
+  if (count > 0) {
+    badge.textContent = count > 99 ? '99+' : count;
+    badge.style.display = 'inline-flex';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+async function sendAdvisorNote() {
+  const input = document.getElementById('notes-input');
+  const msg = (input?.value || '').trim();
+  if (!msg || !advisorCurrentClientId) return;
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return;
+  input.value = '';
+  input.style.height = '44px';
+  try {
+    const { error } = await sb.from('client_notes').insert({
+      advisor_id: user.id,
+      client_id: advisorCurrentClientId,
+      message: msg,
+      author_role: 'advisor',
+      read_by_client: false
+    });
+    if (error) throw error;
+    await loadClientNotes(advisorCurrentClientId);
+  } catch(e) {
+    console.error('sendAdvisorNote error:', e);
+    input.value = msg; // restore on error
+  }
+}
+
+async function checkUnreadNotes(clientId) {
+  if (!clientId) return;
+  try {
+    const { count } = await sb
+      .from('client_notes')
+      .select('id', { count: 'exact', head: true })
+      .eq('client_id', clientId)
+      .eq('author_role', 'client')
+      .eq('read_by_advisor', false);
+    updateNotesBadge(count || 0);
+    // Reload if on notes page
+    const notesPage = document.getElementById('page-notes');
+    if (notesPage && notesPage.style.display !== 'none') {
+      await loadClientNotes(clientId);
+    }
+  } catch(e) {}
+}
+// ── END CLIENT NOTES ──────────────────────────────────────────────────────────
 
 async function advisorSignOut() {
   await sb.auth.signOut();
@@ -2320,6 +2451,7 @@ function switchLegal(doc,el){
 function showPage(name,el){
   if(name==='documents') setTimeout(renderDocumentsPage,10);
   if(name==='invoices') setTimeout(loadInvoicePage,10);
+  if(name==='notes' && advisorCurrentClientId) setTimeout(() => loadClientNotes(advisorCurrentClientId), 10);
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
