@@ -144,6 +144,22 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
 .advisor-status.review{background:rgba(255,107,53,0.12);color:var(--warn);}
 .advisor-arrow{color:var(--text3);font-size:18px;}
 .advisor-empty{text-align:center;padding:60px 20px;color:var(--text3);}
+/* Status dropdown */
+.advisor-status-select{appearance:none;background:transparent;border:none;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;cursor:pointer;padding:4px 20px 4px 10px;border-radius:20px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%237a8099' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 4px center;}
+.advisor-status-select.active{background-color:rgba(0,200,150,0.12);color:var(--accent);}
+.advisor-status-select.pending{background-color:rgba(246,173,85,0.12);color:#f6ad55;}
+.advisor-status-select.review{background-color:rgba(255,107,53,0.12);color:var(--warn);}
+/* Card note row */
+.advisor-card-note{width:100%;background:transparent;border:none;border-top:1px solid var(--border);padding:10px 0 0;margin-top:14px;font-family:'Montserrat',sans-serif;font-size:12px;color:var(--text3);resize:none;outline:none;line-height:1.5;transition:color 0.2s;}
+.advisor-card-note::placeholder{color:var(--text3);opacity:0.6;}
+.advisor-card-note:focus{color:var(--text2);}
+.advisor-card-note-wrap{width:100%;display:flex;align-items:flex-start;gap:6px;padding-top:12px;border-top:1px solid var(--border);margin-top:14px;}
+.advisor-card-note-icon{color:var(--text3);flex-shrink:0;margin-top:1px;}
+/* View button */
+.advisor-view-btn{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 14px;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;color:var(--text2);cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+.advisor-view-btn:hover{border-color:var(--accent);color:var(--accent);}
+/* Auto-save indicator */
+.note-saved{font-size:10px;color:var(--accent);opacity:0;transition:opacity 0.3s;margin-left:auto;flex-shrink:0;padding-top:2px;}
 /* Read-Only Banner */
 #readonly-banner{display:none;position:fixed;top:0;left:0;right:0;z-index:300;background:rgba(0,200,150,0.08);border-bottom:1px solid rgba(0,200,150,0.2);padding:10px 24px;align-items:center;justify-content:space-between;backdrop-filter:blur(8px);}
 #readonly-banner.visible{display:flex;}
@@ -1099,6 +1115,10 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
     <div class="page" id="page-reports">
       <div class="page-title" id="t-reports-title">Export Reports</div>
       <div class="page-sub" id="t-reports-sub">Export your bookkeeping for your accountant</div>
+      <div id="advisor-report-banner" style="display:none;background:rgba(0,200,150,0.07);border:1px solid rgba(0,200,150,0.2);border-radius:10px;padding:10px 16px;margin-bottom:16px;font-size:12px;color:var(--accent)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:6px"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        Exporting for client: <strong id="advisor-report-client-name"></strong> — reports will include client name in header
+      </div>
 
       <!-- REPORTS PERIOD FILTER -->
       <div class="period-bar" style="margin-bottom:20px">
@@ -2034,7 +2054,8 @@ async function loadAdvisorClients(advisorId) {
     // Build per-client stats
     const statsPerClient = {};
     (txRows || []).forEach(tx => {
-      if (!statsPerClient[tx.user_id]) statsPerClient[tx.user_id] = { revenue: 0, expenses: 0, lastDate: null };
+      if (!statsPerClient[tx.user_id]) statsPerClient[tx.user_id] = { revenue: 0, expenses: 0, lastDate: null, txCount: 0 };
+      statsPerClient[tx.user_id].txCount = (statsPerClient[tx.user_id].txCount || 0) + 1;
       if (tx.type === 'income') statsPerClient[tx.user_id].revenue += Number(tx.amount);
       else statsPerClient[tx.user_id].expenses += Number(tx.amount);
       if (!statsPerClient[tx.user_id].lastDate || tx.date > statsPerClient[tx.user_id].lastDate)
@@ -2058,37 +2079,61 @@ async function loadAdvisorClients(advisorId) {
     }
 
     grid.innerHTML = profiles.map(p => {
-      const stats   = statsPerClient[p.id] || { revenue: 0, expenses: 0, lastDate: null };
+      const stats   = statsPerClient[p.id] || { revenue: 0, expenses: 0, lastDate: null, txCount: 0 };
       const status  = statusMap[p.id] || 'active';
+      const note    = (notesMap[p.id] || '').replace(/"/g,'&quot;');
       const initial = (p.name || p.email || '?')[0].toUpperCase();
       const lastAct = stats.lastDate ? new Date(stats.lastDate).toLocaleDateString('en-US', {month:'short', day:'numeric'}) : 'No data';
-      const statusLabel = status === 'active' ? '● Active' : status === 'pending' ? '● Pending' : '● Review';
       const profit  = stats.revenue - stats.expenses;
+      const txCount = stats.txCount || 0;
+      const safeId  = p.id.replace(/-/g,'');
+      const safeName = (p.name||p.email).replace(/'/g,"\\'");
 
       return `
-        <div class="advisor-client-card" onclick="openClientView('${p.id}','${(p.name||p.email).replace(/'/g,"\\'")}')">
-          <div class="advisor-client-left">
-            <div class="advisor-client-avatar">${initial}</div>
-            <div>
-              <div class="advisor-client-name">${p.name || '—'}</div>
-              <div class="advisor-client-email">${p.email}</div>
+        <div class="advisor-client-card" style="flex-direction:column;align-items:stretch;cursor:default">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+            <div class="advisor-client-left" style="cursor:pointer" onclick="openClientView('${p.id}','${safeName}')">
+              <div class="advisor-client-avatar">${initial}</div>
+              <div>
+                <div class="advisor-client-name">${p.name || '—'}</div>
+                <div class="advisor-client-email">${p.email}</div>
+              </div>
+            </div>
+            <div class="advisor-client-right" style="gap:20px">
+              <div class="advisor-client-stat">
+                <div class="advisor-client-stat-label">Revenue YTD</div>
+                <div class="advisor-client-stat-val green">$${stats.revenue.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0})}</div>
+              </div>
+              <div class="advisor-client-stat">
+                <div class="advisor-client-stat-label">Net Profit</div>
+                <div class="advisor-client-stat-val ${profit >= 0 ? 'green' : 'red'}">$${profit.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0})}</div>
+              </div>
+              <div class="advisor-client-stat">
+                <div class="advisor-client-stat-label">Transactions</div>
+                <div class="advisor-client-stat-val">${txCount}</div>
+              </div>
+              <div class="advisor-client-stat">
+                <div class="advisor-client-stat-label">Last Activity</div>
+                <div class="advisor-client-stat-val">${lastAct}</div>
+              </div>
+              <select class="advisor-status-select ${status}" id="status-${safeId}"
+                onchange="updateClientStatus('${p.id}',this.value,this)"
+                onclick="event.stopPropagation()">
+                <option value="active"  ${status==='active' ?'selected':''}>● Active</option>
+                <option value="pending" ${status==='pending'?'selected':''}>● Pending</option>
+                <option value="review"  ${status==='review' ?'selected':''}>● Needs Review</option>
+              </select>
+              <button class="advisor-view-btn" onclick="openClientView('${p.id}','${safeName}')">View →</button>
             </div>
           </div>
-          <div class="advisor-client-right">
-            <div class="advisor-client-stat">
-              <div class="advisor-client-stat-label">Revenue YTD</div>
-              <div class="advisor-client-stat-val green">$${stats.revenue.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0})}</div>
-            </div>
-            <div class="advisor-client-stat">
-              <div class="advisor-client-stat-label">Net Profit</div>
-              <div class="advisor-client-stat-val ${profit >= 0 ? 'green' : 'red'}">$${profit.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0})}</div>
-            </div>
-            <div class="advisor-client-stat">
-              <div class="advisor-client-stat-label">Last Activity</div>
-              <div class="advisor-client-stat-val">${lastAct}</div>
-            </div>
-            <div class="advisor-status ${status}">${statusLabel}</div>
-            <div class="advisor-arrow">›</div>
+          <div class="advisor-card-note-wrap">
+            <svg class="advisor-card-note-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            <textarea class="advisor-card-note" id="note-${safeId}" rows="1"
+              placeholder="Internal note about this client (only you can see this)…"
+              onclick="event.stopPropagation()"
+              oninput="autoResizeNote(this)"
+              onblur="saveClientNote('${p.id}',this.value,'saved-${safeId}')">${note}</textarea>
+            <span class="note-saved" id="saved-${safeId}">Saved ✓</span>
           </div>
         </div>`;
     }).join('');
@@ -2184,6 +2229,43 @@ function backToAdvisorList() {
     el.title = '';
   });
 }
+
+// ── STATUS + NOTES MANAGEMENT ────────────────────────────────────────────────
+async function updateClientStatus(clientId, newStatus, selectEl) {
+  const safeId = clientId.replace(/-/g,'');
+  // Update select style immediately
+  selectEl.className = `advisor-status-select ${newStatus}`;
+  try {
+    const { data: { user } } = await sb.auth.getUser();
+    await sb.from('advisor_clients')
+      .update({ status: newStatus })
+      .eq('advisor_id', user.id)
+      .eq('client_id', clientId);
+  } catch(e) {
+    console.error('updateClientStatus error:', e);
+  }
+}
+
+let noteDebounceTimers = {};
+function autoResizeNote(el) {
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
+}
+
+async function saveClientNote(clientId, noteText, savedElId) {
+  try {
+    const { data: { user } } = await sb.auth.getUser();
+    await sb.from('advisor_clients')
+      .update({ notes: noteText })
+      .eq('advisor_id', user.id)
+      .eq('client_id', clientId);
+    const el = document.getElementById(savedElId);
+    if (el) { el.style.opacity = '1'; setTimeout(() => el.style.opacity = '0', 1800); }
+  } catch(e) {
+    console.error('saveClientNote error:', e);
+  }
+}
+// ── END STATUS + NOTES ────────────────────────────────────────────────────────
 
 function filterAdvisorClients(query) {
   const q = query.toLowerCase().trim();
@@ -2455,6 +2537,12 @@ function showPage(name,el){
   if(name==='documents') setTimeout(renderDocumentsPage,10);
   if(name==='invoices') setTimeout(loadInvoicePage,10);
   if(name==='notes' && advisorCurrentClientId) setTimeout(() => loadClientNotes(advisorCurrentClientId), 10);
+  // Show advisor export banner when on reports page in advisor mode
+  if(name==='reports'){
+    const b=document.getElementById('advisor-report-banner');
+    const cn=document.getElementById('advisor-report-client-name');
+    if(b && cn){ b.style.display=advisorMode?'block':'none'; cn.textContent=llcName||''; }
+  }
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
@@ -3142,12 +3230,19 @@ function generateReport(type){
   const cats={};
   filtered.filter(t=>t.type==='expense').forEach(t=>{cats[t.category]=(cats[t.category]||0)+t.amount;});
   const deductible=filtered.filter(t=>t.deductible).reduce((s,t)=>s+t.amount,0);
+  // Advisor context banner (injected into PDF when in advisor mode)
+  const advisorBanner = advisorMode
+    ? `<div style="background:#f0fff8;border:1px solid #00c896;border-radius:8px;padding:10px 16px;margin-bottom:24px;font-size:12px;color:#1a6b52">
+        <strong>Prepared by Advisor</strong> · Client: ${llcName} · ${date}
+       </div>`
+    : '';
   let html='';
 
   if(type==='pl'){
     const incRows=filtered.filter(t=>t.type==='income').map(t=>`<tr><td>${t.vendor}</td><td>${t.category||'—'}</td><td>${t.date}</td><td class="amount green">+${fmt(t.amount)}</td></tr>`).join('');
     const expRows=filtered.filter(t=>t.type==='expense').map(t=>`<tr><td>${t.vendor}</td><td>${t.category||'—'}</td><td>${t.date}</td><td class="amount red">−${fmt(t.amount)}</td></tr>`).join('');
     html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>P&L — ${llcName}</title><style>${reportCSS()}</style></head><body>
+${advisorBanner}
 <h1>Profit &amp; Loss Statement</h1>
 <div style="font-size:19px;font-weight:700;margin-bottom:2px">${llcName}</div>
 <div style="font-size:13px;color:#777;margin-bottom:28px">Generated: ${date}</div>
@@ -3171,6 +3266,7 @@ function generateReport(type){
   if(type==='summary'){
     const catRows=Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<tr><td>${k}</td><td class="amount">${fmt(v)}</td></tr>`).join('');
     html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Tax Summary — ${llcName}</title><style>${reportCSS()}</style></head><body>
+${advisorBanner}
 <h1>Tax Summary Report</h1>
 <div style="font-size:19px;font-weight:700;margin-bottom:2px">${llcName}</div>
 <div style="font-size:13px;color:#777;margin-bottom:28px">Generated: ${date}</div>
@@ -3344,7 +3440,10 @@ function exportCSV(){
   const header='Date,Vendor,Type,Amount,Currency,Category,Deductible,Note\n';
   const rows=filtered.map(t=>`${t.date},${t.vendor},${t.type},${t.amount},${t.currency||'USD'},${t.category},${t.deductible},${t.note}`).join('\n');
   const blob=new Blob([header+rows],{type:'text/csv'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='mytaxfly-transactions.csv'; a.click();
+  const filename = advisorMode
+    ? `mytaxfly-${llcName.replace(/\s+/g,'-').toLowerCase()}-transactions.csv`
+    : 'mytaxfly-transactions.csv';
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click();
 }
 
 async function generateAIReport(){
