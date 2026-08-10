@@ -20,9 +20,6 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
 .login-box{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:48px;max-width:460px;width:100%;text-align:center;}
 .login-logo{font-size:24px;font-weight:800;color:var(--accent);margin-bottom:4px;letter-spacing:-0.5px;}
 .login-slogan{font-size:12px;color:var(--text3);margin-bottom:32px;letter-spacing:0.5px;}
-.login-tabs{display:flex;gap:0;background:var(--bg3);border-radius:10px;padding:4px;margin-bottom:28px;}
-.login-tab{flex:1;padding:9px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text2);transition:all 0.2s;border:none;background:none;}
-.login-tab.active{background:var(--accent);color:#0d0f14;}
 .form-label{text-align:left;font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;display:block;}
 .form-input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:13px 16px;color:var(--text);font-family:'Montserrat',sans-serif;font-size:14px;margin-bottom:16px;outline:none;transition:border-color 0.2s;}
 .form-input:focus{border-color:var(--accent);}
@@ -39,6 +36,11 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
 .login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:var(--border);}
 .back-link{display:inline-block;margin-top:16px;font-size:13px;color:var(--text3);text-decoration:none;transition:color 0.2s;}
 .back-link:hover{color:var(--accent);}
+.login-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:20px;background:var(--bg3);border-radius:12px;padding:4px;}
+.login-tab{background:none;border:none;border-radius:9px;padding:10px 16px;font-size:13px;font-weight:600;color:var(--text3);cursor:pointer;transition:all 0.2s;font-family:inherit;}
+.login-tab.active{background:var(--card);color:var(--text1);box-shadow:0 1px 4px rgba(0,0,0,0.3);}
+.login-tab#tab-advisor.active{color:var(--accent);}
+.login-tab:hover:not(.active){color:var(--text2);}
 
 /* APP */
 #app{display:none;min-height:100vh;}
@@ -92,6 +94,49 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
 .bar-fill.b2{background:var(--accent2);}
 .bar-fill.b3{background:var(--warn);}
 .bar-fill.b4{background:#a78bfa;}
+/* ── ADVISOR VIEW ─────────────────────────────────────── */
+#advisor-screen{display:none;min-height:100vh;background:var(--bg);font-family:'Inter',sans-serif;}
+#advisor-screen.visible{display:block;}
+.advisor-header{background:var(--card);border-bottom:1px solid var(--border);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;}
+.advisor-header-left{display:flex;align-items:center;gap:12px;}
+.advisor-logo{font-size:18px;font-weight:800;color:var(--accent);letter-spacing:-0.5px;}
+.advisor-badge{font-size:11px;font-weight:600;background:rgba(0,200,150,0.12);color:var(--accent);padding:3px 10px;border-radius:20px;border:1px solid rgba(0,200,150,0.2);}
+.advisor-header-right{display:flex;align-items:center;gap:16px;}
+.advisor-user{font-size:13px;color:var(--text2);}
+.advisor-signout{font-size:13px;color:var(--text3);background:none;border:1px solid var(--border);border-radius:8px;padding:6px 14px;cursor:pointer;transition:all 0.2s;font-family:inherit;}
+.advisor-signout:hover{color:var(--warn);border-color:var(--warn);}
+.advisor-body{max-width:1100px;margin:0 auto;padding:40px 32px;}
+.advisor-title{font-size:26px;font-weight:800;color:var(--text1);margin-bottom:4px;}
+.advisor-sub{font-size:14px;color:var(--text2);margin-bottom:32px;}
+.advisor-stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:32px;}
+.advisor-stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 24px;}
+.advisor-stat-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:8px;}
+.advisor-stat-val{font-size:28px;font-weight:800;color:var(--accent);}
+.advisor-clients-grid{display:flex;flex-direction:column;gap:12px;}
+.advisor-client-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:all 0.2s;}
+.advisor-client-card:hover{border-color:var(--accent);transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,200,150,0.1);}
+.advisor-client-left{display:flex;align-items:center;gap:16px;}
+.advisor-client-avatar{width:42px;height:42px;border-radius:50%;background:rgba(0,200,150,0.12);border:1px solid rgba(0,200,150,0.2);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--accent);}
+.advisor-client-name{font-size:15px;font-weight:700;color:var(--text1);margin-bottom:2px;}
+.advisor-client-email{font-size:12px;color:var(--text3);}
+.advisor-client-right{display:flex;align-items:center;gap:24px;}
+.advisor-client-stat{text-align:right;}
+.advisor-client-stat-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:2px;}
+.advisor-client-stat-val{font-size:15px;font-weight:700;color:var(--text1);}
+.advisor-client-stat-val.green{color:var(--accent);}
+.advisor-client-stat-val.red{color:var(--warn);}
+.advisor-status{font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;}
+.advisor-status.active{background:rgba(0,200,150,0.12);color:var(--accent);}
+.advisor-status.pending{background:rgba(246,173,85,0.12);color:#f6ad55;}
+.advisor-status.review{background:rgba(255,107,53,0.12);color:var(--warn);}
+.advisor-arrow{color:var(--text3);font-size:18px;}
+.advisor-empty{text-align:center;padding:60px 20px;color:var(--text3);}
+/* Read-Only Banner */
+#readonly-banner{display:none;position:sticky;top:0;z-index:200;background:rgba(0,200,150,0.08);border-bottom:1px solid rgba(0,200,150,0.2);padding:10px 24px;align-items:center;justify-content:space-between;}
+#readonly-banner.visible{display:flex;}
+.readonly-info{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--accent);font-weight:600;}
+.readonly-back{background:var(--accent);color:#000;border:none;border-radius:8px;padding:7px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
+.readonly-back:hover{background:var(--accent2);}
 /* SKELETON LOADER */
 #data-loader{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:500;pointer-events:none;opacity:0;transition:opacity 0.3s;}
 #data-loader.visible{opacity:1;pointer-events:all;}
@@ -652,7 +697,14 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
 
     <!-- TABS: Login only -->
     <div class="login-tabs">
-      <button class="login-tab active" id="tab-login"><span id="t-signin-tab">Sign In</span></button>
+      <button class="login-tab active" id="tab-login" onclick="switchLoginMode('client')"><span id="t-signin-tab">Sign In</span></button>
+      <button class="login-tab" id="tab-advisor" onclick="switchLoginMode('advisor')" style="display:flex;align-items:center;gap:6px;justify-content:center;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Advisor Login
+      </button>
+    </div>
+    <div id="advisor-login-hint" style="display:none;background:rgba(0,200,150,0.06);border:1px solid rgba(0,200,150,0.15);border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--text2);text-align:left;">
+      <span style="color:var(--accent);font-weight:600;">Advisor Portal</span> — Log in with your advisor credentials. You will be redirected to your client overview automatically.
     </div>
 
     <div id="login-error" class="login-error"></div>
@@ -734,6 +786,50 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
 </div>
 
 <!-- APP -->
+<!-- ── ADVISOR SCREEN ──────────────────────────────────── -->
+<div id="advisor-screen">
+  <div class="advisor-header">
+    <div class="advisor-header-left">
+      <div class="advisor-logo">MyTaxFly</div>
+      <div class="advisor-badge">Advisor Portal</div>
+    </div>
+    <div class="advisor-header-right">
+      <span class="advisor-user" id="advisor-user-name"></span>
+      <button class="advisor-signout" onclick="advisorSignOut()">Sign Out</button>
+    </div>
+  </div>
+  <div class="advisor-body">
+    <div class="advisor-title" id="advisor-greeting">Your Clients</div>
+    <div class="advisor-sub" id="advisor-sub">Select a client to view their dashboard and transactions</div>
+    <div class="advisor-stats-row">
+      <div class="advisor-stat-card">
+        <div class="advisor-stat-label">Total Clients</div>
+        <div class="advisor-stat-val" id="adv-stat-clients">—</div>
+      </div>
+      <div class="advisor-stat-card">
+        <div class="advisor-stat-label">Total Revenue (all clients)</div>
+        <div class="advisor-stat-val" id="adv-stat-revenue">—</div>
+      </div>
+      <div class="advisor-stat-card">
+        <div class="advisor-stat-label">Active Clients</div>
+        <div class="advisor-stat-val" id="adv-stat-active">—</div>
+      </div>
+    </div>
+    <div class="advisor-clients-grid" id="advisor-clients-grid">
+      <div class="advisor-empty">Loading clients...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── READ-ONLY BANNER (shown when advisor views a client) ── -->
+<div id="readonly-banner">
+  <div class="readonly-info">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+    Viewing: <span id="readonly-client-name" style="color:var(--text1)"></span> — Read Only
+  </div>
+  <button class="readonly-back" onclick="backToAdvisorList()">← Back to Client List</button>
+</div>
+
 <div id="data-loader"><div class="sk-pulse"><div class="sk-dot"></div><div class="sk-dot"></div><div class="sk-dot"></div></div></div>
 <div id="app">
   <div class="sidebar">
@@ -1591,6 +1687,21 @@ function showError(msg){
 
 let mfaFactorId=null, mfaChallengeId=null;
 
+function switchLoginMode(mode) {
+  const clientTab  = document.getElementById('tab-login');
+  const advisorTab = document.getElementById('tab-advisor');
+  const hint       = document.getElementById('advisor-login-hint');
+  if (mode === 'advisor') {
+    clientTab.classList.remove('active');
+    advisorTab.classList.add('active');
+    hint.style.display = 'block';
+  } else {
+    advisorTab.classList.remove('active');
+    clientTab.classList.add('active');
+    hint.style.display = 'none';
+  }
+}
+
 function togglePw(inputId, btn) {
   const input = document.getElementById(inputId);
   const eyeOn  = btn.querySelector('.eye-icon');
@@ -1826,12 +1937,208 @@ async function addTransaction(r){
 }
 
 // ── LAUNCH APP ────────────────────────────────────────────
+// ── ADVISOR SYSTEM ────────────────────────────────────────────────────────────
+
+let advisorMode = false;          // true when advisor is viewing a client
+let advisorCurrentClientId = null;
+
+async function fetchUserRole() {
+  try {
+    const { data, error } = await sb.from('profiles')
+      .select('role, name, email')
+      .eq('id', sb.auth.getUser ? (await sb.auth.getUser()).data.user?.id : null)
+      .single();
+    if (error || !data) return 'client';
+    return data.role || 'client';
+  } catch(e) { return 'client'; }
+}
+
+async function launchAdvisorView(user) {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('advisor-screen').classList.add('visible');
+
+  const name = user.user_metadata?.full_name || user.user_metadata?.name || user.email.split('@')[0];
+  document.getElementById('advisor-user-name').textContent = name;
+  document.getElementById('advisor-greeting').textContent = `Welcome, ${name}`;
+
+  await loadAdvisorClients(user.id);
+}
+
+async function loadAdvisorClients(advisorId) {
+  const grid = document.getElementById('advisor-clients-grid');
+  grid.innerHTML = '<div class="advisor-empty">Loading clients...</div>';
+
+  try {
+    // Get clients assigned to this advisor
+    const { data: acRows, error: acErr } = await sb
+      .from('advisor_clients')
+      .select('client_id, notes, status')
+      .eq('advisor_id', advisorId);
+
+    if (acErr || !acRows || acRows.length === 0) {
+      grid.innerHTML = '<div class="advisor-empty">No clients assigned yet.<br><span style="font-size:12px;margin-top:8px;display:block">Contact MyTaxFly to add clients to your account.</span></div>';
+      document.getElementById('adv-stat-clients').textContent = '0';
+      document.getElementById('adv-stat-revenue').textContent = '$0';
+      document.getElementById('adv-stat-active').textContent = '0';
+      return;
+    }
+
+    const clientIds = acRows.map(r => r.client_id);
+    const statusMap = {};
+    const notesMap  = {};
+    acRows.forEach(r => { statusMap[r.client_id] = r.status; notesMap[r.client_id] = r.notes; });
+
+    // Get profiles for all clients
+    const { data: profiles } = await sb
+      .from('profiles')
+      .select('id, name, email, llc_name, created_at')
+      .in('id', clientIds);
+
+    // Get transactions summary per client
+    const { data: txRows } = await sb
+      .from('transactions')
+      .select('user_id, amount, type, date')
+      .in('user_id', clientIds);
+
+    // Build per-client stats
+    const statsPerClient = {};
+    (txRows || []).forEach(tx => {
+      if (!statsPerClient[tx.user_id]) statsPerClient[tx.user_id] = { revenue: 0, expenses: 0, lastDate: null };
+      if (tx.type === 'income') statsPerClient[tx.user_id].revenue += Number(tx.amount);
+      else statsPerClient[tx.user_id].expenses += Number(tx.amount);
+      if (!statsPerClient[tx.user_id].lastDate || tx.date > statsPerClient[tx.user_id].lastDate)
+        statsPerClient[tx.user_id].lastDate = tx.date;
+    });
+
+    // Summary stats
+    let totalRevenue = 0;
+    let activeCount = 0;
+    (profiles || []).forEach(p => {
+      totalRevenue += statsPerClient[p.id]?.revenue || 0;
+      if (statusMap[p.id] === 'active') activeCount++;
+    });
+
+    document.getElementById('adv-stat-clients').textContent = (profiles || []).length;
+    document.getElementById('adv-stat-revenue').textContent = '$' + totalRevenue.toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
+    document.getElementById('adv-stat-active').textContent = activeCount;
+
+    // Render client cards
+    if (!profiles || profiles.length === 0) {
+      grid.innerHTML = '<div class="advisor-empty">No client profiles found.</div>';
+      return;
+    }
+
+    grid.innerHTML = profiles.map(p => {
+      const stats   = statsPerClient[p.id] || { revenue: 0, expenses: 0, lastDate: null };
+      const status  = statusMap[p.id] || 'active';
+      const initial = (p.name || p.email || '?')[0].toUpperCase();
+      const lastAct = stats.lastDate ? new Date(stats.lastDate).toLocaleDateString('en-US', {month:'short', day:'numeric'}) : 'No data';
+      const statusLabel = status === 'active' ? '● Active' : status === 'pending' ? '● Pending' : '● Review';
+      const profit  = stats.revenue - stats.expenses;
+
+      return `
+        <div class="advisor-client-card" onclick="openClientView('${p.id}','${(p.name||p.email).replace(/'/g,"\\'")}')">
+          <div class="advisor-client-left">
+            <div class="advisor-client-avatar">${initial}</div>
+            <div>
+              <div class="advisor-client-name">${p.name || '—'}</div>
+              <div class="advisor-client-email">${p.email}</div>
+            </div>
+          </div>
+          <div class="advisor-client-right">
+            <div class="advisor-client-stat">
+              <div class="advisor-client-stat-label">Revenue YTD</div>
+              <div class="advisor-client-stat-val green">$${stats.revenue.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0})}</div>
+            </div>
+            <div class="advisor-client-stat">
+              <div class="advisor-client-stat-label">Net Profit</div>
+              <div class="advisor-client-stat-val ${profit >= 0 ? 'green' : 'red'}">$${profit.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0})}</div>
+            </div>
+            <div class="advisor-client-stat">
+              <div class="advisor-client-stat-label">Last Activity</div>
+              <div class="advisor-client-stat-val">${lastAct}</div>
+            </div>
+            <div class="advisor-status ${status}">${statusLabel}</div>
+            <div class="advisor-arrow">›</div>
+          </div>
+        </div>`;
+    }).join('');
+
+  } catch(e) {
+    console.error('loadAdvisorClients error:', e);
+    grid.innerHTML = '<div class="advisor-empty">Error loading clients.</div>';
+  }
+}
+
+async function openClientView(clientId, clientName) {
+  advisorMode = true;
+  advisorCurrentClientId = clientId;
+
+  // Show app, hide advisor screen
+  document.getElementById('advisor-screen').classList.remove('visible');
+  document.getElementById('app').style.display = 'block';
+
+  // Show read-only banner
+  document.getElementById('readonly-client-name').textContent = clientName;
+  document.getElementById('readonly-banner').classList.add('visible');
+
+  // Disable all edit/delete/add buttons
+  document.querySelectorAll('.btn-primary, .btn-icon-danger, [onclick*="deleteTransaction"], [onclick*="openInvoiceForm"], [onclick*="addClient"]').forEach(el => {
+    el.style.opacity = '0.3';
+    el.style.pointerEvents = 'none';
+    el.title = 'Read-only mode';
+  });
+
+  // Load this client's data
+  document.getElementById('data-loader').classList.add('visible');
+  await loadTransactions(clientId);
+  document.getElementById('data-loader').classList.remove('visible');
+
+  // Update header to show client name
+  document.getElementById('dash-title').textContent = clientName;
+  document.getElementById('dash-llc').textContent = 'Client View — Read Only';
+
+  showSection('dashboard');
+}
+
+function backToAdvisorList() {
+  advisorMode = false;
+  advisorCurrentClientId = null;
+
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('readonly-banner').classList.remove('visible');
+  document.getElementById('advisor-screen').classList.add('visible');
+
+  // Re-enable buttons
+  document.querySelectorAll('.btn-primary, .btn-icon-danger, [onclick*="deleteTransaction"], [onclick*="openInvoiceForm"], [onclick*="addClient"]').forEach(el => {
+    el.style.opacity = '';
+    el.style.pointerEvents = '';
+    el.title = '';
+  });
+}
+
+async function advisorSignOut() {
+  await sb.auth.signOut();
+  document.getElementById('advisor-screen').classList.remove('visible');
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+// ── END ADVISOR SYSTEM ────────────────────────────────────────────────────────
+
 async function launchApp(user){
   // Reset login button in case it's still showing "Signing in..."
   const btnLogin = document.getElementById('btn-login');
   if(btnLogin){ btnLogin.disabled=false; const s=btnLogin.querySelector('span'); if(s) s.textContent='Sign In →'; }
 
   try {
+    // ── Role check — Advisor gets their own view ──
+    const role = await fetchUserRole();
+    if (role === 'advisor') {
+      await launchAdvisorView(user);
+      return;
+    }
+
     const meta=user.user_metadata||{};
     userName=localStorage.getItem('MTF_USER_NAME')||meta.full_name||meta.name||user.email.split('@')[0];
     llcName=meta.llc_name||'My LLC';
