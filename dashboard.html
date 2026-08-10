@@ -132,11 +132,15 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
 .advisor-arrow{color:var(--text3);font-size:18px;}
 .advisor-empty{text-align:center;padding:60px 20px;color:var(--text3);}
 /* Read-Only Banner */
-#readonly-banner{display:none;position:sticky;top:0;z-index:200;background:rgba(0,200,150,0.08);border-bottom:1px solid rgba(0,200,150,0.2);padding:10px 24px;align-items:center;justify-content:space-between;}
+#readonly-banner{display:none;position:fixed;top:0;left:0;right:0;z-index:300;background:rgba(0,200,150,0.08);border-bottom:1px solid rgba(0,200,150,0.2);padding:10px 24px;align-items:center;justify-content:space-between;backdrop-filter:blur(8px);}
 #readonly-banner.visible{display:flex;}
 .readonly-info{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--accent);font-weight:600;}
 .readonly-back{background:var(--accent);color:#000;border:none;border-radius:8px;padding:7px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
 .readonly-back:hover{background:var(--accent2);}
+/* Push topbar down when readonly banner visible */
+body.advisor-viewing #topbar-actions{top:58px !important;}
+body.advisor-viewing .sidebar{top:44px;}
+body.advisor-viewing #app{padding-top:44px;}
 /* SKELETON LOADER */
 #data-loader{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:500;pointer-events:none;opacity:0;transition:opacity 0.3s;}
 #data-loader.visible{opacity:1;pointer-events:all;}
@@ -2079,9 +2083,20 @@ async function openClientView(clientId, clientName) {
   document.getElementById('advisor-screen').classList.remove('visible');
   document.getElementById('app').style.display = 'block';
 
+  // Add body class so topbar/sidebar shift down below banner
+  document.body.classList.add('advisor-viewing');
+
   // Show read-only banner
   document.getElementById('readonly-client-name').textContent = clientName;
   document.getElementById('readonly-banner').classList.add('visible');
+
+  // Filter sidebar: only Dashboard, AI Advisor, Export Reports, Documents
+  const allowedSections = ['dashboard', 'chat', 'reports', 'documents'];
+  document.querySelectorAll('.sidebar .nav-item').forEach(item => {
+    const onclick = item.getAttribute('onclick') || '';
+    const allowed = allowedSections.some(s => onclick.includes(`'${s}'`) || onclick.includes(`"${s}"`));
+    item.style.display = allowed ? '' : 'none';
+  });
 
   // Disable all edit/delete/add buttons
   document.querySelectorAll('.btn-primary, .btn-icon-danger, [onclick*="deleteTransaction"], [onclick*="openInvoiceForm"], [onclick*="addClient"]').forEach(el => {
@@ -2106,9 +2121,16 @@ function backToAdvisorList() {
   advisorMode = false;
   advisorCurrentClientId = null;
 
+  document.body.classList.remove('advisor-viewing');
+
   document.getElementById('app').style.display = 'none';
   document.getElementById('readonly-banner').classList.remove('visible');
   document.getElementById('advisor-screen').classList.add('visible');
+
+  // Restore all sidebar nav items
+  document.querySelectorAll('.sidebar .nav-item').forEach(item => {
+    item.style.display = '';
+  });
 
   // Re-enable buttons
   document.querySelectorAll('.btn-primary, .btn-icon-danger, [onclick*="deleteTransaction"], [onclick*="openInvoiceForm"], [onclick*="addClient"]').forEach(el => {
@@ -2610,7 +2632,7 @@ function renderDocumentsPage(resetPage){
       <div class="doc-right">
         <div class="doc-amount ${t.type==='income'?'in':'out'}" style="color:${t.type==='income'?'var(--accent)':'var(--warn)'}">${t.type==='income'?'+':'-'}${fmt(t.amount)}</div>
         ${t.fileUrl?`<button class="tx-delete" style="color:var(--accent)" onclick="window.open('${t.fileUrl}','_blank')" title="View document">${eyeSvgDoc}</button>`:''}
-        <button class="tx-delete" onclick="deleteTransaction('${t._id}')" title="Delete">${trashSvg}</button>
+        ${advisorMode ? '' : `<button class="tx-delete" onclick="deleteTransaction('${t._id}')" title="Delete">${trashSvg}</button>`}
       </div>
     </div>`).join('');
 
