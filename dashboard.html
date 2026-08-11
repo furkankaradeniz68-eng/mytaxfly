@@ -136,8 +136,8 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
 .advisor-client-stat{text-align:right;}
 .advisor-client-stat-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:2px;}
 .advisor-client-stat-val{font-size:15px;font-weight:700;color:var(--text1);}
-.advisor-client-stat-val.green{color:var(--accent);}
-.advisor-client-stat-val.red{color:var(--warn);}
+.advisor-client-stat-val.green,.advisor-mobile-stat-val.green{color:var(--accent);}
+.advisor-client-stat-val.red,.advisor-mobile-stat-val.red{color:var(--warn);}
 .advisor-status{font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;}
 .advisor-status.active{background:rgba(0,200,150,0.12);color:var(--accent);}
 .advisor-status.pending{background:rgba(246,173,85,0.12);color:#f6ad55;}
@@ -159,6 +159,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
 .advisor-view-btn{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 14px;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;color:var(--text2);cursor:pointer;transition:all 0.2s;white-space:nowrap;}
 .advisor-view-btn:hover{border-color:var(--accent);color:var(--accent);}
 .advisor-card-top-row{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;}
+.advisor-mobile-stats{display:none;}
 
 /* ── ADMIN PANEL ───────────────────────────────────────────────────────────── */
 #admin-screen{display:none;min-height:100vh;background:var(--bg);}
@@ -231,15 +232,21 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
   .advisor-client-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .advisor-client-email{display:none;}  /* hide email on mobile */
 
-  /* Right side: only show Revenue + View button, hide rest */
+  /* Right side: only View button, hide stats + status */
   .advisor-client-right{flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;}
-  .advisor-client-stat:nth-child(2),
-  .advisor-client-stat:nth-child(3),
-  .advisor-client-stat:nth-child(4){display:none;}
-  .advisor-client-stat:nth-child(1) .advisor-client-stat-label{font-size:9px;}
-  .advisor-client-stat:nth-child(1) .advisor-client-stat-val{font-size:14px;}
-  .advisor-status-select{display:none;}  /* hide status on mobile */
-  .advisor-view-btn{padding:7px 14px;font-size:12px;}
+  .advisor-client-stat{display:none;}
+  .advisor-status-select{display:none;}
+  .advisor-view-btn{padding:8px 18px;font-size:13px;font-weight:700;}
+
+  /* Left side: show name + email + revenue row below */
+  .advisor-client-left{flex:1;min-width:0;}
+  .advisor-client-name{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .advisor-client-email{display:block !important;font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  /* Revenue row injected below the avatar+name block */
+  .advisor-mobile-stats{display:flex;gap:16px;margin-top:6px;padding-top:6px;border-top:1px solid var(--border);}
+  .advisor-mobile-stat-item{display:flex;flex-direction:column;gap:2px;}
+  .advisor-mobile-stat-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);}
+  .advisor-mobile-stat-val{font-size:13px;font-weight:700;}
 
   /* Note area */
   .advisor-card-note-wrap{padding-top:10px;}
@@ -2376,9 +2383,23 @@ async function loadAdvisorClients(advisorId) {
           <div class="advisor-card-top-row" onclick="openClientView('${p.id}','${safeName}')">
             <div class="advisor-client-left">
               <div class="advisor-client-avatar">${initial}</div>
-              <div>
-                <div class="advisor-client-name">${p.name || '—'}</div>
+              <div style="min-width:0;flex:1">
+                <div class="advisor-client-name">${p.name || p.email.split('@')[0]}</div>
                 <div class="advisor-client-email">${p.email}</div>
+                <div class="advisor-mobile-stats">
+                  <div class="advisor-mobile-stat-item">
+                    <span class="advisor-mobile-stat-label">Revenue YTD</span>
+                    <span class="advisor-mobile-stat-val green">$${stats.revenue.toLocaleString('en-US',{maximumFractionDigits:0})}</span>
+                  </div>
+                  <div class="advisor-mobile-stat-item">
+                    <span class="advisor-mobile-stat-label">Net Profit</span>
+                    <span class="advisor-mobile-stat-val ${(stats.revenue-stats.expenses)>=0?'green':'red'}">$${(stats.revenue-stats.expenses).toLocaleString('en-US',{maximumFractionDigits:0})}</span>
+                  </div>
+                  <div class="advisor-mobile-stat-item">
+                    <span class="advisor-mobile-stat-label">Transactions</span>
+                    <span class="advisor-mobile-stat-val">${stats.txCount||0}</span>
+                  </div>
+                </div>
               </div>
             </div>
             <div class="advisor-client-right" style="gap:20px" onclick="event.stopPropagation()">
