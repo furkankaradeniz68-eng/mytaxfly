@@ -95,7 +95,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
 .bar-fill.b3{background:var(--warn);}
 .bar-fill.b4{background:#a78bfa;}
 /* ── ADVISOR VIEW ─────────────────────────────────────── */
-#advisor-screen{display:none;min-height:100vh;background:var(--bg);font-family:'Inter',sans-serif;}
+#advisor-screen{display:none;min-height:100vh;background:var(--bg);font-family:'Inter',sans-serif;overflow-x:hidden;max-width:100vw;}
 #advisor-screen.visible{display:block;}
 .advisor-header{background:var(--card);border-bottom:1px solid var(--border);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;}
 .advisor-header-left{display:flex;align-items:center;gap:12px;}
@@ -282,8 +282,6 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
   /* Readonly banner: single row, compact */
   .readonly-info span:not(#readonly-client-name){display:none;}
   #readonly-client-name{max-width:100px;}
-  #readonly-banner > div:last-child > button:nth-child(2),
-  #readonly-banner > div:last-child > button:nth-child(3){width:32px;padding:0;overflow:hidden;}
 
   /* Admin */
   .admin-stat-row{grid-template-columns:1fr 1fr;}
@@ -307,8 +305,9 @@ body.advisor-viewing #app{padding-top:44px;}
 body.advisor-viewing #entity-switcher{display:none !important;}
 body.advisor-viewing #nav-advisor-chat-item{display:none !important;}
 @media(max-width:768px){
-  body.advisor-viewing #mobile-header{top:44px;position:sticky;}
-  body.advisor-viewing #app{padding-top:calc(44px + 56px);}
+  /* Push mobile header below the readonly banner */
+  body.advisor-viewing #mobile-header{margin-top:44px;}
+  body.advisor-viewing #app{padding-top:calc(44px);}
 }
 /* SKELETON LOADER */
 #data-loader{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:500;pointer-events:none;opacity:0;transition:opacity 0.3s;}
@@ -1112,7 +1111,6 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
   </div>
   <div style="display:flex;align-items:center;gap:8px;margin-left:auto">
     <button class="readonly-back" onclick="backToAdvisorList()">← Back to Client List</button>
-    <button onclick="toggleGearMenu()" title="Settings" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);transition:all 0.15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)'"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
     <button onclick="handleLogout()" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;height:34px;padding:0 14px;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;color:var(--text2);cursor:pointer;transition:all 0.15s;white-space:nowrap" onmouseover="this.style.borderColor='var(--warn)';this.style.color='var(--warn)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='var(--text2)'">Sign Out</button>
   </div>
 </div>
