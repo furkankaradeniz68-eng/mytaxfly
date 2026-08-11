@@ -158,6 +158,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
 /* View button */
 .advisor-view-btn{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 14px;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;color:var(--text2);cursor:pointer;transition:all 0.2s;white-space:nowrap;}
 .advisor-view-btn:hover{border-color:var(--accent);color:var(--accent);}
+.advisor-card-top-row{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;}
 
 /* ── ADMIN PANEL ───────────────────────────────────────────────────────────── */
 #admin-screen{display:none;min-height:100vh;background:var(--bg);}
@@ -206,6 +207,89 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
 .admin-stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 20px;}
 .admin-stat-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:6px;}
 .admin-stat-val{font-size:26px;font-weight:800;color:var(--accent);}
+/* ── ADVISOR + ADMIN MOBILE ──────────────────────────────────────────────── */
+#advisor-screen{overflow-x:hidden;}
+
+@media(max-width:768px){
+  /* ── Advisor header ── */
+  .advisor-header{padding:10px 14px;}
+  .advisor-badge{display:none;}
+  .advisor-header-right .advisor-user{display:none;}
+  .advisor-signout{padding:5px 10px;font-size:12px;}
+
+  /* ── Advisor body ── */
+  .advisor-body{padding:14px;}
+  .advisor-title{font-size:20px;}
+
+  /* ── Client card: stack layout on mobile ── */
+  .advisor-client-card{padding:14px;}
+  /* Top row: avatar+name fills width, no right-side stats */
+  .advisor-client-left{flex:1;min-width:0;cursor:pointer;}
+  .advisor-client-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .advisor-client-email{display:none;}  /* hide email on mobile */
+
+  /* Right side: only show Revenue + View button, hide rest */
+  .advisor-client-right{flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;}
+  .advisor-client-stat:nth-child(2),
+  .advisor-client-stat:nth-child(3),
+  .advisor-client-stat:nth-child(4){display:none;}
+  .advisor-client-stat:nth-child(1) .advisor-client-stat-label{font-size:9px;}
+  .advisor-client-stat:nth-child(1) .advisor-client-stat-val{font-size:14px;}
+  .advisor-status-select{display:none;}  /* hide status on mobile */
+  .advisor-view-btn{padding:7px 14px;font-size:12px;}
+
+  /* Note area */
+  .advisor-card-note-wrap{padding-top:10px;}
+
+  /* ── Readonly banner (advisor viewing client) ── */
+  #readonly-banner{padding:8px 12px;gap:6px;}
+  .readonly-info{font-size:11px;gap:6px;min-width:0;overflow:hidden;}
+  .readonly-info svg{flex-shrink:0;}
+  #readonly-client-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px;display:inline-block;}
+  .readonly-back{font-size:11px;padding:5px 8px;white-space:nowrap;}
+  /* Hide gear + sign-out label text in banner on very small screens */
+
+  /* ── Admin ── */
+  .admin-header{padding:10px 14px;}
+  .admin-body{padding:14px;}
+  .admin-stat-row{grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:18px;}
+  .admin-stat-val{font-size:22px;}
+  .admin-field-row{grid-template-columns:1fr;}
+  .admin-table{font-size:12px;}
+  .admin-table th,.admin-table td{padding:8px 10px;}
+  /* Hide less important columns on mobile */
+  .admin-table th:nth-child(3),.admin-table td:nth-child(3),
+  .admin-table th:nth-child(4),.admin-table td:nth-child(4){display:none;}
+  .admin-modal-box{padding:20px;margin:10px;}
+}
+
+@media(max-width:480px){
+  /* Body cannot scroll horizontally */
+  body,#advisor-screen{max-width:100vw;overflow-x:hidden;}
+
+  /* Advisor header: just logo + sign out */
+  .advisor-logo{font-size:15px;}
+
+  /* Client card on small phones: full-width tap target */
+  .advisor-client-card > div:first-child{
+    cursor:pointer;
+  }
+  /* Hide right stats entirely, make View button obvious */
+  .advisor-client-stat{display:none !important;}
+  .advisor-client-right{flex-direction:row;align-items:center;gap:8px;}
+  .advisor-view-btn{padding:8px 16px;font-size:13px;white-space:nowrap;}
+
+  /* Readonly banner: single row, compact */
+  .readonly-info span:not(#readonly-client-name){display:none;}
+  #readonly-client-name{max-width:100px;}
+  #readonly-banner > div:last-child > button:nth-child(2),
+  #readonly-banner > div:last-child > button:nth-child(3){width:32px;padding:0;overflow:hidden;}
+
+  /* Admin */
+  .admin-stat-row{grid-template-columns:1fr 1fr;}
+  .admin-stat-val{font-size:18px;}
+  .admin-table th:nth-child(5),.admin-table td:nth-child(5){display:none;}
+}
 /* ── END ADMIN PANEL ─────────────────────────────────────────────────────── */
 
 /* Auto-save indicator */
@@ -222,6 +306,10 @@ body.advisor-viewing .sidebar{top:44px;}
 body.advisor-viewing #app{padding-top:44px;}
 body.advisor-viewing #entity-switcher{display:none !important;}
 body.advisor-viewing #nav-advisor-chat-item{display:none !important;}
+@media(max-width:768px){
+  body.advisor-viewing #mobile-header{top:44px;position:sticky;}
+  body.advisor-viewing #app{padding-top:calc(44px + 56px);}
+}
 /* SKELETON LOADER */
 #data-loader{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:500;pointer-events:none;opacity:0;transition:opacity 0.3s;}
 #data-loader.visible{opacity:1;pointer-events:all;}
@@ -2264,15 +2352,15 @@ async function loadAdvisorClients(advisorId) {
 
       return `
         <div class="advisor-client-card" style="flex-direction:column;align-items:stretch;cursor:default">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
-            <div class="advisor-client-left" style="cursor:pointer" onclick="openClientView('${p.id}','${safeName}')">
+          <div class="advisor-card-top-row" onclick="openClientView('${p.id}','${safeName}')">
+            <div class="advisor-client-left">
               <div class="advisor-client-avatar">${initial}</div>
               <div>
                 <div class="advisor-client-name">${p.name || '—'}</div>
                 <div class="advisor-client-email">${p.email}</div>
               </div>
             </div>
-            <div class="advisor-client-right" style="gap:20px">
+            <div class="advisor-client-right" style="gap:20px" onclick="event.stopPropagation()">
               <div class="advisor-client-stat">
                 <div class="advisor-client-stat-label">Revenue YTD</div>
                 <div class="advisor-client-stat-val green">$${stats.revenue.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0})}</div>
