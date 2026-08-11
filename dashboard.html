@@ -212,10 +212,13 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
 
 @media(max-width:768px){
   /* ── Advisor header ── */
-  .advisor-header{padding:10px 14px;}
+  .advisor-header{padding:10px 14px;width:100%;box-sizing:border-box;}
   .advisor-badge{display:none;}
   .advisor-header-right .advisor-user{display:none;}
   .advisor-signout{padding:5px 10px;font-size:12px;}
+  /* ── Advisor body & search ── */
+  #advisor-search{width:100%;box-sizing:border-box;}
+  .advisor-clients-grid{width:100%;box-sizing:border-box;}
 
   /* ── Advisor body ── */
   .advisor-body{padding:14px;}
@@ -303,20 +306,23 @@ body.advisor-viewing .sidebar{top:44px;}
 body.advisor-viewing #app{padding-top:44px;}
 body.advisor-viewing #entity-switcher{display:none !important;}
 body.advisor-viewing #nav-advisor-chat-item{display:none !important;}
-/* Mobile: banner fixed 44px, mobile-header fixed below it at 44px */
+/* Mobile: banner fixed 54px, burger-only mobile-header fixed directly below */
 @media(max-width:768px){
+  #readonly-banner{padding:9px 12px;min-height:54px;box-sizing:border-box;}
   body.advisor-viewing #mobile-header{
     position:fixed !important;
-    top:44px !important;
+    top:54px !important;
     left:0;right:0;
     z-index:290;
     justify-content:flex-start;
-    padding:10px 16px;
+    padding:8px 14px;
+    min-height:44px;
+    box-sizing:border-box;
   }
   /* Strip mobile header to burger-only in client view */
   body.advisor-viewing #mobile-logo-img{display:none !important;}
   body.advisor-viewing #mobile-gear-wrap{display:none !important;}
-  /* Push app content below both: 44px banner + ~56px mobile-header */
+  /* Push app content below both: 54px banner + 44px mobile-header = 98px */
   body.advisor-viewing #app{padding-top:100px;}
   body.advisor-viewing .sidebar{top:100px;}
 }
