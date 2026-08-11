@@ -303,14 +303,22 @@ body.advisor-viewing .sidebar{top:44px;}
 body.advisor-viewing #app{padding-top:44px;}
 body.advisor-viewing #entity-switcher{display:none !important;}
 body.advisor-viewing #nav-advisor-chat-item{display:none !important;}
-/* Mobile: banner is 44px fixed, mobile-header is ~56px sticky → total offset 100px */
+/* Mobile: banner fixed 44px, mobile-header fixed below it at 44px */
 @media(max-width:768px){
-  body.advisor-viewing #app{padding-top:100px;}
-  body.advisor-viewing .sidebar{top:100px;}
+  body.advisor-viewing #mobile-header{
+    position:fixed !important;
+    top:44px !important;
+    left:0;right:0;
+    z-index:290;
+    justify-content:flex-start;
+    padding:10px 16px;
+  }
   /* Strip mobile header to burger-only in client view */
   body.advisor-viewing #mobile-logo-img{display:none !important;}
   body.advisor-viewing #mobile-gear-wrap{display:none !important;}
-  body.advisor-viewing #mobile-header{justify-content:flex-start;padding:10px 16px;}
+  /* Push app content below both: 44px banner + ~56px mobile-header */
+  body.advisor-viewing #app{padding-top:100px;}
+  body.advisor-viewing .sidebar{top:100px;}
 }
 /* Global: prevent any horizontal overflow causing zoom-out on mobile */
 html{overflow-x:hidden;}
