@@ -304,11 +304,14 @@ body.advisor-viewing .sidebar{top:44px;}
 body.advisor-viewing #app{padding-top:44px;}
 body.advisor-viewing #entity-switcher{display:none !important;}
 body.advisor-viewing #nav-advisor-chat-item{display:none !important;}
+/* Mobile: banner is 44px fixed, mobile-header is ~56px sticky → total offset 100px */
 @media(max-width:768px){
-  /* Push mobile header below the readonly banner */
-  body.advisor-viewing #mobile-header{margin-top:44px;}
-  body.advisor-viewing #app{padding-top:calc(44px);}
+  body.advisor-viewing #app{padding-top:100px;}
+  body.advisor-viewing .sidebar{top:100px;}
 }
+/* Global: prevent any horizontal overflow causing zoom-out on mobile */
+html{overflow-x:hidden;}
+body{overflow-x:hidden;max-width:100vw;}
 /* SKELETON LOADER */
 #data-loader{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:500;pointer-events:none;opacity:0;transition:opacity 0.3s;}
 #data-loader.visible{opacity:1;pointer-events:all;}
@@ -2265,8 +2268,11 @@ async function fetchUserRole() {
 
 async function launchAdvisorView(user) {
   isAdvisorUser = true;
+  sessionStorage.setItem('mtf_portal_mode', 'advisor');
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'none';
+  const mh = document.getElementById('mobile-header');
+  if (mh) mh.style.display = 'none';
   document.getElementById('advisor-screen').classList.add('visible');
 
   const name = user.user_metadata?.full_name || user.user_metadata?.name || user.email.split('@')[0];
@@ -2499,9 +2505,12 @@ function backToAdvisorList() {
 // ── ADMIN PANEL ──────────────────────────────────────────────────────────────
 
 async function launchAdminView(user) {
+  sessionStorage.setItem('mtf_portal_mode', 'admin');
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'none';
   document.getElementById('advisor-screen').classList.remove('visible');
+  const mh = document.getElementById('mobile-header');
+  if (mh) mh.style.display = 'none';
   document.getElementById('admin-screen').classList.add('visible');
 
   const name = user.user_metadata?.full_name || user.user_metadata?.name || user.email.split('@')[0];
@@ -2742,8 +2751,11 @@ async function changeUserRole(userId, selectEl) {
 }
 
 async function adminSignOut() {
+  sessionStorage.removeItem('mtf_portal_mode');
   await sb.auth.signOut();
   document.getElementById('admin-screen').classList.remove('visible');
+  const mh = document.getElementById('mobile-header');
+  if (mh) mh.style.display = '';
   document.getElementById('login-screen').style.display = '';
 }
 
@@ -2972,8 +2984,11 @@ async function checkUnreadNotes(clientId) {
 // ── END CLIENT NOTES ──────────────────────────────────────────────────────────
 
 async function advisorSignOut() {
+  sessionStorage.removeItem('mtf_portal_mode');
   await sb.auth.signOut();
   document.getElementById('advisor-screen').classList.remove('visible');
+  const mh = document.getElementById('mobile-header');
+  if (mh) mh.style.display = '';
   document.getElementById('login-screen').style.display = 'flex';
 }
 
@@ -2985,9 +3000,10 @@ async function launchApp(user){
   if(btnLogin){ btnLogin.disabled=false; const s=btnLogin.querySelector('span'); if(s) s.textContent='Sign In →'; }
 
   try {
-    // ── Role check — only route to advisor portal when advisor tab was used ──
+    // ── Role check — restore portal on reload, or route when advisor tab used ──
+    const savedPortal = sessionStorage.getItem('mtf_portal_mode');
     const advisorTabActive = document.getElementById('tab-advisor')?.classList.contains('active');
-    if (advisorTabActive) {
+    if (savedPortal || advisorTabActive) {
       const role = await fetchUserRole();
       if (role === 'admin') {
         await launchAdminView(user);
