@@ -159,7 +159,13 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
 .advisor-view-btn{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 14px;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;color:var(--text2);cursor:pointer;transition:all 0.2s;white-space:nowrap;}
 .advisor-view-btn:hover{border-color:var(--accent);color:var(--accent);}
 .advisor-card-top-row{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;}
-.advisor-mobile-stats{display:none;}
+/* Mobile stats row — hidden on desktop, shown on mobile via media query */
+.advisor-mobile-row{display:none;flex-direction:column;gap:10px;padding-top:12px;border-top:1px solid var(--border);margin-top:12px;}
+.advisor-mobile-stats{display:flex;gap:0;justify-content:space-between;}
+.advisor-mobile-stat-item{display:flex;flex-direction:column;gap:3px;flex:1;}
+.advisor-mobile-stat-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);}
+.advisor-mobile-stat-val{font-size:14px;font-weight:700;color:var(--text1);}
+.advisor-mobile-status{width:100%;}
 
 /* ── ADMIN PANEL ───────────────────────────────────────────────────────────── */
 #admin-screen{display:none;min-height:100vh;background:var(--bg);}
@@ -232,21 +238,19 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
   .advisor-client-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .advisor-client-email{display:none;}  /* hide email on mobile */
 
-  /* Right side: only View button, hide stats + status */
+  /* Right side: only View button, hide desktop stats + status */
   .advisor-client-right{flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;}
   .advisor-client-stat{display:none;}
-  .advisor-status-select{display:none;}
+  .advisor-status-select:not(.advisor-mobile-status){display:none;}
   .advisor-view-btn{padding:8px 18px;font-size:13px;font-weight:700;}
 
-  /* Left side: show name + email + revenue row below */
+  /* Left side */
   .advisor-client-left{flex:1;min-width:0;}
   .advisor-client-name{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .advisor-client-email{display:block !important;font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  /* Revenue row injected below the avatar+name block */
-  .advisor-mobile-stats{display:flex;gap:16px;margin-top:6px;padding-top:6px;border-top:1px solid var(--border);}
-  .advisor-mobile-stat-item{display:flex;flex-direction:column;gap:2px;}
-  .advisor-mobile-stat-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);}
-  .advisor-mobile-stat-val{font-size:13px;font-weight:700;}
+
+  /* Show mobile stats row */
+  .advisor-mobile-row{display:flex;}
 
   /* Note area */
   .advisor-card-note-wrap{padding-top:10px;}
@@ -273,6 +277,9 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
   .admin-modal-box{padding:20px;margin:10px;}
 }
 
+@media(min-width:769px){
+  .advisor-mobile-row{display:none !important;}
+}
 @media(max-width:480px){
   /* Body cannot scroll horizontally */
   body,#advisor-screen{max-width:100vw;overflow-x:hidden;}
@@ -2386,20 +2393,6 @@ async function loadAdvisorClients(advisorId) {
               <div style="min-width:0;flex:1">
                 <div class="advisor-client-name">${p.name || p.email.split('@')[0]}</div>
                 <div class="advisor-client-email">${p.email}</div>
-                <div class="advisor-mobile-stats">
-                  <div class="advisor-mobile-stat-item">
-                    <span class="advisor-mobile-stat-label">Revenue YTD</span>
-                    <span class="advisor-mobile-stat-val green">$${stats.revenue.toLocaleString('en-US',{maximumFractionDigits:0})}</span>
-                  </div>
-                  <div class="advisor-mobile-stat-item">
-                    <span class="advisor-mobile-stat-label">Net Profit</span>
-                    <span class="advisor-mobile-stat-val ${(stats.revenue-stats.expenses)>=0?'green':'red'}">$${(stats.revenue-stats.expenses).toLocaleString('en-US',{maximumFractionDigits:0})}</span>
-                  </div>
-                  <div class="advisor-mobile-stat-item">
-                    <span class="advisor-mobile-stat-label">Transactions</span>
-                    <span class="advisor-mobile-stat-val">${stats.txCount||0}</span>
-                  </div>
-                </div>
               </div>
             </div>
             <div class="advisor-client-right" style="gap:20px" onclick="event.stopPropagation()">
@@ -2428,6 +2421,34 @@ async function loadAdvisorClients(advisorId) {
               </select>
               <button class="advisor-view-btn" onclick="openClientView('${p.id}','${safeName}')">View →</button>
             </div>
+          </div>
+          <!-- Mobile-only stats + status row -->
+          <div class="advisor-mobile-row">
+            <div class="advisor-mobile-stats">
+              <div class="advisor-mobile-stat-item">
+                <span class="advisor-mobile-stat-label">Revenue YTD</span>
+                <span class="advisor-mobile-stat-val green">$${stats.revenue.toLocaleString('en-US',{maximumFractionDigits:0})}</span>
+              </div>
+              <div class="advisor-mobile-stat-item">
+                <span class="advisor-mobile-stat-label">Net Profit</span>
+                <span class="advisor-mobile-stat-val ${(stats.revenue-stats.expenses)>=0?'green':'red'}">$${(stats.revenue-stats.expenses).toLocaleString('en-US',{maximumFractionDigits:0})}</span>
+              </div>
+              <div class="advisor-mobile-stat-item">
+                <span class="advisor-mobile-stat-label">Transactions</span>
+                <span class="advisor-mobile-stat-val">${stats.txCount||0}</span>
+              </div>
+              <div class="advisor-mobile-stat-item">
+                <span class="advisor-mobile-stat-label">Last Activity</span>
+                <span class="advisor-mobile-stat-val">${stats.lastDate ? new Date(stats.lastDate).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : 'No data'}</span>
+              </div>
+            </div>
+            <select class="advisor-status-select ${status} advisor-mobile-status" id="status-mob-${safeId}"
+              onchange="updateClientStatus('${p.id}',this.value,this);document.getElementById('status-${safeId}').value=this.value;document.getElementById('status-${safeId}').className='advisor-status-select '+this.value"
+              onclick="event.stopPropagation()">
+              <option value="active"  ${status==='active' ?'selected':''}>● Active</option>
+              <option value="pending" ${status==='pending'?'selected':''}>● Pending</option>
+              <option value="review"  ${status==='review' ?'selected':''}>● Needs Review</option>
+            </select>
           </div>
           <div class="advisor-card-note-wrap">
             <svg class="advisor-card-note-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
