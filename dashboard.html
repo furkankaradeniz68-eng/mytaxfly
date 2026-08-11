@@ -279,8 +279,8 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
   .advisor-client-right{flex-direction:row;align-items:center;gap:8px;}
   .advisor-view-btn{padding:8px 16px;font-size:13px;white-space:nowrap;}
 
-  /* Readonly banner: compact on small screens */
-  #readonly-client-name{max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  /* Readonly banner: hide client name on mobile, only eye + buttons */
+  .readonly-client-name-desktop{display:none;}
 
   /* Admin */
   .admin-stat-row{grid-template-columns:1fr 1fr;}
@@ -307,6 +307,10 @@ body.advisor-viewing #nav-advisor-chat-item{display:none !important;}
 @media(max-width:768px){
   body.advisor-viewing #app{padding-top:100px;}
   body.advisor-viewing .sidebar{top:100px;}
+  /* Strip mobile header to burger-only in client view */
+  body.advisor-viewing #mobile-logo-img{display:none !important;}
+  body.advisor-viewing #mobile-gear-wrap{display:none !important;}
+  body.advisor-viewing #mobile-header{justify-content:flex-start;padding:10px 16px;}
 }
 /* Global: prevent any horizontal overflow causing zoom-out on mobile */
 html{overflow-x:hidden;}
@@ -1109,7 +1113,7 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
 <div id="readonly-banner">
   <div class="readonly-info">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-    <span id="readonly-client-name" style="color:var(--text1)"></span>
+    <span id="readonly-client-name" class="readonly-client-name-desktop" style="color:var(--text1)"></span>
   </div>
   <div style="display:flex;align-items:center;gap:8px;margin-left:auto">
     <button class="readonly-back" onclick="backToAdvisorList()">← Back to Client List</button>
@@ -2419,9 +2423,13 @@ async function openClientView(clientId, clientName) {
   // Add body class so topbar/sidebar shift down below banner
   document.body.classList.add('advisor-viewing');
 
-  // Show mobile header (burger) in client view
+  // Show mobile header (burger only) in client view — hide logo + gear
   const mhClient = document.getElementById('mobile-header');
   if (mhClient) mhClient.style.display = '';
+  const mhLogo = document.getElementById('mobile-logo-img');
+  if (mhLogo) mhLogo.style.display = 'none';
+  const mhGear = document.getElementById('mobile-gear-wrap');
+  if (mhGear) mhGear.style.display = 'none';
 
   // Show read-only banner
   document.getElementById('readonly-client-name').textContent = clientName;
@@ -2481,9 +2489,13 @@ function backToAdvisorList() {
   document.getElementById('app').style.display = 'none';
   document.getElementById('readonly-banner').classList.remove('visible');
   document.getElementById('advisor-screen').classList.add('visible');
-  // Hide mobile header again on advisor list
+  // Restore mobile header state for advisor list (hidden, advisor screen has own header)
   const mhBack = document.getElementById('mobile-header');
   if (mhBack) mhBack.style.display = 'none';
+  const mhLogoBack = document.getElementById('mobile-logo-img');
+  if (mhLogoBack) mhLogoBack.style.display = '';
+  const mhGearBack = document.getElementById('mobile-gear-wrap');
+  if (mhGearBack) mhGearBack.style.display = '';
 
   // Stop notes polling + reset badge
   if (notesPollingInterval) { clearInterval(notesPollingInterval); notesPollingInterval = null; }
