@@ -2224,6 +2224,11 @@ async function confirmEnroll2FA(factorId){
 }
 
 async function handleLogout(){
+  // Clean up Realtime channels
+  if (notesRealtimeChannel) { try { sb.removeChannel(notesRealtimeChannel); } catch(e){} notesRealtimeChannel = null; }
+  if (clientRealtimeChannel) { try { sb.removeChannel(clientRealtimeChannel); } catch(e){} clientRealtimeChannel = null; }
+  if (notesPollingInterval) { clearInterval(notesPollingInterval); notesPollingInterval = null; }
+  sessionStorage.removeItem('mtf_portal_mode');
   await sb.auth.signOut();
   transactions=[];chatHistory=[];chatSessions=[];currentChatId=null;userEmail='';userName='';llcName='';
   document.getElementById('app').style.display='none';
@@ -2514,8 +2519,7 @@ async function openClientView(clientId, clientName) {
 
   // Load notes + start polling
   await checkUnreadNotes(clientId);
-  if (notesPollingInterval) clearInterval(notesPollingInterval);
-  notesPollingInterval = setInterval(() => checkUnreadNotes(advisorCurrentClientId), 30000);
+  subscribeAdvisorNotesRealtime(clientId);
 
   // Disable all edit/delete/add buttons
   document.querySelectorAll('.btn-primary, .btn-icon-danger, [onclick*="deleteTransaction"], [onclick*="openInvoiceForm"], [onclick*="addClient"]').forEach(el => {
@@ -2553,7 +2557,8 @@ function backToAdvisorList() {
   const mhGearBack = document.getElementById('mobile-gear-wrap');
   if (mhGearBack) mhGearBack.style.display = '';
 
-  // Stop notes polling + reset badge
+  // Tear down Realtime + fallback polling
+  if (notesRealtimeChannel) { try { sb.removeChannel(notesRealtimeChannel); } catch(e){} notesRealtimeChannel = null; }
   if (notesPollingInterval) { clearInterval(notesPollingInterval); notesPollingInterval = null; }
   updateNotesBadge(0);
 
@@ -2906,13 +2911,17 @@ async function checkClientAdvisorChat(userId) {
         const badge = document.getElementById('advisor-chat-badge');
         if (badge) { badge.textContent = count > 99 ? '99+' : count; badge.style.display = 'inline-flex'; }
       }
+      // Subscribe to Realtime for instant new message notifications
+      subscribeClientNotesRealtime(userId, data.advisor_id);
     }
   } catch(e) { /* no advisor assigned — silently skip */ }
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ── CLIENT NOTES ─────────────────────────────────────────────────────────────
-let notesPollingInterval = null;
+// ── CLIENT NOTES (Realtime) ───────────────────────────────────────────────────
+let notesPollingInterval = null;   // fallback only
+let notesRealtimeChannel = null;   // advisor → client channel
+let clientRealtimeChannel = null;  // client → advisor channel
 
 async function loadClientNotes(clientId) {
   const wrap = document.getElementById('notes-messages');
@@ -3055,6 +3064,102 @@ async function checkUnreadNotes(clientId) {
     }
   } catch(e) {}
 }
+
+// ── REALTIME SUBSCRIPTIONS ───────────────────────────────────────────────────
+
+function subscribeAdvisorNotesRealtime(clientId) {
+  // Clean up any existing channel
+  if (notesRealtimeChannel) { try { sb.removeChannel(notesRealtimeChannel); } catch(e){} }
+  if (notesPollingInterval)  { clearInterval(notesPollingInterval); notesPollingInterval = null; }
+
+  try {
+    notesRealtimeChannel = sb
+      .channel(`advisor-notes-${clientId}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'client_notes',
+        filter: `client_id=eq.${clientId}`
+      }, async (payload) => {
+        const msg = payload.new;
+        // Update badge for new client messages
+        if (msg.author_role === 'client') {
+          const notesPage = document.getElementById('page-notes');
+          if (notesPage && notesPage.style.display !== 'none') {
+            // Chat is open — reload & mark read
+            await loadClientNotes(clientId);
+          } else {
+            // Chat is closed — increment badge
+            const badge = document.getElementById('notes-badge');
+            const cur = parseInt(badge?.textContent || '0') || 0;
+            updateNotesBadge(cur + 1);
+          }
+        } else {
+          // Advisor's own message sent — just refresh to confirm
+          const notesPage = document.getElementById('page-notes');
+          if (notesPage && notesPage.style.display !== 'none') {
+            await loadClientNotes(clientId);
+          }
+        }
+      })
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('[Realtime] Advisor notes channel connected for client', clientId);
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          // Fallback to polling if Realtime fails
+          console.warn('[Realtime] Falling back to 30s polling');
+          notesPollingInterval = setInterval(() => checkUnreadNotes(clientId), 30000);
+        }
+      });
+  } catch(e) {
+    console.warn('[Realtime] Setup failed, using polling fallback:', e);
+    notesPollingInterval = setInterval(() => checkUnreadNotes(clientId), 30000);
+  }
+}
+
+function subscribeClientNotesRealtime(userId, advisorId) {
+  // Clean up existing
+  if (clientRealtimeChannel) { try { sb.removeChannel(clientRealtimeChannel); } catch(e){} }
+
+  try {
+    clientRealtimeChannel = sb
+      .channel(`client-notes-${userId}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'client_notes',
+        filter: `client_id=eq.${userId}`
+      }, async (payload) => {
+        const msg = payload.new;
+        if (msg.author_role !== 'advisor') return; // only care about advisor messages
+        const notesPage = document.getElementById('page-notes');
+        if (notesPage && notesPage.style.display !== 'none') {
+          // Chat is open — reload & mark read instantly
+          await loadClientAdvisorNotes();
+        } else {
+          // Chat closed — show badge
+          const badge = document.getElementById('advisor-chat-badge');
+          if (badge) {
+            const cur = parseInt(badge.textContent || '0') || 0;
+            badge.textContent = cur + 1 > 99 ? '99+' : cur + 1;
+            badge.style.display = 'inline-flex';
+          }
+        }
+      })
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('[Realtime] Client notes channel connected for user', userId);
+        }
+      });
+  } catch(e) {
+    console.warn('[Realtime] Client channel setup failed:', e);
+  }
+}
+
+function unsubscribeClientNotesRealtime() {
+  if (clientRealtimeChannel) { try { sb.removeChannel(clientRealtimeChannel); } catch(e){} clientRealtimeChannel = null; }
+}
+
 // ── END CLIENT NOTES ──────────────────────────────────────────────────────────
 
 async function advisorSignOut() {
