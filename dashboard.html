@@ -279,9 +279,8 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
   .advisor-client-right{flex-direction:row;align-items:center;gap:8px;}
   .advisor-view-btn{padding:8px 16px;font-size:13px;white-space:nowrap;}
 
-  /* Readonly banner: single row, compact */
-  .readonly-info span:not(#readonly-client-name){display:none;}
-  #readonly-client-name{max-width:100px;}
+  /* Readonly banner: compact on small screens */
+  #readonly-client-name{max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
   /* Admin */
   .admin-stat-row{grid-template-columns:1fr 1fr;}
@@ -1110,7 +1109,7 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
 <div id="readonly-banner">
   <div class="readonly-info">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-    Viewing: <span id="readonly-client-name" style="color:var(--text1)"></span> — Read Only
+    <span id="readonly-client-name" style="color:var(--text1)"></span>
   </div>
   <div style="display:flex;align-items:center;gap:8px;margin-left:auto">
     <button class="readonly-back" onclick="backToAdvisorList()">← Back to Client List</button>
@@ -2420,6 +2419,10 @@ async function openClientView(clientId, clientName) {
   // Add body class so topbar/sidebar shift down below banner
   document.body.classList.add('advisor-viewing');
 
+  // Show mobile header (burger) in client view
+  const mhClient = document.getElementById('mobile-header');
+  if (mhClient) mhClient.style.display = '';
+
   // Show read-only banner
   document.getElementById('readonly-client-name').textContent = clientName;
   document.getElementById('readonly-banner').classList.add('visible');
@@ -2478,6 +2481,9 @@ function backToAdvisorList() {
   document.getElementById('app').style.display = 'none';
   document.getElementById('readonly-banner').classList.remove('visible');
   document.getElementById('advisor-screen').classList.add('visible');
+  // Hide mobile header again on advisor list
+  const mhBack = document.getElementById('mobile-header');
+  if (mhBack) mhBack.style.display = 'none';
 
   // Stop notes polling + reset badge
   if (notesPollingInterval) { clearInterval(notesPollingInterval); notesPollingInterval = null; }
