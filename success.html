@@ -144,18 +144,14 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
       btn.disabled = true;
       document.getElementById('btn-text').textContent = 'Creating account...';
 
-      // Check active subscription — poll up to 12s because webhook may not have fired yet
+      // Check active subscription via server endpoint (bypasses RLS) — poll up to 12s
       document.getElementById('btn-text').textContent = 'Activating subscription...';
       let sub = null;
       for (let i = 0; i < 6; i++) {
-        const { data } = await sb
-          .from('subscriptions')
-          .select('status,plan')
-          .eq('email', email)
-          .eq('status', 'active')
-          .single();
-        if (data) { sub = data; break; }
-        if (i < 5) await new Promise(r => setTimeout(r, 2000)); // wait 2s between retries
+        const res = await fetch('/api/check-subscription?email=' + encodeURIComponent(email));
+        const data = await res.json();
+        if (data.found) { sub = data; break; }
+        if (i < 5) await new Promise(r => setTimeout(r, 2000));
       }
 
       if (!sub) {
