@@ -109,6 +109,25 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
       el.style.display = 'block';
     }
 
+    // Auto-fill email from Stripe session
+    (async function prefillEmail() {
+      const params = new URLSearchParams(window.location.search);
+      const sessionId = params.get('session_id');
+      if (!sessionId) return;
+
+      try {
+        const res = await fetch('/api/get-session?session_id=' + encodeURIComponent(sessionId));
+        const { email } = await res.json();
+        if (email) {
+          const field = document.getElementById('reg-email');
+          field.value = email;
+          field.readOnly = true;
+          field.style.opacity = '0.7';
+          field.style.cursor = 'not-allowed';
+        }
+      } catch (_) {}
+    })();
+
     async function createAccount() {
       const name     = document.getElementById('reg-name').value.trim();
       const email    = document.getElementById('reg-email').value.trim().toLowerCase();
