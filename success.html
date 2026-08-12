@@ -164,7 +164,7 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
       const { error } = await sb.auth.signUp({
         email,
         password,
-        options: { data: { name, llc_name: llc || 'My LLC' } }
+        options: { data: { name, user_name: name, llc_name: llc || 'My LLC' } }
       });
 
       if (error) {
