@@ -3195,7 +3195,7 @@ async function launchApp(user){
     }
 
     const meta=user.user_metadata||{};
-    userName=localStorage.getItem('MTF_USER_NAME')||meta.full_name||meta.name||user.email.split('@')[0];
+    userName=meta.full_name||meta.name||meta.user_name||localStorage.getItem('MTF_USER_NAME')||user.email.split('@')[0];
     llcName=meta.llc_name||'My LLC';
     userEmail=user.email;
     document.getElementById('dash-title').textContent=`Welcome, ${userName}`;
@@ -3221,7 +3221,7 @@ async function launchApp(user){
       }
     }
     // Re-read userName from potentially-synced value
-    userName = localStorage.getItem('MTF_USER_NAME') || cloudMeta.full_name || cloudMeta.name || user.email.split('@')[0];
+    userName = cloudMeta.full_name || cloudMeta.name || cloudMeta.user_name || localStorage.getItem('MTF_USER_NAME') || user.email.split('@')[0];
     document.getElementById('dash-title').textContent = `Welcome, ${userName}`;
 
     loadTaxProfile();
