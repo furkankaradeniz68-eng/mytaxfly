@@ -2533,6 +2533,19 @@ async function openClientView(clientId, clientName) {
   await loadTransactions(clientId);
   document.getElementById('data-loader').classList.remove('visible');
 
+  // Apply client's plan so IRS exports are correctly gated
+  try {
+    const { data: cp } = await sb.from('profiles').select('email').eq('id', clientId).single();
+    if (cp?.email) applyPlanGating(await fetchUserPlan(cp.email));
+  } catch(_) {}
+
+  // Re-enable export buttons for advisor (read-only applies to data entry, not exports)
+  document.querySelectorAll('.btn-primary[onclick*="gatedAction"], .btn-primary[onclick*="generateAIReport"]').forEach(el => {
+    el.style.opacity = '';
+    el.style.pointerEvents = '';
+    el.title = '';
+  });
+
   // Update header to show client name
   document.getElementById('dash-title').textContent = clientName;
   document.getElementById('dash-llc').textContent = 'Client View — Read Only';
@@ -3412,7 +3425,7 @@ function refreshDashboard(){
   } else {
     const eyeSvg='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
     const trashSvgSm='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>';
-    txList.innerHTML=filtered.slice(0,5).map(t=>`<div class="tx-item"><div class="tx-left"><div class="tx-icon">${icons[t.category]||''}</div><div><div class="tx-name">${t.vendor}</div><div class="tx-cat">${t.category}</div></div></div><div style="display:flex;align-items:center;gap:6px"><div class="tx-amount ${t.type==='income'?'in':'out'}">${t.type==='income'?'+':'-'}${fmt(t.amount)}</div>${t.fileUrl?`<button class="tx-delete" style="color:var(--accent)" onclick="event.stopPropagation();window.open('${t.fileUrl}','_blank')" title="View document">${eyeSvg}</button>`:''}<button class="tx-delete" onclick="event.stopPropagation();deleteTransaction('${t._id}')" title="Delete transaction">${trashSvgSm}</button></div></div>`).join('')+'<div class="tx-view-all"><button onclick="showPage(\'documents\',document.getElementById(\'nav-docs-item\'))">View All →</button></div>';
+    txList.innerHTML=filtered.slice(0,5).map(t=>`<div class="tx-item"><div class="tx-left"><div class="tx-icon">${icons[t.category]||''}</div><div><div class="tx-name">${t.vendor}</div><div class="tx-cat">${t.category}</div></div></div><div style="display:flex;align-items:center;gap:6px"><div class="tx-amount ${t.type==='income'?'in':'out'}">${t.type==='income'?'+':'-'}${fmt(t.amount)}</div>${t.fileUrl?`<button class="tx-delete" style="color:var(--accent)" onclick="event.stopPropagation();window.open('${t.fileUrl}','_blank')" title="View document">${eyeSvg}</button>`:''}<button class="tx-delete" onclick="event.stopPropagation();openEditModal('${t._id}')" title="Edit" style="color:var(--text3)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="tx-delete" onclick="event.stopPropagation();deleteTransaction('${t._id}')" title="Delete transaction">${trashSvgSm}</button></div></div>`).join('')+'<div class="tx-view-all"><button onclick="showPage(\'documents\',document.getElementById(\'nav-docs-item\'))">View All →</button></div>';
   }
   const cats={};
   filtered.filter(t=>t.type==='expense').forEach(t=>{cats[t.category]=(cats[t.category]||0)+t.amount;});
@@ -3640,6 +3653,87 @@ function deleteTransaction(id){
   };
 }
 
+// ── EDIT TRANSACTION ───────────────────────────────────────
+let _editingTxId = null;
+
+function openEditModal(id) {
+  const t = transactions.find(tx => String(tx._id) === String(id));
+  if (!t) return;
+  _editingTxId = id;
+  document.getElementById('edit-vendor').value   = t.vendor || '';
+  document.getElementById('edit-amount').value   = t.amount || '';
+  document.getElementById('edit-date').value     = t.date   || '';
+  document.getElementById('edit-type').value     = t.type   || 'expense';
+  document.getElementById('edit-category').value = t.category || 'Other';
+  // Strip embedded file metadata from notes display
+  const rawNote = t.note || '';
+  document.getElementById('edit-notes').value = rawNote.replace(/^\[File:[^\]]+\]\s*/, '');
+  document.getElementById('edit-tx-error').style.display = 'none';
+  document.getElementById('edit-save-btn').textContent = 'Save Changes';
+  document.getElementById('edit-save-btn').disabled = false;
+  const modal = document.getElementById('edit-tx-modal');
+  modal.style.display = 'flex';
+}
+
+function closeEditModal() {
+  document.getElementById('edit-tx-modal').style.display = 'none';
+  _editingTxId = null;
+}
+
+async function saveEditTransaction() {
+  const id     = _editingTxId;
+  const vendor = document.getElementById('edit-vendor').value.trim();
+  const amount = parseFloat(document.getElementById('edit-amount').value);
+  const date   = document.getElementById('edit-date').value;
+  const type   = document.getElementById('edit-type').value;
+  const cat    = document.getElementById('edit-category').value;
+  const notes  = document.getElementById('edit-notes').value.trim();
+  const errEl  = document.getElementById('edit-tx-error');
+
+  if (!vendor) { errEl.textContent = 'Vendor is required.'; errEl.style.display='block'; return; }
+  if (!amount || amount <= 0) { errEl.textContent = 'Enter a valid amount.'; errEl.style.display='block'; return; }
+
+  const btn = document.getElementById('edit-save-btn');
+  btn.textContent = 'Saving...';
+  btn.disabled = true;
+
+  // Find transaction and preserve embedded file metadata in note
+  const t = transactions.find(tx => String(tx._id) === String(id));
+  const filePrefix = (t?.note || '').match(/^\[File:[^\]]+\]\s*/)?.[0] || '';
+  const newNote = filePrefix + notes;
+
+  // Update local array
+  if (t) {
+    t.vendor   = vendor;
+    t.amount   = amount;
+    t.date     = date;
+    t.type     = type;
+    t.category = cat;
+    t.note     = newNote;
+  }
+
+  // Save to Supabase
+  try {
+    if (id && !String(id).startsWith('tmp_')) {
+      const { data: { user } } = await sb.auth.getUser();
+      const uid = advisorMode ? advisorCurrentClientId : user?.id;
+      await sb.from('transactions').update({
+        vendor, amount, date, type, category: cat, note: newNote
+      }).eq('id', id).eq('user_id', uid);
+    }
+  } catch(e) { console.warn('Edit save error', e); }
+
+  closeEditModal();
+  refreshDashboard();
+  renderDocumentsPage();
+
+  const toast = document.createElement('div');
+  toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid var(--accent);border-radius:10px;padding:10px 18px;font-size:12px;color:var(--accent);z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.3)';
+  toast.textContent = '✓ Transaction updated';
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 2000);
+}
+
 // ── DOCUMENTS PAGE ─────────────────────────────────────────
 function renderDocumentsPage(resetPage){
   const list = document.getElementById('doc-list-full');
@@ -3688,6 +3782,7 @@ function renderDocumentsPage(resetPage){
       <div class="doc-right">
         <div class="doc-amount ${t.type==='income'?'in':'out'}" style="color:${t.type==='income'?'var(--accent)':'var(--warn)'}">${t.type==='income'?'+':'-'}${fmt(t.amount)}</div>
         ${t.fileUrl?`<button class="tx-delete" style="color:var(--accent)" onclick="window.open('${t.fileUrl}','_blank')" title="View document">${eyeSvgDoc}</button>`:''}
+        ${advisorMode ? '' : `<button class="tx-delete" onclick="openEditModal('${t._id}')" title="Edit transaction" style="color:var(--text3)">${pencilIcon}</button>`}
         ${advisorMode ? '' : `<button class="tx-delete" onclick="deleteTransaction('${t._id}')" title="Delete">${trashSvg}</button>`}
       </div>
     </div>`).join('');
@@ -3849,7 +3944,11 @@ async function analyzeText(fn,txt,loaderId,fileUrl){
     const res=JSON.parse(text.replace(/```json|```/g,'').trim());
     res.filename=fn; if(fileUrl) res.fileUrl=fileUrl;
     await autoConvertResult(res);
-    renderResult(fn,res,loaderId); await addTransaction(res);
+    const cardId=renderResult(fn,res,loaderId);
+    await addTransaction(res);
+    // Activate edit button once _id is available
+    const editBtn=document.getElementById('edit-btn-'+cardId);
+    if(editBtn&&res._id){editBtn.style.opacity='1';editBtn.style.pointerEvents='auto';editBtn.onclick=()=>openEditModal(res._id);}
   }catch(e){
     const el=document.getElementById(loaderId);
     if(el) el.outerHTML=`<div class="result-card"><div style="color:var(--warn)">❌ ${fn}: ${e.message}</div></div>`;
@@ -3859,10 +3958,13 @@ async function analyzeText(fn,txt,loaderId,fileUrl){
 function renderResult(fn,r,loaderId){
   const iI=r.type==='income';
   const bannerId='success-banner-'+Date.now();
-  const card=`<div class="result-card"><div class="result-header"><div><div class="result-file">📄 ${fn}</div><div class="result-title">${r.vendor}</div></div><span class="badge ${r.deductible?'green':'orange'}">${r.deductible?r.deductible_percent+'% deductible':'not deductible'}</span></div><div class="result-grid"><div class="result-field"><div class="result-field-label">Amount</div><div class="result-field-val" style="color:${iI?'var(--accent)':'var(--warn)'}">${iI?'+':'-'}${fmt(r.amount)}</div></div><div class="result-field"><div class="result-field-label">Category</div><div class="result-field-val">${r.category}</div></div><div class="result-field"><div class="result-field-label">Date</div><div class="result-field-val">${r.date}</div></div></div><div class="result-note">${r.note}</div><div class="success-banner" id="${bannerId}" style="opacity:0;transform:translateY(8px)"><div class="success-icon">✓</div><div><div class="success-title">Successfully added to dashboard</div><div class="success-sub">Saved to your account · <span style="cursor:pointer;text-decoration:underline;color:var(--accent)" onclick="showPage('dashboard',document.querySelectorAll('.nav-item')[0])">View Dashboard →</span></div></div></div></div>`;
+  const cardId='rc-'+Date.now();
+  const editBtnHtml=`<button id="edit-btn-${cardId}" style="margin-top:10px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 14px;color:var(--text2);font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;cursor:pointer;opacity:0.4;pointer-events:none;transition:opacity 0.3s" title="Edit this transaction"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;vertical-align:middle"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit</button>`;
+  const card=`<div class="result-card"><div class="result-header"><div><div class="result-file">📄 ${fn}</div><div class="result-title">${r.vendor}</div></div><span class="badge ${r.deductible?'green':'orange'}">${r.deductible?r.deductible_percent+'% deductible':'not deductible'}</span></div><div class="result-grid"><div class="result-field"><div class="result-field-label">Amount</div><div class="result-field-val" style="color:${iI?'var(--accent)':'var(--warn)'}">${iI?'+':'-'}${fmt(r.amount)}</div></div><div class="result-field"><div class="result-field-label">Category</div><div class="result-field-val">${r.category}</div></div><div class="result-field"><div class="result-field-label">Date</div><div class="result-field-val">${r.date}</div></div></div><div class="result-note">${r.note}</div>${editBtnHtml}<div class="success-banner" id="${bannerId}" style="opacity:0;transform:translateY(8px)"><div class="success-icon">✓</div><div><div class="success-title">Successfully added to dashboard</div><div class="success-sub">Saved to your account · <span style="cursor:pointer;text-decoration:underline;color:var(--accent)" onclick="showPage('dashboard',document.querySelectorAll('.nav-item')[0])">View Dashboard →</span></div></div></div></div>`;
   const el=document.getElementById(loaderId);
   if(el) el.outerHTML=card;
   setTimeout(()=>{const b=document.getElementById(bannerId);if(b){b.style.transition='all 0.5s ease';b.style.opacity='1';b.style.transform='translateY(0)';}},300);
+  return cardId;
 }
 
 async function runDemo(){
@@ -6613,6 +6715,61 @@ document.addEventListener('click', e => {
 </div>
 
 <!-- UPGRADE MODAL -->
+<!-- ── Edit Transaction Modal ──────────────────────────────────────────── -->
+<div id="edit-tx-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(4px)" onclick="if(event.target===this)closeEditModal()">
+  <div style="background:#0d1117;border:1px solid #1e2633;border-radius:20px;padding:32px;max-width:460px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.5)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+      <div style="font-size:16px;font-weight:800;color:var(--text1)">Edit Transaction</div>
+      <button onclick="closeEditModal()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:20px;line-height:1">×</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px">Type</div>
+        <select id="edit-type" style="width:100%;background:#13161e;border:1px solid #1e2633;border-radius:8px;padding:9px 12px;color:var(--text1);font-family:'Montserrat',sans-serif;font-size:13px;outline:none">
+          <option value="expense">Expense</option>
+          <option value="income">Income</option>
+        </select>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px">Amount (USD)</div>
+        <input id="edit-amount" type="number" step="0.01" min="0" style="width:100%;background:#13161e;border:1px solid #1e2633;border-radius:8px;padding:9px 12px;color:var(--text1);font-family:'Montserrat',sans-serif;font-size:13px;outline:none">
+      </div>
+    </div>
+    <div style="margin-bottom:12px">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px">Vendor / Description</div>
+      <input id="edit-vendor" type="text" style="width:100%;background:#13161e;border:1px solid #1e2633;border-radius:8px;padding:9px 12px;color:var(--text1);font-family:'Montserrat',sans-serif;font-size:13px;outline:none">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px">Category</div>
+        <select id="edit-category" style="width:100%;background:#13161e;border:1px solid #1e2633;border-radius:8px;padding:9px 12px;color:var(--text1);font-family:'Montserrat',sans-serif;font-size:13px;outline:none">
+          <option>Software & Tools</option>
+          <option>Marketing</option>
+          <option>Travel</option>
+          <option>Meals</option>
+          <option>Professional Services</option>
+          <option>Office & Supplies</option>
+          <option>Other</option>
+          <option>Income</option>
+        </select>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px">Date</div>
+        <input id="edit-date" type="date" style="width:100%;background:#13161e;border:1px solid #1e2633;border-radius:8px;padding:9px 12px;color:var(--text1);font-family:'Montserrat',sans-serif;font-size:13px;outline:none">
+      </div>
+    </div>
+    <div style="margin-bottom:20px">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px">Notes (optional)</div>
+      <input id="edit-notes" type="text" style="width:100%;background:#13161e;border:1px solid #1e2633;border-radius:8px;padding:9px 12px;color:var(--text1);font-family:'Montserrat',sans-serif;font-size:13px;outline:none">
+    </div>
+    <div id="edit-tx-error" style="display:none;background:rgba(255,107,53,0.1);border:1px solid rgba(255,107,53,0.3);border-radius:8px;padding:9px 12px;font-size:12px;color:#ff6b35;margin-bottom:12px"></div>
+    <div style="display:flex;gap:10px">
+      <button onclick="closeEditModal()" style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:11px;color:var(--text2);font-family:'Montserrat',sans-serif;font-size:13px;font-weight:600;cursor:pointer">Cancel</button>
+      <button onclick="saveEditTransaction()" id="edit-save-btn" style="flex:2;background:#00c896;border:none;border-radius:10px;padding:11px;color:#080b10;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;cursor:pointer">Save Changes</button>
+    </div>
+  </div>
+</div>
+
 <div id="upgrade-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(4px)" onclick="if(event.target===this)closeUpgradeModal()">
   <div style="background:var(--bg2);border:1px solid rgba(0,200,150,0.3);border-radius:20px;padding:40px;max-width:400px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.5)">
     <div style="margin-bottom:16px"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d='M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z'/><path d='M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z'/><path d='M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0'/><path d='M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5'/></svg></div>
