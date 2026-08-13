@@ -5176,6 +5176,11 @@ function applyTenantConfig(cfg) {
       if (el) { el.src = cfg.logo_url; el.alt = cfg.brand_name||'Logo'; el.style.borderRadius='0'; el.style.objectFit='contain'; }
     });
   }
+  // Client login tab label — white-label partners get "Client Log In" instead of "Sign In"
+  if (cfg.tenant_id && cfg.tenant_id !== 'mytaxfly') {
+    const signinTab = document.getElementById('t-signin-tab');
+    if (signinTab) signinTab.textContent = 'Client Log In';
+  }
   // Advisor login tab
   const advisorTab = document.getElementById('tab-advisor');
   const loginTabs  = document.querySelector('.login-tabs');
