@@ -3889,13 +3889,15 @@ async function processFile(file){
     const {data:{user}} = await sb.auth.getUser();
     if(user){
       const path = `${user.id}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;
-      const {data:upData} = await sb.storage.from('receipts').upload(path, file, {upsert:true});
+      const {data:upData, error:upErr} = await sb.storage.from('receipts').upload(path, file, {upsert:true});
+      if(upErr) console.error('❌ Storage upload error:', upErr.message, upErr);
       if(upData?.path){
         const {data:urlData} = sb.storage.from('receipts').getPublicUrl(upData.path);
         fileUrl = urlData?.publicUrl || null;
+        console.log('✅ File uploaded:', fileUrl);
       }
     }
-  } catch(e){ /* storage optional — continue without */ }
+  } catch(e){ console.error('❌ Storage exception:', e.message); }
   if(file.type.startsWith('image/'))await analyzeWithClaude(file.name,await readB64(file),file.type,loaderId,fileUrl);
   else if(file.type==='application/pdf')await analyzeWithClaude(file.name,await readB64(file),'application/pdf',loaderId,fileUrl);
   else await analyzeText(file.name,await readTxt(file),loaderId,fileUrl);
@@ -4918,6 +4920,7 @@ async function fetchUserPlan(email){
 }
 
 function applyPlanGating(plan){
+  if(isAdvisorUser) plan = 'business'; // Advisors always get full access
   currentPlan = plan;
   const lvl = PLAN_LEVEL[plan] || 1;
 
