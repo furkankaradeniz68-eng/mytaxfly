@@ -3208,7 +3208,7 @@ async function launchApp(user){
     }
 
     const meta=user.user_metadata||{};
-    userName=meta.full_name||meta.name||meta.user_name||localStorage.getItem('MTF_USER_NAME')||user.email.split('@')[0];
+    userName=meta.full_name||meta.name||meta.user_name||user.email.split('@')[0];
     llcName=meta.llc_name||'My LLC';
     userEmail=user.email;
     document.getElementById('dash-title').textContent=`Welcome, ${userName}`;
@@ -3225,7 +3225,7 @@ async function launchApp(user){
     if (cloudMeta.tax_profile)   localStorage.setItem(TAX_PROFILE_KEY,     JSON.stringify(cloudMeta.tax_profile));
     if (cloudMeta.entities)      localStorage.setItem('mtf_entities',       JSON.stringify(cloudMeta.entities));
     if (cloudMeta.inv_profile)   localStorage.setItem('MTF_INV_PROFILE',    JSON.stringify(cloudMeta.inv_profile));
-    if (cloudMeta.user_name)     localStorage.setItem('MTF_USER_NAME',      cloudMeta.user_name);
+    // (name is never cached in localStorage — always read from Supabase metadata)
     // Restore chat sessions from cloud if local is empty
     if (cloudMeta.chat_sessions && cloudMeta.chat_sessions.length) {
       const local = localStorage.getItem(CHATS_KEY);
@@ -3234,7 +3234,7 @@ async function launchApp(user){
       }
     }
     // Re-read userName from potentially-synced value
-    userName = cloudMeta.full_name || cloudMeta.name || cloudMeta.user_name || localStorage.getItem('MTF_USER_NAME') || user.email.split('@')[0];
+    userName = cloudMeta.full_name || cloudMeta.name || cloudMeta.user_name || user.email.split('@')[0];
     document.getElementById('dash-title').textContent = `Welcome, ${userName}`;
 
     loadTaxProfile();
@@ -5249,18 +5249,22 @@ document.addEventListener('click', e=>{
   }
 });
 
-function openAccountModal() {
+async function openAccountModal() {
   const p = JSON.parse(localStorage.getItem(TAX_PROFILE_KEY) || '{}');
   const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
   set('acc-ein', p.ein); set('acc-address', p.address); set('acc-city', p.city);
   set('acc-inc-date', p.incDate); set('acc-activity', p.activity); set('acc-country', p.country);
   set('acc-sh-name', p.shName); set('acc-sh-country', p.shCountry);
   set('acc-sh-ftin', p.shFtin); set('acc-sh-res', p.shRes);
-  // Pre-fill email from global userEmail
+  // Always load name + email fresh from Supabase session (never from localStorage)
+  const { data: { user: currentUser } } = await sb.auth.getUser();
   const emailEl = document.getElementById('acc-email');
-  if (emailEl) emailEl.value = userEmail || '';
+  if (emailEl) emailEl.value = currentUser?.email || userEmail || '';
   const nameEl = document.getElementById('acc-name');
-  if (nameEl) nameEl.value = localStorage.getItem('MTF_USER_NAME') || userName || '';
+  if (nameEl) {
+    const meta = currentUser?.user_metadata || {};
+    nameEl.value = meta.full_name || meta.name || meta.user_name || '';
+  }
   // Reset email change form
   document.getElementById('email-change-form').style.display = 'none';
   document.getElementById('email-change-msg').style.display = 'none';
@@ -5307,7 +5311,6 @@ function saveAccountModal() {
   const newName = g('acc-name');
   if (newName) {
     userName = newName;
-    localStorage.setItem('MTF_USER_NAME', newName);
     sb.auth.updateUser({ data: { full_name: newName, user_name: newName } });
     // Update any displayed name in the UI
     document.querySelectorAll('.user-name-display').forEach(el => el.textContent = newName);
@@ -6926,25 +6929,25 @@ document.addEventListener('click', e => {
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-      <div class="form-group"><div class="f-label">Full Name / Company</div><input class="f-input" id="ip-name" placeholder="e.g. Furkan Karadeniz or My LLC"></div>
-      <div class="form-group"><div class="f-label">Address</div><input class="f-input" id="ip-address" placeholder="Saarlandstr. 68 · 67434 · Neustadt"></div>
-      <div class="form-group"><div class="f-label">E-Mail</div><input class="f-input" id="ip-email" placeholder="email@example.com" type="email"></div>
-      <div class="form-group"><div class="f-label">Phone</div><input class="f-input" id="ip-phone" placeholder="+49 155 6094 7139"></div>
+      <div class="form-group"><div class="f-label">Full Name / Company</div><input class="f-input" id="ip-name" placeholder="e.g. Acme Ventures LLC"></div>
+      <div class="form-group"><div class="f-label">Address</div><input class="f-input" id="ip-address" placeholder="e.g. 123 Main St, Suite 100, New York, NY 10001"></div>
+      <div class="form-group"><div class="f-label">E-Mail</div><input class="f-input" id="ip-email" placeholder="e.g. billing@acmeventures.com" type="email"></div>
+      <div class="form-group"><div class="f-label">Phone</div><input class="f-input" id="ip-phone" placeholder="e.g. +1 (212) 555-0100"></div>
     </div>
 
     <div style="height:1px;background:var(--border);margin:16px 0"></div>
     <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Tax & Registration</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-      <div class="form-group"><div class="f-label">Tax ID / Steuernummer / EIN</div><input class="f-input" id="ip-tax-id" placeholder="e.g. 3108030743 or 12-3456789"></div>
-      <div class="form-group"><div class="f-label">Court / Amtsgericht (optional)</div><input class="f-input" id="ip-court" placeholder="e.g. Neustadt an der Weinstraße"></div>
+      <div class="form-group"><div class="f-label">EIN (Employer Identification Number)</div><input class="f-input" id="ip-tax-id" placeholder="e.g. 12-3456789"></div>
+      <div class="form-group"><div class="f-label">State of Formation (optional)</div><input class="f-input" id="ip-court" placeholder="e.g. Delaware"></div>
     </div>
 
     <div style="height:1px;background:var(--border);margin:16px 0"></div>
     <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Bank Details (shown in invoice footer)</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
-      <div class="form-group"><div class="f-label">Bank Name</div><input class="f-input" id="ip-bank" placeholder="e.g. Sparkasse Südpfalz"></div>
-      <div class="form-group"><div class="f-label">SWIFT / BIC</div><input class="f-input" id="ip-bic" placeholder="e.g. SOLADES1SUW"></div>
-      <div class="form-group" style="grid-column:1/-1"><div class="f-label">IBAN</div><input class="f-input" id="ip-iban" placeholder="e.g. DE71548500101710424522"></div>
+      <div class="form-group"><div class="f-label">Bank Name</div><input class="f-input" id="ip-bank" placeholder="e.g. Chase, Mercury, Bank of America"></div>
+      <div class="form-group"><div class="f-label">SWIFT / BIC</div><input class="f-input" id="ip-bic" placeholder="e.g. CHASUS33"></div>
+      <div class="form-group" style="grid-column:1/-1"><div class="f-label">Account / Routing Number</div><input class="f-input" id="ip-iban" placeholder="e.g. Routing: 021000021  ·  Account: 000123456789"></div>
     </div>
 
     <div style="display:flex;align-items:center;gap:10px">
