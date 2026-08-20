@@ -1504,10 +1504,11 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
           </div>
           <div style="font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin:16px 0 10px">Foreign Shareholder (You)</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-            <div class="form-group"><div class="f-label">Full Name &amp; Address</div><input class="f-input" id="tp-sh-name" placeholder="Your Name, Street, City, Country"></div>
-            <div class="form-group"><div class="f-label">Country of Citizenship</div><input class="f-input" id="tp-sh-country" placeholder="Germany"></div>
-            <div class="form-group"><div class="f-label">Foreign Tax ID (FTIN)</div><input class="f-input" id="tp-sh-ftin" placeholder="e.g. German Steuer-ID"></div>
-            <div class="form-group"><div class="f-label">Country of Tax Residence</div><input class="f-input" id="tp-sh-res" placeholder="Germany"></div>
+            <div class="form-group"><div class="f-label">Full Name</div><input class="f-input" id="tp-sh-name" placeholder="e.g. John Smith"></div>
+            <div class="form-group"><div class="f-label">Country of Citizenship</div><input class="f-input" id="tp-sh-country" placeholder="e.g. Germany"></div>
+            <div class="form-group" style="grid-column:1/-1"><div class="f-label">Street Address, City, Country</div><input class="f-input" id="tp-sh-address" placeholder="e.g. Musterstraße 1, 10115 Berlin, Germany"></div>
+            <div class="form-group"><div class="f-label">Foreign Tax ID (FTIN)</div><input class="f-input" id="tp-sh-ftin" placeholder="e.g. 86 123 456 789"></div>
+            <div class="form-group"><div class="f-label">Country of Tax Residence</div><input class="f-input" id="tp-sh-res" placeholder="e.g. Germany"></div>
           </div>
           <button class="btn-primary" style="width:auto;padding:12px 24px;margin-right:8px" onclick="saveTaxProfile()"><svg style="display:inline;vertical-align:-2px;margin-right:5px" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d='M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z'/><polyline points='17 21 17 13 7 13 7 21'/><polyline points='7 3 7 8 15 8'/></svg>Save Profile</button>
           <div id="tp-saved" style="display:inline;font-size:12px;color:#00c896;display:none">✓ Saved</div>
@@ -3285,6 +3286,10 @@ sb.auth.onAuthStateChange(async (event, session)=>{
     showSetNewPasswordForm();
     return;
   }
+  // USER_UPDATED fires after every updateUser() call — the app is already
+  // running and localStorage already has the fresh data, so skip re-init
+  // to avoid the race condition where stale cloud metadata overwrites local.
+  if(event === 'USER_UPDATED') return;
   if(session?.user){
     await launchApp(session.user);
   } else {
@@ -4435,8 +4440,8 @@ function loadTaxProfile() {
   const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
   set('tp-ein', p.ein); set('tp-address', p.address); set('tp-city', p.city);
   set('tp-inc-date', p.incDate); set('tp-activity', p.activity); set('tp-country', p.country);
-  set('tp-sh-name', p.shName); set('tp-sh-country', p.shCountry);
-  set('tp-sh-ftin', p.shFtin); set('tp-sh-res', p.shRes);
+  set('tp-sh-name', p.shName); set('tp-sh-address', p.shAddress);
+  set('tp-sh-country', p.shCountry); set('tp-sh-ftin', p.shFtin); set('tp-sh-res', p.shRes);
   // Hide setup form once profile is saved
   if (p.ein) {
     const sec = document.getElementById('tax-profile-section');
@@ -4449,8 +4454,8 @@ async function saveTaxProfile() {
   const p = {
     ein: g('tp-ein'), address: g('tp-address'), city: g('tp-city'),
     incDate: g('tp-inc-date'), activity: g('tp-activity'), country: g('tp-country'),
-    shName: g('tp-sh-name'), shCountry: g('tp-sh-country'),
-    shFtin: g('tp-sh-ftin'), shRes: g('tp-sh-res')
+    shName: g('tp-sh-name'), shAddress: g('tp-sh-address'),
+    shCountry: g('tp-sh-country'), shFtin: g('tp-sh-ftin'), shRes: g('tp-sh-res')
   };
   // Write to localStorage (fast, synchronous)
   localStorage.setItem(TAX_PROFILE_KEY, JSON.stringify(p));
@@ -4533,7 +4538,7 @@ td{padding:6px 10px;border-bottom:1px solid #eee;font-size:11px}.amount{text-ali
 <div class="section">
 <div class="section-title">Part II — 25% Foreign Shareholder (You)</div>
 <table><tbody>
-<tr><td class="field-label" style="width:220px">4a Name &amp; Address</td><td><div class="field">${p.shName || '___________________________'}</div></td><td class="field-label" style="width:160px">4d Country of Citizenship</td><td><div class="field">${p.shCountry || '___________'}</div></td></tr>
+<tr><td class="field-label" style="width:220px">4a Name &amp; Address</td><td><div class="field">${[p.shName, p.shAddress].filter(Boolean).join(', ') || '___________________________'}</div></td><td class="field-label" style="width:160px">4d Country of Citizenship</td><td><div class="field">${p.shCountry || '___________'}</div></td></tr>
 <tr><td class="field-label">4b(3) Foreign Tax ID (FTIN)</td><td><div class="field">${p.shFtin || '___________________________'}</div></td><td class="field-label">4e Country of Tax Residence</td><td><div class="field">${p.shRes || '___________'}</div></td></tr>
 </tbody></table>
 </div>
@@ -4773,7 +4778,7 @@ function buildForm5472HTML(p, filtered, taxYear, sigData) {
     <div style="font-size:11px;font-weight:700;border-left:3px solid #00c896;padding-left:8px;margin-bottom:10px">Part II — 25% Foreign Shareholder</div>
     <table style="width:100%;border-collapse:collapse">
       <tr>
-        <td style="width:50%;padding:3px 8px 3px 0;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">4a — Name &amp; Address</div><div style="font-size:12px;font-weight:700">${p.shName||'[Shareholder Name]'}</div></td>
+        <td style="width:50%;padding:3px 8px 3px 0;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">4a — Name &amp; Address</div><div style="font-size:12px;font-weight:700">${p.shName||'[Shareholder Name]'}</div>${p.shAddress?`<div style="font-size:10px;color:#555">${p.shAddress}</div>`:''}</td>
         <td style="width:25%;padding:3px 8px;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">4b(3) — Foreign Tax ID (FTIN)</div><div style="font-size:12px;font-weight:700;font-family:monospace">${p.shFtin||'[FTIN]'}</div></td>
         <td style="width:25%;padding:3px 0 3px 8px;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">Ownership %</div><div style="font-size:12px;font-weight:700">100%</div></td>
       </tr>
@@ -5514,11 +5519,11 @@ function getSignatureDataURL() { return (_sigPad && !_sigPad.isEmpty()) ? _sigPa
 
 async function openAccountModal() {
   const p = JSON.parse(localStorage.getItem(TAX_PROFILE_KEY) || '{}');
-  const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
   set('acc-ein', p.ein); set('acc-address', p.address); set('acc-city', p.city);
   set('acc-inc-date', p.incDate); set('acc-activity', p.activity); set('acc-country', p.country);
-  set('acc-sh-name', p.shName); set('acc-sh-country', p.shCountry);
-  set('acc-sh-ftin', p.shFtin); set('acc-sh-res', p.shRes);
+  set('acc-sh-name', p.shName); set('acc-sh-address', p.shAddress);
+  set('acc-sh-country', p.shCountry); set('acc-sh-ftin', p.shFtin); set('acc-sh-res', p.shRes);
   // Always load name + email fresh from Supabase session (never from localStorage)
   const { data: { user: currentUser } } = await sb.auth.getUser();
   const emailEl = document.getElementById('acc-email');
@@ -5571,36 +5576,42 @@ document.addEventListener('click', e => {
 function saveAccountModal() {
   const g = id => document.getElementById(id)?.value?.trim() || '';
   const p = {
-    ein: g('acc-ein'), address: g('acc-address'), city: g('acc-city'),
-    incDate: g('acc-inc-date'), activity: g('acc-activity'), country: g('acc-country'),
-    shName: g('acc-sh-name'), shCountry: g('acc-sh-country'),
-    shFtin: g('acc-sh-ftin'), shRes: g('acc-sh-res')
+    ein:       g('acc-ein'),      address:   g('acc-address'), city:     g('acc-city'),
+    incDate:   g('acc-inc-date'), activity:  g('acc-activity'), country: g('acc-country'),
+    shName:    g('acc-sh-name'),  shAddress: g('acc-sh-address'),
+    shCountry: g('acc-sh-country'), shFtin:  g('acc-sh-ftin'), shRes:   g('acc-sh-res')
   };
   localStorage.setItem(TAX_PROFILE_KEY, JSON.stringify(p));
-  // Sync tax profile to cloud
-  sb.auth.updateUser({ data: { tax_profile: p } }).catch(e => console.warn('Tax profile cloud save failed:', e.message));
-  // Save name and update global + Supabase user metadata
-  const newName = g('acc-name');
-  if (newName) {
-    userName = newName;
-    sb.auth.updateUser({ data: { full_name: newName, user_name: newName } });
-    // Update any displayed name in the UI
-    document.querySelectorAll('.user-name-display').forEach(el => el.textContent = newName);
-  }
-  // Sync to tax profile form fields as well
-  const map = {ein:'tp-ein',address:'tp-address',city:'tp-city',incDate:'tp-inc-date',activity:'tp-activity',country:'tp-country',shName:'tp-sh-name',shCountry:'tp-sh-country',shFtin:'tp-sh-ftin',shRes:'tp-sh-res'};
-  Object.entries(map).forEach(([k,id])=>{ const el=document.getElementById(id); if(el) el.value=p[k]||''; });
-  // Hide setup form since profile now complete
-  if (p.ein) { const sec=document.getElementById('tax-profile-section'); if(sec) sec.style.display='none'; }
-  // Save signature if drawn
-  const sigData = getSignatureDataURL();
-  if (sigData) {
-    sb.auth.updateUser({ data: { signature_data: sigData } }).then(()=>{
+
+  // Build one single updateUser payload to avoid the USER_UPDATED race condition
+  // (multiple rapid calls each trigger onAuthStateChange which can overwrite localStorage)
+  const newName  = g('acc-name');
+  const sigData  = getSignatureDataURL();
+  const metaUpdate = { tax_profile: p };
+  if (newName)  { metaUpdate.full_name = newName; metaUpdate.user_name = newName; }
+  if (sigData)  { metaUpdate.signature_data = sigData; }
+
+  sb.auth.updateUser({ data: metaUpdate }).then(() => {
+    if (newName) {
+      userName = newName;
+      document.querySelectorAll('.user-name-display').forEach(el => el.textContent = newName);
+    }
+    if (sigData) {
       const previewWrap = document.getElementById('acc-sig-preview-wrap');
-      const previewImg = document.getElementById('acc-sig-preview-img');
+      const previewImg  = document.getElementById('acc-sig-preview-img');
       if (previewWrap && previewImg) { previewImg.src = sigData; previewWrap.style.display = 'block'; }
-    }).catch(e => console.warn('Signature save failed:', e.message));
-  }
+    }
+  }).catch(e => console.warn('Account save failed:', e.message));
+
+  // Mirror to Tax Profile form fields (if open)
+  const map = {
+    ein:'tp-ein', address:'tp-address', city:'tp-city',
+    incDate:'tp-inc-date', activity:'tp-activity', country:'tp-country',
+    shName:'tp-sh-name', shAddress:'tp-sh-address', shCountry:'tp-sh-country',
+    shFtin:'tp-sh-ftin', shRes:'tp-sh-res'
+  };
+  Object.entries(map).forEach(([k,id])=>{ const el=document.getElementById(id); if(el) el.value=p[k]||''; });
+  if (p.ein) { const sec=document.getElementById('tax-profile-section'); if(sec) sec.style.display='none'; }
   const s = document.getElementById('acc-saved');
   if (s) { s.style.display='block'; setTimeout(()=>s.style.display='none', 2500); }
 }
@@ -7158,12 +7169,18 @@ document.addEventListener('click', e => {
         <div class="form-group"><div class="f-label">Principal Business Activity</div><input class="f-input" id="acc-activity" placeholder="e.g. Software / Consulting"></div>
         <div class="form-group"><div class="f-label">Country of Incorporation</div><input class="f-input" id="acc-country" placeholder="United States (Delaware)"></div>
       </div>
-      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin:12px 0 10px">Foreign Shareholder</div>
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin:12px 0 4px">Foreign Shareholder (You)</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:10px">Required for IRS Form 5472 — info about the 25% foreign owner.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:6px">
+        <div class="form-group"><div class="f-label">Full Name</div><input class="f-input" id="acc-sh-name" placeholder="e.g. John Smith"></div>
+        <div class="form-group"><div class="f-label">Country of Citizenship</div><input class="f-input" id="acc-sh-country" placeholder="e.g. Germany"></div>
+      </div>
+      <div style="margin-bottom:6px">
+        <div class="form-group"><div class="f-label">Street Address, City, Country</div><input class="f-input" id="acc-sh-address" placeholder="e.g. Musterstraße 1, 10115 Berlin, Germany"></div>
+      </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-        <div class="form-group"><div class="f-label">Full Name &amp; Address</div><input class="f-input" id="acc-sh-name" placeholder="Your Name, Street, City, Country"></div>
-        <div class="form-group"><div class="f-label">Country of Citizenship</div><input class="f-input" id="acc-sh-country" placeholder="Germany"></div>
-        <div class="form-group"><div class="f-label">Foreign Tax ID (FTIN)</div><input class="f-input" id="acc-sh-ftin" placeholder="e.g. German Steuer-ID"></div>
-        <div class="form-group"><div class="f-label">Country of Tax Residence</div><input class="f-input" id="acc-sh-res" placeholder="Germany"></div>
+        <div class="form-group"><div class="f-label">Foreign Tax ID (FTIN)</div><input class="f-input" id="acc-sh-ftin" placeholder="e.g. 86 123 456 789"></div>
+        <div class="form-group"><div class="f-label">Country of Tax Residence</div><input class="f-input" id="acc-sh-res" placeholder="e.g. Germany"></div>
       </div>
       <div style="height:1px;background:var(--border);margin:16px 0"></div>
       <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">IRS Filing Signature</div>
