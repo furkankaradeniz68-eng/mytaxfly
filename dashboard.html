@@ -1477,6 +1477,11 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
             </div>
           </div>
         </div>
+        <!-- File with IRS via Lob Certified Mail -->
+        <button class="btn-primary" style="width:100%;padding:13px 8px;font-size:12px;font-weight:700;background:linear-gradient(135deg,#7c3aed,#5b21b6);margin-bottom:8px" onclick="gatedAction(openIRSFilingModal,'pro')">
+          <svg style="display:inline;vertical-align:-3px;margin-right:6px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 12 19.79 19.79 0 0 1 1.08 3.4 2 2 0 0 1 3.07 1.22h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16.92z"/></svg>
+          File with IRS via USPS Certified Mail
+        </button>
         <!-- DISABLED: Send to Tax Advisor — implementation pending (upload+send workflow)
         <button class="btn-primary" style="width:100%;padding:13px 8px;font-size:12px;font-weight:700;background:linear-gradient(135deg,#3b82f6,#1d4ed8);margin-bottom:12px" onclick="gatedAction(openSendToAdvisorModal,'pro')">
           <svg style="display:inline;vertical-align:-3px;margin-right:6px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
@@ -4617,7 +4622,7 @@ ${filtered.map(t => `<tr><td>${t.date}</td><td>${t.vendor}</td><td>${t.type}</td
 
 // ── COOKIE BANNER ─────────────────────────────────────────
 // ── Shared helper: build the clean-style HTML for Form 1120 ──────────────────
-function buildForm1120HTML(p, filtered, taxYear) {
+function buildForm1120HTML(p, filtered, taxYear, sigData) {
   const inc    = filtered.filter(t => t.type==='income').reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
   const exp    = filtered.filter(t => t.type==='expense').reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
   const profit = inc - exp;
@@ -4693,11 +4698,20 @@ function buildForm1120HTML(p, filtered, taxYear) {
     <div style="font-size:10px;color:#555;margin-bottom:10px;line-height:1.5">Under penalties of perjury, I declare that I have examined this return, including accompanying schedules and statements, and to the best of my knowledge and belief, it is true, correct, and complete.</div>
     <table style="width:100%;border-collapse:collapse">
       <tr>
-        <td style="border-bottom:1px solid #999;padding-bottom:16px;width:45%;font-size:10px;color:#888">Signature of officer</td>
+        <td style="border-bottom:1px solid #999;padding-bottom:4px;width:45%;font-size:10px;color:#888;vertical-align:bottom">
+          ${sigData?`<img src="${sigData}" style="height:38px;display:block;margin-bottom:2px">`:'<div style="height:38px"></div>'}
+          Signature of officer
+        </td>
         <td style="width:5%"></td>
-        <td style="border-bottom:1px solid #999;padding-bottom:16px;width:22%;font-size:10px;color:#888">Date</td>
+        <td style="border-bottom:1px solid #999;padding-bottom:4px;width:22%;font-size:10px;color:#888;vertical-align:bottom">
+          ${sigData?`<div style="font-size:11px;color:#111;margin-bottom:2px">${new Date().toLocaleDateString('en-US')}</div>`:'<div style="height:38px"></div>'}
+          Date
+        </td>
         <td style="width:5%"></td>
-        <td style="border-bottom:1px solid #999;padding-bottom:16px;width:23%;font-size:10px;color:#888">Title</td>
+        <td style="border-bottom:1px solid #999;padding-bottom:4px;width:23%;font-size:10px;color:#888;vertical-align:bottom">
+          ${sigData?`<div style="font-size:11px;color:#111;margin-bottom:2px">Owner / Managing Member</div>`:'<div style="height:38px"></div>'}
+          Title
+        </td>
       </tr>
     </table>
   </div>
@@ -4710,7 +4724,7 @@ function buildForm1120HTML(p, filtered, taxYear) {
 }
 
 // ── Shared helper: build the clean-style HTML for Form 5472 ──────────────────
-function buildForm5472HTML(p, filtered, taxYear) {
+function buildForm5472HTML(p, filtered, taxYear, sigData) {
   const inc     = filtered.filter(t=>t.type==='income').reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
   const exp     = filtered.filter(t=>t.type==='expense').reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
   const corpName = llcName || p.llcName || '';
@@ -4808,11 +4822,20 @@ function buildForm5472HTML(p, filtered, taxYear) {
     <div style="font-size:10px;color:#555;margin-bottom:10px;line-height:1.5">Under penalties of perjury, I declare that I have examined this return, including accompanying schedules and statements, and to the best of my knowledge and belief, it is true, correct, and complete.</div>
     <table style="width:100%;border-collapse:collapse">
       <tr>
-        <td style="border-bottom:1px solid #999;padding-bottom:16px;width:45%;font-size:10px;color:#888">Signature of officer</td>
+        <td style="border-bottom:1px solid #999;padding-bottom:4px;width:45%;font-size:10px;color:#888;vertical-align:bottom">
+          ${sigData?`<img src="${sigData}" style="height:38px;display:block;margin-bottom:2px">`:'<div style="height:38px"></div>'}
+          Signature of officer
+        </td>
         <td style="width:5%"></td>
-        <td style="border-bottom:1px solid #999;padding-bottom:16px;width:22%;font-size:10px;color:#888">Date</td>
+        <td style="border-bottom:1px solid #999;padding-bottom:4px;width:22%;font-size:10px;color:#888;vertical-align:bottom">
+          ${sigData?`<div style="font-size:11px;color:#111;margin-bottom:2px">${new Date().toLocaleDateString('en-US')}</div>`:'<div style="height:38px"></div>'}
+          Date
+        </td>
         <td style="width:5%"></td>
-        <td style="border-bottom:1px solid #999;padding-bottom:16px;width:23%;font-size:10px;color:#888">Title</td>
+        <td style="border-bottom:1px solid #999;padding-bottom:4px;width:23%;font-size:10px;color:#888;vertical-align:bottom">
+          ${sigData?`<div style="font-size:11px;color:#111;margin-bottom:2px">Owner / Managing Member</div>`:'<div style="height:38px"></div>'}
+          Title
+        </td>
       </tr>
     </table>
   </div>
@@ -4868,7 +4891,7 @@ function exportForm5472() {
 
 }
 
-function buildFilingPackageHTML(p, filtered, taxYear, corpName) {
+function buildFilingPackageHTML(p, filtered, taxYear, corpName, sigData) {
   const inc = filtered.filter(t=>t.type==='income').reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
   const exp = filtered.filter(t=>t.type==='expense').reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
   const coverHTML = `<div style="font-family:Arial,sans-serif;padding:60px 48px;background:#fff;text-align:center;min-height:600px;display:flex;flex-direction:column;align-items:center;justify-content:center">
@@ -4896,9 +4919,9 @@ function buildFilingPackageHTML(p, filtered, taxYear, corpName) {
   </div>`;
   return coverHTML
     + `<div style="page-break-before:always"></div>`
-    + buildForm1120HTML(p, filtered, taxYear)
+    + buildForm1120HTML(p, filtered, taxYear, sigData)
     + `<div style="page-break-before:always"></div>`
-    + buildForm5472HTML(p, filtered, taxYear);
+    + buildForm5472HTML(p, filtered, taxYear, sigData);
 }
 
 function exportFilingPackage() {
@@ -4989,6 +5012,121 @@ async function sendToAdvisor() {
     status.textContent = '✗ Error: ' + e.message;
     btn.disabled = false;
     btn.textContent = 'Send PDF →';
+  }
+}
+
+async function openIRSFilingModal() {
+  const p = getTaxProfile();
+  if (!p.ein) { alert('Please complete your LLC profile first (EIN is required).'); return; }
+
+  // Populate sender address block
+  const fromEl = document.getElementById('irs-modal-from');
+  if (fromEl) {
+    fromEl.innerHTML = [
+      `<strong style="color:var(--text)">${llcName}</strong>`,
+      p.address || '',
+      p.city    || '',
+      `EIN: ${p.ein}`
+    ].filter(Boolean).join('<br>');
+  }
+
+  // Load signature from Supabase
+  const { data: { user } } = await sb.auth.getUser();
+  const sigData = user?.user_metadata?.signature_data;
+
+  const sigOk      = document.getElementById('irs-sig-ok');
+  const sigMissing = document.getElementById('irs-sig-missing');
+  const sigImg     = document.getElementById('irs-sig-img');
+  const sendBtn    = document.getElementById('irs-send-btn');
+
+  if (sigData) {
+    if (sigImg)     sigImg.src = sigData;
+    if (sigOk)      sigOk.style.display = 'block';
+    if (sigMissing) sigMissing.style.display = 'none';
+    if (sendBtn)    { sendBtn.disabled = false; sendBtn.textContent = 'Send via USPS →'; }
+  } else {
+    if (sigOk)      sigOk.style.display = 'none';
+    if (sigMissing) sigMissing.style.display = 'block';
+    if (sendBtn)    { sendBtn.disabled = true; sendBtn.textContent = 'Signature required'; }
+  }
+
+  // Reset status
+  const status = document.getElementById('irs-send-status');
+  if (status) { status.style.display = 'none'; status.innerHTML = ''; }
+
+  document.getElementById('irs-filing-modal').style.display = 'flex';
+}
+
+async function sendToIRS() {
+  const p       = getTaxProfile();
+  const btn     = document.getElementById('irs-send-btn');
+  const status  = document.getElementById('irs-send-status');
+
+  btn.disabled = true;
+  btn.textContent = 'Generating PDF…';
+  status.style.display = 'none';
+
+  let wrap = null;
+  try {
+    // Fetch fresh signature
+    const { data: { user } } = await sb.auth.getUser();
+    const sigData = user?.user_metadata?.signature_data || null;
+
+    // Build filing package PDF (with signature embedded)
+    const filtered  = getReportFilteredTx();
+    const taxYear   = reportPeriodFrom ? reportPeriodFrom.getFullYear() : new Date().getFullYear() - 1;
+    const corpName  = llcName || p.llcName || '';
+
+    wrap = document.createElement('div');
+    wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:820px;background:#fff;';
+    const formEl = document.createElement('div');
+    formEl.innerHTML = buildFilingPackageHTML(p, filtered, taxYear, corpName, sigData);
+    wrap.appendChild(formEl);
+    document.body.appendChild(wrap);
+
+    const blob = await html2pdf().set({
+      margin: [14,10,14,10],
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    }).from(formEl).outputPdf('blob');
+    document.body.removeChild(wrap);
+    wrap = null;
+
+    btn.textContent = 'Mailing to IRS…';
+
+    const base64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload  = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+
+    const res = await fetch('/api/send-to-irs', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        pdfBase64:   base64,
+        fromName:    corpName,
+        fromAddress: p.address || '',
+        fromCity:    p.city    || '',
+        taxYear
+      })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.error || 'Lob API error');
+
+    status.style.display = 'block';
+    status.style.color   = '#00c896';
+    status.innerHTML     = `✓ Letter submitted! Tracking: <strong>${data.tracking || data.id}</strong><br><small style="color:var(--text3)">Estimated delivery 5–7 business days · USPS Certified Mail</small>`;
+    btn.textContent = '✓ Sent!';
+  } catch(e) {
+    if (wrap && wrap.parentNode) wrap.parentNode.removeChild(wrap);
+    status.style.display = 'block';
+    status.style.color   = '#e53e3e';
+    status.textContent   = '✗ Error: ' + e.message;
+    btn.disabled    = false;
+    btn.textContent = 'Send via USPS →';
   }
 }
 
@@ -7170,6 +7308,47 @@ document.addEventListener('click', e => {
         <a href="https://mytaxfly.com/#pricing" target="_blank" class="btn-primary" style="padding:8px 14px;font-size:12px;white-space:nowrap;text-decoration:none">Upgrade →</a>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- IRS Filing Modal -->
+<div id="irs-filing-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:10001;align-items:center;justify-content:center;backdrop-filter:blur(4px)" onclick="if(event.target===this)document.getElementById('irs-filing-modal').style.display='none'">
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:32px;width:480px;max-width:92vw;max-height:90vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <div style="font-size:16px;font-weight:800;color:var(--text)">File with IRS via Certified Mail</div>
+      <button onclick="document.getElementById('irs-filing-modal').style.display='none'" style="background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;line-height:1">&times;</button>
+    </div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:20px">Your signed Filing Package will be printed and sent via USPS Certified Mail to the IRS. You receive a tracking number.</div>
+
+    <!-- Recipient -->
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px">
+      <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Recipient (IRS)</div>
+      <div style="font-size:13px;font-weight:600;color:var(--text)">Internal Revenue Service</div>
+      <div style="font-size:12px;color:var(--text2)">P.O. Box 409101 · Ogden, UT 84409</div>
+    </div>
+
+    <!-- Sender (from tax profile) -->
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px">
+      <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Sender (Your LLC)</div>
+      <div id="irs-modal-from" style="font-size:12px;color:var(--text2);line-height:1.6"></div>
+    </div>
+
+    <!-- Signature preview -->
+    <div id="irs-sig-section" style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px">
+      <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Signature</div>
+      <div id="irs-sig-ok" style="display:none"><img id="irs-sig-img" style="height:44px;border-radius:6px;padding:4px 8px;background:#fff;border:1px solid #ddd"></div>
+      <div id="irs-sig-missing" style="display:none;font-size:12px;color:#e53e3e">⚠ No signature saved yet. <span style="color:#00c896;cursor:pointer;text-decoration:underline" onclick="document.getElementById('irs-filing-modal').style.display='none';openAccountModal()">Add in Account Settings →</span></div>
+    </div>
+
+    <!-- Contents -->
+    <div style="font-size:12px;color:var(--text3);margin-bottom:4px">📄 Contents: <strong style="color:var(--text)">Pro Forma Form 1120 + Form 5472</strong> · Certified Mail with tracking</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:20px">📬 Estimated delivery: <strong style="color:var(--text)">5–7 business days</strong></div>
+
+    <div style="display:flex;gap:10px">
+      <button onclick="document.getElementById('irs-filing-modal').style.display='none'" style="flex:1;padding:12px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-size:13px;font-family:'Montserrat',sans-serif">Cancel</button>
+      <button id="irs-send-btn" onclick="sendToIRS()" style="flex:2;padding:12px;border-radius:10px;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;border:none;cursor:pointer;font-size:13px;font-weight:700;font-family:'Montserrat',sans-serif">Send via USPS →</button>
+    </div>
+    <div id="irs-send-status" style="margin-top:14px;font-size:13px;display:none;text-align:center"></div>
   </div>
 </div>
 
