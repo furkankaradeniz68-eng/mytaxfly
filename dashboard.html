@@ -1558,6 +1558,15 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
         </ul>
       </div>
 
+      <!-- Tax Year Selector -->
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:16px">
+        <div>
+          <div style="font-size:13px;font-weight:700;margin-bottom:3px">Tax Year to File</div>
+          <div style="font-size:12px;color:var(--text3);line-height:1.5">All transactions from Jan 1 – Dec 31 of the selected year will be included in your filing package.</div>
+        </div>
+        <select id="irs-year-select" onchange="irsFilingYear=parseInt(this.value)" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-family:'Montserrat',sans-serif;font-size:15px;font-weight:700;color:var(--text);cursor:pointer;flex-shrink:0;min-width:90px"></select>
+      </div>
+
       <!-- Send button -->
       <button class="btn-primary" style="width:100%;padding:16px;font-size:14px;font-weight:700;background:linear-gradient(135deg,#7c3aed,#5b21b6);border-radius:12px;margin-bottom:8px" onclick="gatedAction(openIRSFilingModal,'pro')">
         <svg style="display:inline;vertical-align:-3px;margin-right:8px" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,13 22,4"/></svg>
@@ -1927,6 +1936,8 @@ let periodFrom=null, periodTo=null;
 // Reports page has its own independent period filter (defaults to full current year)
 const _ry=new Date().getFullYear();
 let reportPeriodFrom=new Date(_ry,0,1), reportPeriodTo=new Date(_ry,11,31);
+// IRS filing year — always a complete calendar year, defaults to prior year
+let irsFilingYear = _ry - 1;
 
 // ── PERIOD FILTER ─────────────────────────────────────────
 function getPeriodRange(val){
@@ -3439,7 +3450,7 @@ function showPage(name,el){
     const cn=document.getElementById('advisor-report-client-name');
     if(b && cn){ b.style.display=advisorMode?'block':'none'; cn.textContent=llcName||''; }
   }
-  if(name==='irs-filing') setTimeout(renderIRSHistory, 10);
+  if(name==='irs-filing'){ initIRSYearPicker(); setTimeout(renderIRSHistory, 10); }
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
@@ -5084,6 +5095,10 @@ async function openIRSFilingModal() {
     ].filter(Boolean).join('<br>');
   }
 
+  // Show selected tax year
+  const tyEl = document.getElementById('irs-modal-taxyear');
+  if (tyEl) tyEl.textContent = irsFilingYear;
+
   // Load signature from Supabase
   const { data: { user } } = await sb.auth.getUser();
   const sigData = user?.user_metadata?.signature_data;
@@ -5126,9 +5141,11 @@ async function sendToIRS() {
     const { data: { user } } = await sb.auth.getUser();
     const sigData = user?.user_metadata?.signature_data || null;
 
-    // Build filing package PDF (with signature embedded)
-    const filtered  = getReportFilteredTx();
-    const taxYear   = reportPeriodFrom ? reportPeriodFrom.getFullYear() : new Date().getFullYear() - 1;
+    // Build filing package PDF — filter transactions for the chosen complete tax year
+    const _irsFrom  = new Date(irsFilingYear, 0, 1);
+    const _irsTo    = new Date(irsFilingYear, 11, 31, 23, 59, 59);
+    const filtered  = transactions.filter(t => { const d=new Date(t.date); return d>=_irsFrom && d<=_irsTo; });
+    const taxYear   = irsFilingYear;
     const corpName  = llcName || p.llcName || '';
 
     wrap = document.createElement('div');
@@ -5184,6 +5201,24 @@ async function sendToIRS() {
     btn.disabled    = false;
     btn.textContent = 'Send via USPS →';
   }
+}
+
+// ── IRS Year Picker ─────────────────────────────────────────────────────────
+function initIRSYearPicker() {
+  const sel = document.getElementById('irs-year-select');
+  if (!sel) return;
+  const cur = new Date().getFullYear();
+  sel.innerHTML = '';
+  // Offer current year + up to 4 prior years (covers late filings)
+  for (let y = cur; y >= cur - 4; y--) {
+    const opt = document.createElement('option');
+    opt.value = y;
+    opt.textContent = y;
+    if (y === irsFilingYear) opt.selected = true;
+    sel.appendChild(opt);
+  }
+  // Sync variable to actual picker state (in case it was reset)
+  irsFilingYear = parseInt(sel.value);
 }
 
 // ── IRS Letter History ──────────────────────────────────────────────────────
@@ -7446,8 +7481,12 @@ document.addEventListener('click', e => {
     </div>
 
     <!-- Contents -->
-    <div style="font-size:12px;color:var(--text3);margin-bottom:4px">📄 Contents: <strong style="color:var(--text)">Pro Forma Form 1120 + Form 5472</strong> · Certified Mail with tracking</div>
-    <div style="font-size:12px;color:var(--text3);margin-bottom:20px">📬 Estimated delivery: <strong style="color:var(--text)">5–7 business days</strong></div>
+    <div style="background:var(--bg3);border:1px solid rgba(124,58,237,0.25);border-radius:10px;padding:12px 14px;margin-bottom:14px">
+      <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Filing Details</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:3px">📅 Tax Year: <strong id="irs-modal-taxyear" style="color:#a78bfa">—</strong> &nbsp;(Jan 1 – Dec 31)</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:3px">📄 Forms: <strong style="color:var(--text)">Pro Forma 1120 + Form 5472</strong></div>
+      <div style="font-size:12px;color:var(--text2)">📬 Estimated delivery: <strong style="color:var(--text)">5–7 business days</strong> · USPS Certified Mail</div>
+    </div>
 
     <div style="display:flex;gap:10px">
       <button onclick="document.getElementById('irs-filing-modal').style.display='none'" style="flex:1;padding:12px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-size:13px;font-family:'Montserrat',sans-serif">Cancel</button>
