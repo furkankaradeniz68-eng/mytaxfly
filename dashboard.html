@@ -1181,11 +1181,10 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
       <span>Download IRS Forms (ZIP)</span>
     </a>
     <div class="nav-item" onclick="showPage('invoices',this)" id="nav-invoices-item"><span class="nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg></span> Invoices</div>
-    <div class="nav-divider"></div>
     <div class="nav-item" id="nav-docs-item" onclick="showPage('documents',this)"><span class="nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span> Documents</div>
     <div class="nav-item" id="nav-notes-item" onclick="showPage('notes',this)" style="display:none"><span class="nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span> <span id="nav-notes-label">My Client Chat</span> <span id="notes-badge" class="nav-badge" style="display:none">0</span></div>
     <div class="nav-item" id="nav-advisor-chat-item" onclick="showPage('notes',this)" style="display:none"><span class="nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span> My Advisor Chat <span id="advisor-chat-badge" class="nav-badge" style="display:none">0</span></div>
-    <div class="nav-item" onclick="showPage('legal',this)"><span class="nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d='M12 2H2v20h20V2h-10'/><line x1='8' y1='6' x2='16' y2='6'/><line x1='8' y1='10' x2='16' y2='10'/><line x1='8' y1='14' x2='12' y2='14'/></svg></span> <span id="t-nav-legal">Legal</span></div>
+    <div class="nav-divider"></div>
     <a href="/" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:#00c896;font-size:12px;font-weight:600;padding:6px 24px;margin-top:2px;transition:opacity 0.2s" onmouseover="this.style.opacity='0.75'" onmouseout="this.style.opacity='1'">← Back to mytaxfly.com</a>
     </div><!-- /nav-scroll -->
     <!-- SIDEBAR FOOTER: plan badge + lang + email -->
@@ -1206,6 +1205,9 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
         </div>
       </div>
       <div id="plan-badge" style="display:inline-flex;align-items:center;gap:5px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:10px;font-weight:700;letter-spacing:0.5px;color:var(--text3);width:100%;justify-content:center">Basic Plan</div>
+      <div style="text-align:center;margin-top:8px">
+        <a href="#" onclick="showPage('legal',null);return false;" style="font-size:11px;color:var(--text3);text-decoration:none;transition:color 0.15s" onmouseover="this.style.color='var(--text2)'" onmouseout="this.style.color=''">Legal</a>
+      </div>
     </div>
   </div>
 
