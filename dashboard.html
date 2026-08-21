@@ -5090,10 +5090,10 @@ async function sendToIRS() {
     document.body.appendChild(wrap);
 
     const blob = await html2pdf().set({
-      margin: [14,10,14,10],
+      margin: [12.7, 12.7, 12.7, 12.7],  // 0.5 in margins — US Letter
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      jsPDF: { unit: 'mm', format: [215.9, 279.4], orientation: 'portrait' }  // US Letter 8.5×11 in
     }).from(formEl).outputPdf('blob');
     document.body.removeChild(wrap);
     wrap = null;
