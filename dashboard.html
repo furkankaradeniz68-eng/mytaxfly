@@ -1175,6 +1175,7 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
     <div class="nav-item" onclick="showPage('upload',this)"><span class="nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1='12' y1='5' x2='12' y2='19'/><line x1='5' y1='12' x2='19' y2='12'/></svg></span> <span id="t-nav-add">Add Transaction</span></div>
     <div class="nav-item" id="nav-ai-item" onclick="gatedNav('chat',this,'pro')"><span class="nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d='M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z'/></svg></span> <span id="t-nav-ai">AI Advisor</span><span id="nav-ai-lock" style="display:none;margin-left:auto;font-size:10px;opacity:0.5">🔒</span></div>
     <div class="nav-item" onclick="showPage('reports',this)"><span class="nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1='18' y1='20' x2='18' y2='10'/><line x1='12' y1='20' x2='12' y2='4'/><line x1='6' y1='20' x2='6' y2='14'/></svg></span> <span id="t-nav-reports">Export Reports</span></div>
+    <div class="nav-item" id="nav-irs-filing-item" onclick="gatedNav('irs-filing',this,'pro')"><span class="nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,13 22,4"/></svg></span> Send to IRS</div>
     <a id="nav-irs-zip" href="/forms/IRS-Forms-MyTaxFly.zip" download style="display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--text2);font-size:12px;font-weight:500;padding:7px 24px 7px 20px;margin-top:2px;transition:color 0.2s;border-left:2px solid transparent" onmouseover="this.style.color='#00c896'" onmouseout="this.style.color=''">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
       <span>Download IRS Forms (ZIP)</span>
@@ -1506,27 +1507,66 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
         </div>
       </div>
 
-      <!-- IRS CERTIFIED MAIL SECTION -->
-      <div class="card" style="border-color:rgba(124,58,237,0.3);background:linear-gradient(135deg,rgba(124,58,237,0.04) 0%,var(--card) 60%)">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,13 22,4"/></svg>
-          <div class="card-title" style="color:#a78bfa;margin:0">File with IRS — USPS Certified Mail</div>
-          <span style="font-size:11px;font-weight:700;padding:2px 9px;background:rgba(124,58,237,0.15);color:#a78bfa;border-radius:20px;border:1px solid rgba(124,58,237,0.3)">Certified Mail</span>
+    </div>
+
+    <!-- IRS FILING PAGE -->
+    <div class="page" id="page-irs-filing">
+      <div class="page-title">Send to IRS</div>
+      <div class="page-sub">File your tax package directly via USPS Certified Mail</div>
+
+      <!-- How it works -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title" style="margin-bottom:16px">How it works</div>
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div style="display:flex;align-items:flex-start;gap:14px">
+            <div style="width:34px;height:34px;border-radius:50%;background:rgba(0,200,150,0.1);border:1px solid rgba(0,200,150,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:800;color:#00c896">1</div>
+            <div>
+              <div style="font-size:13px;font-weight:700;margin-bottom:3px">Forms are pre-filled from your data</div>
+              <div style="font-size:12px;color:var(--text3);line-height:1.6">Pro Forma 1120 and Form 5472 are auto-filled from your transactions and tax profile — your numbers, in the correct IRS fields.</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:14px">
+            <div style="width:34px;height:34px;border-radius:50%;background:rgba(0,200,150,0.1);border:1px solid rgba(0,200,150,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:800;color:#00c896">2</div>
+            <div>
+              <div style="font-size:13px;font-weight:700;margin-bottom:3px">You sign digitally in the browser</div>
+              <div style="font-size:12px;color:var(--text3);line-height:1.6">Sign your filing package using your saved signature — directly in MyTaxFly. No printing or scanning required.</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:14px">
+            <div style="width:34px;height:34px;border-radius:50%;background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:800;color:#a78bfa">3</div>
+            <div>
+              <div style="font-size:13px;font-weight:700;margin-bottom:3px">We mail it to the IRS</div>
+              <div style="font-size:12px;color:var(--text3);line-height:1.6">Your signed filing is printed and sent via <strong style="color:var(--text)">USPS Certified Mail</strong> to IRS Ogden, UT 84409. You receive a tracking number. ~$6 per letter.</div>
+            </div>
+          </div>
         </div>
-        <div style="font-size:13px;color:var(--text2);margin-bottom:16px">Sign your filing package digitally and we mail it to the <strong style="color:var(--text)">IRS Ogden processing center</strong> via USPS Certified Mail with a tracking number. No post office trip needed.</div>
-        <button class="btn-primary" style="width:100%;padding:14px;font-size:13px;font-weight:700;background:linear-gradient(135deg,#7c3aed,#5b21b6)" onclick="gatedAction(openIRSFilingModal,'pro')">
-          <svg style="display:inline;vertical-align:-3px;margin-right:7px" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,13 22,4"/></svg>
-          Send to IRS via USPS Certified Mail
-        </button>
-        <div style="font-size:11px;color:var(--text3);margin:8px 0 20px;display:flex;align-items:center;gap:5px">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d='M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z'/><line x1='12' y1='9' x2='12' y2='13'/><line x1='12' y1='17' x2='12.01' y2='17'/></svg>
-          Review with your CPA before filing. Signature required. ~$6 per letter via USPS Certified Mail.
+      </div>
+
+      <!-- Disclaimer -->
+      <div style="background:rgba(255,200,50,0.07);border:1px solid rgba(255,200,50,0.25);border-radius:12px;padding:16px 20px;margin-bottom:20px">
+        <div style="font-size:13px;font-weight:700;color:#f6ad55;margin-bottom:10px;display:flex;align-items:center;gap:7px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f6ad55" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d='M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z'/><line x1='12' y1='9' x2='12' y2='13'/><line x1='12' y1='17' x2='12.01' y2='17'/></svg>
+          Please review carefully — this sends a real letter to the IRS
         </div>
-        <!-- History -->
-        <div style="border-top:1px solid var(--border);padding-top:16px">
-          <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:12px">📬 Sent Letters History</div>
-          <div id="irs-letter-history"><div style="font-size:13px;color:var(--text3);padding:8px 0">No letters sent yet.</div></div>
-        </div>
+        <ul style="font-size:12px;color:var(--text2);line-height:2;margin:0;padding-left:18px">
+          <li>MyTaxFly is <strong style="color:var(--text)">not a licensed tax advisor</strong>. Always consult a qualified CPA before filing.</li>
+          <li>Make sure your <strong style="color:var(--text)">tax profile is complete</strong> — EIN, LLC address, and foreign shareholder info.</li>
+          <li>Verify that all transactions for the tax year are <strong style="color:var(--text)">correctly entered and categorized</strong>.</li>
+          <li>Once mailed, the letter <strong style="color:var(--text)">cannot be recalled</strong>. Double-check everything before sending.</li>
+        </ul>
+      </div>
+
+      <!-- Send button -->
+      <button class="btn-primary" style="width:100%;padding:16px;font-size:14px;font-weight:700;background:linear-gradient(135deg,#7c3aed,#5b21b6);border-radius:12px;margin-bottom:8px" onclick="gatedAction(openIRSFilingModal,'pro')">
+        <svg style="display:inline;vertical-align:-3px;margin-right:8px" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,13 22,4"/></svg>
+        Send to IRS via USPS Certified Mail
+      </button>
+      <div style="font-size:11px;color:var(--text3);text-align:center;margin-bottom:28px">USPS Certified Mail · With tracking number · Delivered to IRS Ogden, UT 84409</div>
+
+      <!-- History -->
+      <div class="card">
+        <div class="card-title" style="margin-bottom:16px">📬 Sent Letters History</div>
+        <div id="irs-letter-history"><div style="font-size:13px;color:var(--text3);padding:8px 0">No letters sent yet.</div></div>
       </div>
     </div>
 
@@ -3396,8 +3436,8 @@ function showPage(name,el){
     const b=document.getElementById('advisor-report-banner');
     const cn=document.getElementById('advisor-report-client-name');
     if(b && cn){ b.style.display=advisorMode?'block':'none'; cn.textContent=llcName||''; }
-    setTimeout(renderIRSHistory, 10);
   }
+  if(name==='irs-filing') setTimeout(renderIRSHistory, 10);
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
