@@ -521,6 +521,10 @@ body{overflow-x:hidden;max-width:100vw;}
   .period-divider{height:1px;background:var(--border);}
   .period-custom{display:none;align-items:center;gap:8px;}
   .period-custom.visible{display:flex;}
+  /* Report period pills */
+  .rp-pill{display:inline-flex;align-items:center;padding:5px 13px;border-radius:20px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:600;font-family:'Montserrat',sans-serif;cursor:pointer;transition:all 0.15s;white-space:nowrap;line-height:1.4;}
+  .rp-pill:hover{border-color:var(--accent);color:var(--accent);}
+  .rp-pill.active{background:rgba(0,200,150,0.13);border-color:#00c896;color:#00c896;}
   .period-date{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:7px 10px;color:var(--text);font-family:'Montserrat',sans-serif;font-size:12px;font-weight:500;outline:none;transition:border-color 0.2s,box-shadow 0.2s;color-scheme:dark;}
   .period-date:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,200,150,0.12);}
   .period-date::-webkit-calendar-picker-indicator{filter:invert(1) sepia(1) saturate(2) hue-rotate(120deg);opacity:0.7;cursor:pointer;}
@@ -1420,22 +1424,21 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
       </div>
 
       <!-- REPORTS PERIOD FILTER -->
-      <div class="period-bar" style="margin-bottom:20px">
-        <div class="period-switcher" id="report-period-switcher">
-          <button class="period-btn" onclick="toggleReportPeriodMenu()" id="report-period-btn-main">
-            <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x='3' y='4' width='18' height='18' rx='2'/><line x1='16' y1='2' x2='16' y2='6'/><line x1='8' y1='2' x2='8' y2='6'/><line x1='3' y1='10' x2='21' y2='10'/></svg></span>
-            <span id="report-period-label-text">Full Year 2026</span>
-            <span style="font-size:9px;margin-left:1px">▾</span>
-          </button>
-          <div class="period-dropdown" id="report-period-dropdown"></div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:24px">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:6px;color:var(--text3);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;white-space:nowrap">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x='3' y='4' width='18' height='18' rx='2'/><line x1='16' y1='2' x2='16' y2='6'/><line x1='8' y1='2' x2='8' y2='6'/><line x1='3' y1='10' x2='21' y2='10'/></svg>
+            Period
+          </div>
+          <div style="width:1px;height:16px;background:var(--border);flex-shrink:0"></div>
+          <div id="report-period-pills" style="display:flex;flex-wrap:wrap;gap:6px;flex:1"></div>
         </div>
-        <div class="period-custom" id="report-custom-range">
+        <div id="report-custom-range" class="period-custom" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
           <input type="date" class="period-date" id="report-custom-from">
           <span class="period-sep">→</span>
           <input type="date" class="period-date" id="report-custom-to">
           <button class="btn-sec" style="padding:7px 12px;font-size:12px" onclick="applyReportCustomRange()">Apply</button>
         </div>
-        <span style="font-size:12px;font-weight:600;color:var(--accent)">✦ Select time period</span>
       </div>
 
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px">
@@ -1988,45 +1991,38 @@ function togglePeriodMenu(){
   document.getElementById('period-dropdown').classList.toggle('open');
 }
 
-// ── REPORTS PERIOD FILTER ─────────────────────────────────
-function buildReportPeriodMenu(){
-  const now=new Date(); const y=now.getFullYear();
-  const dropdown=document.getElementById('report-period-dropdown');
-  if(!dropdown) return;
+// ── REPORTS PERIOD FILTER (pill bar) ──────────────────────
+function buildReportPeriodPills(){
+  const y=new Date().getFullYear();
+  const container=document.getElementById('report-period-pills');
+  if(!container) return;
   const items=[
     {val:'month',label:'This Month'},
-    {div:true},
-    {val:`q1_${y}`,label:`Q1 · Jan–Mar`},
-    {val:`q2_${y}`,label:`Q2 · Apr–Jun`},
-    {val:`q3_${y}`,label:`Q3 · Jul–Sep`},
-    {val:`q4_${y}`,label:`Q4 · Oct–Dec`},
-    {div:true},
-    {val:`year_${y}`,label:`This Year ${y}`,default:true},
-    {val:`year_${y-1}`,label:`Last Year ${y-1}`},
-    {div:true},
+    {val:`q1_${y}`,label:`Q1 ${y}`},
+    {val:`q2_${y}`,label:`Q2 ${y}`},
+    {val:`q3_${y}`,label:`Q3 ${y}`},
+    {val:`q4_${y}`,label:`Q4 ${y}`},
+    {val:`year_${y}`,label:`Full Year ${y}`,default:true},
+    {val:`year_${y-1}`,label:`${y-1}`},
     {val:'all',label:'All Time'},
-    {val:'custom',label:'Custom Range'},
+    {val:'custom',label:'Custom ···'},
   ];
-  dropdown.innerHTML=items.map(item=>{
-    if(item.div) return '<div class="period-divider"></div>';
-    return `<div class="period-option${item.default?' active':''}" onclick="selectReportPeriod('${item.val}','${item.label}')">${item.label}</div>`;
-  }).join('');
+  container.innerHTML=items.map(it=>
+    `<button class="rp-pill${it.default?' active':''}" onclick="selectReportPeriodPill('${it.val}',this)">${it.label}</button>`
+  ).join('');
+  // Set initial period
+  const def=items.find(i=>i.default);
+  if(def){ const[from,to]=getPeriodRange(def.val); reportPeriodFrom=from; reportPeriodTo=to; }
 }
 
-function toggleReportPeriodMenu(){
-  document.getElementById('report-period-dropdown').classList.toggle('open');
-}
-
-function selectReportPeriod(val,label){
-  document.getElementById('report-period-label-text').textContent=label;
-  document.querySelectorAll('#report-period-dropdown .period-option').forEach(el=>el.classList.remove('active'));
-  event.target.classList.add('active');
-  document.getElementById('report-period-dropdown').classList.remove('open');
+function selectReportPeriodPill(val,el){
+  document.querySelectorAll('#report-period-pills .rp-pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
   const custom=document.getElementById('report-custom-range');
   if(val==='custom'){ custom.classList.add('visible'); }
   else{
     custom.classList.remove('visible');
-    const [from,to]=getPeriodRange(val);
+    const[from,to]=getPeriodRange(val);
     reportPeriodFrom=from; reportPeriodTo=to;
   }
 }
@@ -2036,7 +2032,8 @@ function applyReportCustomRange(){
   const t=document.getElementById('report-custom-to').value;
   if(!f||!t){alert('Please select both dates.');return;}
   reportPeriodFrom=new Date(f); reportPeriodTo=new Date(t);
-  document.getElementById('report-period-label-text').textContent=`${f} → ${t}`;
+  const customBtn=document.querySelector('#report-period-pills .rp-pill[onclick*="custom"]');
+  if(customBtn) customBtn.textContent=`${f.slice(5)} → ${t.slice(5)}`;
   document.getElementById('report-custom-range').classList.remove('visible');
 }
 
@@ -3292,7 +3289,7 @@ async function launchApp(user){
     const tbe=document.getElementById('topbar-user-email');if(tbe)tbe.textContent=user.email;
     document.getElementById('m-date').value=new Date().toISOString().split('T')[0];
     buildPeriodMenu();
-    buildReportPeriodMenu();
+    buildReportPeriodPills();
     const [pFrom,pTo]=getPeriodRange('month');
     periodFrom=pFrom; periodTo=pTo;
     document.querySelectorAll('.stat-change').forEach(el=>{if(!el.id)el.textContent='This Month';});
