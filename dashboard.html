@@ -1941,9 +1941,10 @@ let _appInitialized = false;
     const stored = JSON.parse(raw);
     const user = stored?.user;
     if (!user?.id) return;
-    // Valid cached user — launch immediately (async, intentionally not awaited)
+    // Valid cached user — defer to microtask so all let/const declarations
+    // are initialized before launchApp runs (avoids temporal dead zone errors)
     _appInitialized = true;
-    launchApp(user);
+    Promise.resolve().then(() => launchApp(user));
   } catch(e) { /* fall through to background validation */ }
 })();
 
