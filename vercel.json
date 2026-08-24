@@ -1,12 +1,10 @@
 {
   "cleanUrls": true,
   "functions": {
-    "api/stripe-webhook.js":   { "memory": 256, "maxDuration": 10 },
-    "api/send-to-advisor.js":  { "maxDuration": 30 },
-    "api/send-to-irs.js":      { "memory": 256, "maxDuration": 30 },
-    "api/plaid-create-link-token.js": { "maxDuration": 10 },
-    "api/plaid-exchange-token.js":   { "maxDuration": 10 },
-    "api/plaid-sync.js":             { "maxDuration": 30 }
+    "api/stripe-webhook.js": { "memory": 256, "maxDuration": 10 },
+    "api/send-to-advisor.js": { "maxDuration": 30 },
+    "api/send-to-irs.js":     { "memory": 256, "maxDuration": 30 },
+    "api/process-referral.js": { "maxDuration": 15 }
   },
   "rewrites": [
     { "source": "/", "destination": "/index.html" },
@@ -48,7 +46,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com https://cdn.jsdelivr.net https://cdn.plaid.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.anthropic.com https://open.er-api.com https://cdn.jsdelivr.net https://js.stripe.com https://*.plaid.com; frame-src https://js.stripe.com https://cdn.plaid.com; object-src 'none';"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.anthropic.com https://open.er-api.com https://cdn.jsdelivr.net https://js.stripe.com; frame-src https://js.stripe.com; object-src 'none';"
         }
       ]
     }
