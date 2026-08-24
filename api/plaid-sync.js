@@ -79,10 +79,51 @@ export default async function handler(req, res) {
     return res.status(200).json({ imported: 0, skipped: 0 });
   }
 
+  // Maps Plaid's category array to MyTaxFly categories.
+  // Plaid sends e.g. ["Food and Drink", "Restaurants"] or ["Travel", "Airlines and Aviation Services"].
+  function mapCategory(plaidCats, isExpense) {
+    if (!isExpense) return 'Income';
+    if (!plaidCats || !plaidCats.length) return 'Uncategorized';
+    const [primary = '', secondary = ''] = plaidCats.map(c => c.toLowerCase());
+
+    if (primary === 'travel') return 'Travel';
+    if (primary === 'food and drink') return 'Meals';
+
+    if (secondary.includes('software') || secondary.includes('internet services') ||
+        secondary.includes('computers') || secondary.includes('electronics') ||
+        secondary.includes('telecommunication') || secondary.includes('subscription'))
+      return 'Software & Tools';
+
+    if (secondary.includes('advertis') || secondary.includes('marketing'))
+      return 'Advertising';
+
+    if (secondary.includes('legal') || secondary.includes('accounting') ||
+        secondary.includes('tax preparation'))
+      return 'Legal & Professional';
+
+    if (secondary.includes('consulting') || secondary.includes('professional') ||
+        (primary === 'service' && secondary.includes('business')))
+      return 'Professional Services';
+
+    if (secondary.includes('office') || secondary.includes('shipping') ||
+        secondary.includes('printing') || primary === 'shops')
+      return 'Office & Supplies';
+
+    if (primary === 'transfer' || primary === 'payment' || primary === 'bank fees')
+      return 'Other';
+
+    return 'Uncategorized';
+  }
+
   // Map Plaid transactions to MyTaxFly schema.
   // Plaid convention: amount > 0 = debit (expense), amount < 0 = credit (income).
   const mapped = posted.map(t => {
     const isExpense = t.amount > 0;
+    // Prefer personal_finance_category (newer) but fall back to legacy category array
+    const plaidCats = t.personal_finance_category
+      ? [t.personal_finance_category.primary, t.personal_finance_category.detailed]
+      : (t.category || []);
+    const category = mapCategory(plaidCats, isExpense);
     return {
       user_id: user.id,
       external_id: t.transaction_id,
@@ -92,8 +133,8 @@ export default async function handler(req, res) {
       currency: t.iso_currency_code || 'USD',
       date: t.date,
       type: isExpense ? 'expense' : 'income',
-      category: 'Uncategorized',
-      deductible: isExpense,
+      category,
+      deductible: isExpense && category !== 'Other',
       deductible_percent: 100,
       note: t.name || '',
       entity_id: null,
