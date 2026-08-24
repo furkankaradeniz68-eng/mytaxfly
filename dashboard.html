@@ -2326,10 +2326,13 @@ async function handleLogout(){
   if (clientRealtimeChannel) { try { sb.removeChannel(clientRealtimeChannel); } catch(e){} clientRealtimeChannel = null; }
   if (notesPollingInterval) { clearInterval(notesPollingInterval); notesPollingInterval = null; }
   sessionStorage.removeItem('mtf_portal_mode');
-  await sb.auth.signOut();
+  // Update UI immediately — don't wait for signOut network request (hangs in mobile WebViews)
+  _appInitialized = false;
   transactions=[];chatHistory=[];chatSessions=[];currentChatId=null;userEmail='';userName='';llcName='';
   document.getElementById('app').style.display='none';
   document.getElementById('login-screen').style.display='flex';
+  // Revoke session server-side in background
+  try { await sb.auth.signOut(); } catch(e) { /* session already cleared locally */ }
 }
 
 // ── SUPABASE TRANSACTIONS ─────────────────────────────────
@@ -5730,29 +5733,37 @@ async function openAccountModal() {
   set('acc-inc-date', p.incDate); set('acc-activity', p.activity); set('acc-country', p.country);
   set('acc-sh-name', p.shName); set('acc-sh-address', p.shAddress);
   set('acc-sh-country', p.shCountry); set('acc-sh-ftin', p.shFtin); set('acc-sh-res', p.shRes);
-  // Always load name + email fresh from Supabase session (never from localStorage)
-  const { data: { user: currentUser } } = await sb.auth.getUser();
+  // Pre-fill with cached values so the modal opens immediately
   const emailEl = document.getElementById('acc-email');
-  if (emailEl) emailEl.value = currentUser?.email || userEmail || '';
+  if (emailEl) emailEl.value = userEmail || '';
   const nameEl = document.getElementById('acc-name');
-  if (nameEl) {
-    const meta = currentUser?.user_metadata || {};
-    nameEl.value = meta.full_name || meta.name || meta.user_name || '';
-  }
-  // Load saved signature preview
-  const savedSig = currentUser?.user_metadata?.signature_data;
-  const previewWrap = document.getElementById('acc-sig-preview-wrap');
-  const previewImg = document.getElementById('acc-sig-preview-img');
-  if (savedSig && previewWrap && previewImg) {
-    previewImg.src = savedSig; previewWrap.style.display = 'block';
-  } else if (previewWrap) { previewWrap.style.display = 'none'; }
+  if (nameEl) nameEl.value = userName || '';
   // Reset email change form
   document.getElementById('email-change-form').style.display = 'none';
   document.getElementById('email-change-msg').style.display = 'none';
+  // Show modal immediately — don't block on network (hangs in mobile WebViews)
   const modal = document.getElementById('account-modal');
   modal.style.display = 'flex';
-  // Init signature pad after modal is visible
   setTimeout(initSignaturePad, 80);
+  // Refresh name/email + signature from Supabase in background (3s timeout)
+  try {
+    const result = await Promise.race([
+      sb.auth.getUser(),
+      new Promise(resolve => setTimeout(() => resolve({ data: { user: null } }), 3000))
+    ]);
+    const currentUser = result?.data?.user;
+    if (currentUser) {
+      if (emailEl) emailEl.value = currentUser.email || userEmail || '';
+      const meta = currentUser.user_metadata || {};
+      if (nameEl) nameEl.value = meta.full_name || meta.name || meta.user_name || userName || '';
+      const savedSig = meta.signature_data;
+      const previewWrap = document.getElementById('acc-sig-preview-wrap');
+      const previewImg  = document.getElementById('acc-sig-preview-img');
+      if (savedSig && previewWrap && previewImg) {
+        previewImg.src = savedSig; previewWrap.style.display = 'block';
+      } else if (previewWrap) { previewWrap.style.display = 'none'; }
+    }
+  } catch(e) { /* use cached values already in the fields */ }
 }
 function showEmailChange() {
   const f = document.getElementById('email-change-form');
