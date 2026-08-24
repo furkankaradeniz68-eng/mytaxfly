@@ -814,6 +814,15 @@ body{overflow-x:hidden;max-width:100vw;}
 .chat-main{flex:1;display:flex;flex-direction:column;min-width:0;}
 @media(max-width:640px){.chat-sidebar{display:none;}.chat-container{height:420px;}}
 
+/* ── iOS ZOOM FIX ─────────────────────────────────────────────────────
+   Safari/WebKit zooms in on any input with font-size < 16px.
+   Force 16px on mobile so the page never auto-zooms on focus.      */
+@media(max-width:768px){
+  input:not([type="checkbox"]):not([type="radio"]),
+  textarea,
+  select { font-size: 16px !important; }
+}
+
 /* ── ENTITY SWITCHER ── */
 .entity-switcher{position:relative;padding:0 12px 6px;border-bottom:1px solid var(--border);margin-bottom:4px;display:none;}
 .entity-switcher.visible{display:block;}
