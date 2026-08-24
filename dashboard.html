@@ -1915,15 +1915,23 @@ const sb = createClient('https://yacwkxstvqvdgiiffwos.supabase.co', 'sb_publisha
 let _appInitialized = false;
 (async () => {
   try {
-    const { data: { session } } = await sb.auth.getSession();
+    // Race getSession() against a 5-second timeout (Instagram/WebView can hang)
+    const sessionResult = await Promise.race([
+      sb.auth.getSession(),
+      new Promise(resolve => setTimeout(() => resolve({ data: { session: null }, _timedOut: true }), 5000))
+    ]);
+    const session = sessionResult.data?.session;
     if (session?.user && !_appInitialized) {
       _appInitialized = true;
       await launchApp(session.user);
-    } else if (!session?.user) {
-      // No session — ensure login screen is visible
+    } else {
+      // No session or timed out — show login screen so user can sign in
       document.getElementById('login-screen').style.display = 'flex';
     }
-  } catch(e) { /* ignore — onAuthStateChange will handle it */ }
+  } catch(e) {
+    // On any error fall back to login screen
+    document.getElementById('login-screen').style.display = 'flex';
+  }
 })();
 const ADMIN_EMAILS = ['furkan.karadeniz68@googlemail.com', 'anil@aynauniverse.com', 'info@llc-starten.de', 'solutionthirteenllc@gmail.com'];
 
@@ -3327,11 +3335,18 @@ async function launchApp(user){
     document.getElementById('app').style.display='block';
     document.getElementById('data-loader').classList.add('visible');
 
-    // Load data in background
-    const [, plan] = await Promise.all([
-      loadTransactions(user.id),
-      fetchUserPlan(user.email)
-    ]);
+    // Load data with an 8-second timeout so slow/restrictive WebViews
+    // (e.g. Instagram in-app browser) never leave the user stuck on the loader.
+    let plan = 'basic';
+    try {
+      const dataResult = await Promise.race([
+        Promise.all([loadTransactions(user.id), fetchUserPlan(user.email)]),
+        new Promise(resolve => setTimeout(() => resolve([null, null]), 8000))
+      ]);
+      plan = dataResult?.[1] || 'basic';
+    } catch(dataErr) {
+      console.warn('Data load error (proceeding with empty state):', dataErr);
+    }
     applyPlanGating(plan);
     document.getElementById('data-loader').classList.remove('visible');
 
