@@ -3325,6 +3325,7 @@ async function launchApp(user){
     if (cloudMeta.tax_profile)   localStorage.setItem(TAX_PROFILE_KEY,     JSON.stringify(cloudMeta.tax_profile));
     if (cloudMeta.entities)      localStorage.setItem('mtf_entities',       JSON.stringify(cloudMeta.entities));
     if (cloudMeta.inv_profile)   localStorage.setItem('MTF_INV_PROFILE',    JSON.stringify(cloudMeta.inv_profile));
+    if (cloudMeta.signature_data) localStorage.setItem('mtf_signature',     cloudMeta.signature_data);
     // (name is never cached in localStorage — always read from Supabase metadata)
     // Restore chat sessions from cloud if local is empty
     if (cloudMeta.chat_sessions && cloudMeta.chat_sessions.length) {
@@ -3347,20 +3348,27 @@ async function launchApp(user){
     document.getElementById('app').style.display='block';
     document.getElementById('data-loader').classList.add('visible');
 
-    // Load data with an 8-second timeout so slow/restrictive WebViews
-    // (e.g. Instagram in-app browser) never leave the user stuck on the loader.
-    let plan = 'basic';
+    // Apply basic plan immediately as safe default while plan loads
+    applyPlanGating('basic');
+
+    // Load transactions with 8-second timeout (non-critical — just data display).
+    // Plan fetch is kept SEPARATE so a slow mobile network never locks the plan
+    // to 'basic' just because transactions were slow too.
     try {
-      const dataResult = await Promise.race([
-        Promise.all([loadTransactions(user.id), fetchUserPlan(user.email)]),
-        new Promise(resolve => setTimeout(() => resolve([null, null]), 8000))
+      await Promise.race([
+        loadTransactions(user.id),
+        new Promise(resolve => setTimeout(resolve, 8000))
       ]);
-      plan = dataResult?.[1] || 'basic';
     } catch(dataErr) {
-      console.warn('Data load error (proceeding with empty state):', dataErr);
+      console.warn('Transactions load error (proceeding with empty state):', dataErr);
     }
-    applyPlanGating(plan);
     document.getElementById('data-loader').classList.remove('visible');
+
+    // Fetch the actual subscription plan in the background — no timeout.
+    // When it resolves (fast on WiFi, slower on mobile) it upgrades the gating.
+    fetchUserPlan(user.email)
+      .then(plan => { if (plan) applyPlanGating(plan); })
+      .catch(() => { /* stay on basic */ });
 
     // ── Check if this client has an advisor assigned → show "My Advisor Chat" ──
     checkClientAdvisorChat(user.id);
@@ -5738,6 +5746,13 @@ async function openAccountModal() {
   if (emailEl) emailEl.value = userEmail || '';
   const nameEl = document.getElementById('acc-name');
   if (nameEl) nameEl.value = userName || '';
+  // Show cached signature preview immediately (no network needed)
+  const previewWrap = document.getElementById('acc-sig-preview-wrap');
+  const previewImg  = document.getElementById('acc-sig-preview-img');
+  const cachedSig   = localStorage.getItem('mtf_signature');
+  if (cachedSig && previewWrap && previewImg) {
+    previewImg.src = cachedSig; previewWrap.style.display = 'block';
+  } else if (previewWrap) { previewWrap.style.display = 'none'; }
   // Reset email change form
   document.getElementById('email-change-form').style.display = 'none';
   document.getElementById('email-change-msg').style.display = 'none';
@@ -5756,12 +5771,11 @@ async function openAccountModal() {
       if (emailEl) emailEl.value = currentUser.email || userEmail || '';
       const meta = currentUser.user_metadata || {};
       if (nameEl) nameEl.value = meta.full_name || meta.name || meta.user_name || userName || '';
-      const savedSig = meta.signature_data;
-      const previewWrap = document.getElementById('acc-sig-preview-wrap');
-      const previewImg  = document.getElementById('acc-sig-preview-img');
-      if (savedSig && previewWrap && previewImg) {
-        previewImg.src = savedSig; previewWrap.style.display = 'block';
-      } else if (previewWrap) { previewWrap.style.display = 'none'; }
+      const freshSig = meta.signature_data;
+      if (freshSig) {
+        localStorage.setItem('mtf_signature', freshSig);
+        if (previewWrap && previewImg) { previewImg.src = freshSig; previewWrap.style.display = 'block'; }
+      }
     }
   } catch(e) { /* use cached values already in the fields */ }
 }
@@ -5807,6 +5821,9 @@ function saveAccountModal() {
   const metaUpdate = { tax_profile: p };
   if (newName)  { metaUpdate.full_name = newName; metaUpdate.user_name = newName; }
   if (sigData)  { metaUpdate.signature_data = sigData; }
+
+  // Update localStorage cache immediately (don't wait for Supabase round-trip)
+  if (sigData) localStorage.setItem('mtf_signature', sigData);
 
   sb.auth.updateUser({ data: metaUpdate }).then(() => {
     if (newName) {
