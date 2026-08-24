@@ -11,6 +11,7 @@
 <script defer src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+<script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0d0f14;--bg2:#13161e;--bg3:#1a1e28;--border:#252a38;--accent:#00c896;--accent2:#0099ff;--warn:#ff6b35;--text:#e8eaf2;--text2:#7a8099;--text3:#4a5068;--card:#161922;--radius:12px;}
@@ -1312,7 +1313,7 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
         <div class="entry-tab active" id="tab-manual" onclick="switchTab('manual')"><svg style="display:inline;vertical-align:-2px;margin-right:5px" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d='M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7'/><path d='M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z'/></svg><span id="t-tab-manual">Manual Entry</span></div>
         <div class="entry-tab" id="tab-upload" onclick="switchTab('upload')"><svg style="display:inline;vertical-align:-2px;margin-right:5px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span id="t-tab-upload">Upload Receipt</span></div>
         <div class="entry-tab" id="tab-csv" onclick="switchTab('csv')"><svg style="display:inline;vertical-align:-2px;margin-right:5px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 19 19 12"/></svg>Import CSV</div>
-        <div class="entry-tab biz-only" id="tab-bank" style="opacity:0.6;cursor:default;position:relative" onclick="showBankComingSoon()"><svg style="display:inline;vertical-align:-2px;margin-right:5px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>Bank Sync <span style="font-size:9px;font-weight:800;padding:2px 6px;background:rgba(245,158,11,0.2);color:#f59e0b;border-radius:20px;border:1px solid rgba(245,158,11,0.3);margin-left:4px;vertical-align:1px">SOON</span></div>
+        <div class="entry-tab biz-only" id="tab-bank" onclick="switchTab('bank')"><svg style="display:inline;vertical-align:-2px;margin-right:5px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>Bank Sync</div>
       </div>
       <div id="panel-manual">
         <div class="entry-form">
@@ -1363,25 +1364,38 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
         <div id="csv-preview"></div>
       </div>
       <div id="panel-bank" style="display:none">
-        <div style="text-align:center;padding:40px 20px">
-          <div style="width:64px;height:64px;background:rgba(245,158,11,0.1);border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+        <!-- Not connected -->
+        <div id="bank-not-connected" style="text-align:center;padding:40px 20px">
+          <div style="width:64px;height:64px;background:rgba(0,200,150,0.1);border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
           </div>
-          <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#f59e0b;margin-bottom:10px;text-transform:uppercase">Coming Soon</div>
-          <div style="font-size:20px;font-weight:800;color:var(--text);margin-bottom:12px">Bank Sync</div>
-          <div style="font-size:13px;color:var(--text2);max-width:380px;margin:0 auto 28px;line-height:1.7">Connect your bank directly — MyTaxFly will automatically pull in your transactions every day. No more manual entry. Supports Mercury, Chase, Wise, Bank of America and more.</div>
-          <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:32px">
-            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;color:var(--text2)">Mercury</div>
-            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;color:var(--text2)">Chase</div>
-            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;color:var(--text2)">Wise</div>
-            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;color:var(--text2)">Bank of America</div>
-            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;color:var(--text2)">Wells Fargo</div>
-            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;color:var(--text2)">+ more</div>
+          <div style="font-size:20px;font-weight:800;color:var(--text);margin-bottom:12px">Connect Your Bank</div>
+          <div style="font-size:13px;color:var(--text2);max-width:380px;margin:0 auto 28px;line-height:1.7">Automatically import transactions from Chase, Mercury, Wise, Bank of America, Wells Fargo and 12,000+ more banks via Plaid.</div>
+          <button class="btn-primary" onclick="connectBank()" style="padding:12px 28px;font-size:14px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:-2px;margin-right:6px"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            Connect Bank
+          </button>
+          <div style="margin-top:16px;font-size:11px;color:var(--text2)">Secured by Plaid · Bank-level encryption</div>
+        </div>
+        <!-- Connected -->
+        <div id="bank-connected" style="display:none;padding:24px">
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin-bottom:16px">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+              <div>
+                <div style="font-size:11px;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Connected Bank</div>
+                <div id="bank-account-name" style="font-size:16px;font-weight:800;color:var(--text)">—</div>
+                <div id="bank-last-synced" style="font-size:12px;color:var(--text2);margin-top:2px">Never synced</div>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button class="btn-primary" onclick="syncBank()" id="btn-sync-bank" style="padding:8px 18px;font-size:13px">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:-2px;margin-right:5px"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                  Sync Now
+                </button>
+                <button class="btn-sec" onclick="disconnectBank()" style="padding:8px 14px;font-size:13px;color:#ef4444;border-color:rgba(239,68,68,0.3)">Disconnect</button>
+              </div>
+            </div>
           </div>
-          <div style="background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);border-radius:12px;padding:16px 20px;display:inline-flex;align-items:center;gap:10px;font-size:13px;color:var(--text2)">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
-            We'll notify you as soon as Bank Sync is available.
-          </div>
+          <div id="bank-sync-status" style="font-size:13px;color:var(--text2);text-align:center;padding:8px"></div>
         </div>
       </div>
     </div>
@@ -3406,6 +3420,7 @@ async function launchApp(user){
 
     // ── Check if this client has an advisor assigned → show "My Advisor Chat" ──
     checkClientAdvisorChat(user.id);
+    checkBankConnections();
   } catch(err) {
     console.error('launchApp error:', err);
     showError('Error: ' + (err?.message || String(err)));
@@ -6221,25 +6236,94 @@ if (IS_SHARE_VIEW) {
   }
 })();
 
-// ── Bank Sync Import ───────────────────────────────────
-let selectedBank = 'mercury';
+// ── PLAID BANK SYNC ───────────────────────────────────
+async function checkBankConnections() {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return;
+    const { data: conn } = await sb.from('bank_connections').select('*').eq('user_id', session.user.id).eq('bank', 'plaid').maybeSingle();
+    if (conn) showBankConnected(conn);
+    else {
+      document.getElementById('bank-not-connected').style.display = 'block';
+      document.getElementById('bank-connected').style.display = 'none';
+    }
+  } catch(e) { console.error('checkBankConnections:', e); }
+}
 
-const BANK_COLUMN_MAPS = {
-  mercury:  { date: ['date'], vendor: ['description','merchant name'], amount: ['amount'], type_hint: 'sign' },
-  chase:    { date: ['posting date','transaction date'], vendor: ['description'], amount: ['amount'], type_hint: 'sign' },
-  wise:     { date: ['date'], vendor: ['merchant','description'], amount: ['amount'], type_hint: 'sign' },
-  boa:      { date: ['date'], vendor: ['description'], amount: ['amount'], type_hint: 'sign' },
-  wells:    { date: ['date'], vendor: ['description'], amount: ['amount'], type_hint: 'sign' },
-  other:    { date: ['date','transaction date'], vendor: ['description','payee','merchant'], amount: ['amount','debit','credit'], type_hint: 'sign' }
-};
+function showBankConnected(conn) {
+  document.getElementById('bank-not-connected').style.display = 'none';
+  document.getElementById('bank-connected').style.display = 'block';
+  document.getElementById('bank-account-name').textContent = conn.account_name || 'Bank Account';
+  document.getElementById('bank-last-synced').textContent = conn.last_synced_at
+    ? 'Last synced: ' + new Date(conn.last_synced_at).toLocaleString()
+    : 'Never synced';
+}
 
-function showBankComingSoon() {
-  ['manual','upload','csv','bank'].forEach(t=>{
-    const tb=document.getElementById('tab-'+t);
-    const pn=document.getElementById('panel-'+t);
-    if(tb) tb.classList.toggle('active',t==='bank');
-    if(pn) pn.style.display=t==='bank'?'block':'none';
-  });
+async function connectBank() {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return;
+    const res = await fetch('/api/plaid-create-link-token', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + session.access_token }
+    });
+    const { link_token, error } = await res.json();
+    if (error) { showError(error); return; }
+    const handler = Plaid.create({
+      token: link_token,
+      onSuccess: async (public_token, metadata) => {
+        const r = await fetch('/api/plaid-exchange-token', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + session.access_token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ publicToken: public_token, institutionName: metadata.institution?.name })
+        });
+        const d = await r.json();
+        if (d.success) { await checkBankConnections(); syncBank(); }
+        else showError(d.error || 'Failed to connect bank');
+      },
+      onExit: (err) => { if (err) console.error('Plaid exit:', err); }
+    });
+    handler.open();
+  } catch(e) { showError('Failed to open bank connection'); console.error(e); }
+}
+
+async function syncBank() {
+  const btn = document.getElementById('btn-sync-bank');
+  const status = document.getElementById('bank-sync-status');
+  if (btn) { btn.disabled = true; btn.textContent = 'Syncing...'; }
+  if (status) status.textContent = 'Importing transactions...';
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return;
+    const res = await fetch('/api/plaid-sync', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + session.access_token }
+    });
+    const d = await res.json();
+    if (d.error) {
+      if (status) status.textContent = 'Error: ' + d.error;
+    } else {
+      if (status) status.textContent = d.imported > 0
+        ? `✓ Imported ${d.imported} new transaction${d.imported !== 1 ? 's' : ''}`
+        : '✓ Already up to date';
+      await checkBankConnections();
+      if (d.imported > 0) await loadTransactions(session.user.id);
+    }
+  } catch(e) {
+    if (status) status.textContent = 'Sync failed';
+    console.error(e);
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:-2px;margin-right:5px"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Sync Now'; }
+  }
+}
+
+async function disconnectBank() {
+  if (!confirm('Disconnect your bank? Imported transactions will remain.')) return;
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return;
+  await sb.from('bank_connections').delete().eq('user_id', session.user.id).eq('bank', 'plaid');
+  document.getElementById('bank-not-connected').style.display = 'block';
+  document.getElementById('bank-connected').style.display = 'none';
 }
 
 function selectBank(bank) {
