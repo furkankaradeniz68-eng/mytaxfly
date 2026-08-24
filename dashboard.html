@@ -1290,6 +1290,7 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
         <div class="stat-card"><div class="stat-label" id="t-stat-tx">Transactions</div><div class="stat-value blue" id="beleg-count">0</div><div class="stat-change">This month</div></div>
       </div>
       <div class="two-col">
+        <div class="card" id="referral-card" style="display:none"></div>
         <div class="card"><div class="card-title" id="t-recent-tx">Recent Transactions</div><div id="tx-list"><div class="empty-state" style="padding:30px 0"><div class="empty-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div><div class="empty-title">No transactions yet</div><div class="empty-sub">Add your first transaction</div></div></div></div>
         <div class="card"><div class="card-title" id="t-by-cat">Expenses by Category</div><div id="cat-list"><div class="empty-state" style="padding:30px 0"><div class="empty-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><div class="empty-title">No data yet</div><div class="empty-sub">Appears after first entry</div></div></div></div>
       </div>
@@ -1921,6 +1922,15 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
 const { createClient } = supabase;
 const sb = createClient('https://yacwkxstvqvdgiiffwos.supabase.co', 'sb_publishable_JAGI28ms4nmK_dDoS1BLzA_O8locPZk');
 
+// ── REFERRAL — capture ?ref= from URL immediately ─────────
+(function captureReferral() {
+  const ref = new URLSearchParams(window.location.search).get('ref');
+  if (ref) {
+    localStorage.setItem('mtf_referral', ref.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12));
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+})();
+
 // ── INSTANT LAUNCH — zero network latency for returning users ─────────────
 // Supabase v2 stores the full session (including user object + metadata) in
 // localStorage synchronously. We read it immediately — no network call — and
@@ -2294,9 +2304,10 @@ async function handleRegister(){
 
   const btn=document.getElementById('btn-register');
   btn.disabled=true; btn.querySelector('span').textContent='Creating account...';
+  const referredBy = localStorage.getItem('mtf_referral') || '';
   const {error}=await sb.auth.signUp({
     email, password,
-    options:{data:{name, llc_name:llc||'My LLC'}}
+    options:{data:{name, llc_name:llc||'My LLC', ...(referredBy ? {referred_by: referredBy} : {})}}
   });
   btn.disabled=false;
   if(error){showError(error.message);btn.querySelector('span').textContent='Create Account →';return;}
@@ -3408,6 +3419,8 @@ async function launchApp(user){
     // ── Check if this client has an advisor assigned → show "My Advisor Chat" ──
     checkClientAdvisorChat(user.id);
     checkBankConnections();
+    // ── Referral: generate code if missing, process reward if referred ──────
+    initReferral(user);
   } catch(err) {
     console.error('launchApp error:', err);
     showError('Error: ' + (err?.message || String(err)));
@@ -3597,6 +3610,89 @@ function refreshDashboard(){
   } else {
     catList.innerHTML=Object.entries(cats).map(([k,v],i)=>`<div class="cat-item"><div class="cat-header"><span class="cat-name">${k}</span><div style="display:flex;align-items:center;gap:8px"><span class="cat-val">${fmt(v)}</span><button data-cat="${k.replace(/"/g,'&quot;')}" onclick="goToDocsByCategory(this.dataset.cat)" title="View in Documents" style="background:rgba(0,200,150,0.1);border:1px solid rgba(0,200,150,0.25);cursor:pointer;color:var(--accent);font-size:10px;padding:2px 7px;border-radius:5px;line-height:1.6;font-family:inherit;font-weight:600;transition:background 0.15s" onmouseover="this.style.background='rgba(0,200,150,0.22)'" onmouseout="this.style.background='rgba(0,200,150,0.1)'">→</button></div></div><div class="bar-bg"><div class="bar-fill ${cls[i%4]}" style="width:${(v/tot*100).toFixed(0)}%"></div></div></div>`).join('');
   }
+}
+
+// ── REFERRAL PROGRAM ──────────────────────────────────────
+async function initReferral(user) {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return;
+
+    // 1. Ensure user has a referral_code in profiles
+    const { data: profile } = await sb.from('profiles')
+      .select('referral_code, referred_by, referral_count, referral_reward_given')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    let code = profile?.referral_code;
+
+    if (!code) {
+      // Generate unique 7-char code
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      code = Array.from(crypto.getRandomValues(new Uint8Array(7))).map(b => chars[b % chars.length]).join('');
+      await sb.from('profiles').update({ referral_code: code }).eq('id', user.id);
+    }
+
+    // 2. If referred and not yet rewarded, try to process
+    const referred_by = profile?.referred_by || user.user_metadata?.referred_by || '';
+    if (referred_by && !profile?.referral_reward_given) {
+      // Save referred_by to profile if not already there
+      if (!profile?.referred_by) {
+        await sb.from('profiles').update({ referred_by }).eq('id', user.id);
+      }
+      // Try to process referral (server checks if subscription is active)
+      fetch('/api/process-referral', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + session.access_token }
+      }).catch(() => {});
+    }
+
+    // 3. Render referral card in dashboard
+    renderReferralCard(code, profile?.referral_count || 0, referred_by);
+
+    // 4. If user was referred, show promo code banner at top
+    if (referred_by && !profile?.referral_reward_given) {
+      showReferralWelcomeBanner();
+    }
+  } catch(e) { console.error('initReferral:', e); }
+}
+
+function renderReferralCard(code, referralCount, referredBy) {
+  const el = document.getElementById('referral-card');
+  if (!el) return;
+  const link = `https://mytaxfly.com/?ref=${code}`;
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+      <div>
+        <div style="font-size:14px;font-weight:700;color:var(--text)">🎁 Refer a Friend</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:2px">You get 1 free month · They get 50% off their first month</div>
+      </div>
+      <div style="font-size:13px;font-weight:700;color:var(--accent)">${referralCount} referral${referralCount !== 1 ? 's' : ''}</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div style="flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:12px;color:var(--text2);font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${link}</div>
+      <button onclick="copyReferralLink('${link}', this)" style="background:var(--accent);color:#000;border:none;border-radius:8px;padding:9px 16px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit">Copy Link</button>
+    </div>
+    ${referredBy ? `<div style="margin-top:10px;font-size:11px;color:var(--text3)">✓ You were referred — use <strong style="color:var(--accent)">REFER50</strong> at checkout for 50% off your first month</div>` : ''}
+  `;
+  el.style.display = 'block';
+}
+
+function copyReferralLink(link, btn) {
+  navigator.clipboard.writeText(link).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => { btn.textContent = orig; }, 2000);
+  });
+}
+
+function showReferralWelcomeBanner() {
+  if (document.getElementById('referral-banner')) return;
+  const banner = document.createElement('div');
+  banner.id = 'referral-banner';
+  banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:400;background:rgba(0,200,150,0.95);color:#000;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:600;backdrop-filter:blur(8px)';
+  banner.innerHTML = `<span>🎁 You were referred! Use code <strong>REFER50</strong> at checkout for 50% off your first month.</span><button onclick="this.parentElement.remove()" style="background:rgba(0,0,0,0.15);border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-weight:700;color:#000">✕</button>`;
+  document.body.prepend(banner);
 }
 
 function goToDocsByCategory(cat) {
