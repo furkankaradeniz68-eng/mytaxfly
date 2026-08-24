@@ -1230,6 +1230,14 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
 
     <!-- TOP RIGHT TOOLBAR -->
     <div id="topbar-actions" style="position:fixed;top:16px;right:24px;display:flex;align-items:center;gap:10px;z-index:200">
+      <!-- Gift / Referral dropdown -->
+      <div class="gear-wrap" id="gift-wrap" style="position:relative">
+        <button class="gear-btn" onclick="toggleGiftMenu()" title="Refer a Friend" style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all 0.15s;color:var(--text2)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg></button>
+        <div class="gear-dropdown" id="gift-dropdown" style="min-width:280px">
+          <div class="gdrop-label">Refer a Friend</div>
+          <div id="gift-dropdown-body" style="padding:4px 16px 14px"><div style="font-size:12px;color:var(--text3)">Loading…</div></div>
+        </div>
+      </div>
       <!-- Gear dropdown -->
       <div class="gear-wrap" id="gear-wrap" style="position:relative">
         <button class="gear-btn" onclick="toggleGearMenu()" title="Settings" style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all 0.15s;color:var(--text2)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
@@ -1290,7 +1298,6 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
         <div class="stat-card"><div class="stat-label" id="t-stat-tx">Transactions</div><div class="stat-value blue" id="beleg-count">0</div><div class="stat-change">This month</div></div>
       </div>
       <div class="two-col">
-        <div class="card" id="referral-card" style="display:none"></div>
         <div class="card"><div class="card-title" id="t-recent-tx">Recent Transactions</div><div id="tx-list"><div class="empty-state" style="padding:30px 0"><div class="empty-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div><div class="empty-title">No transactions yet</div><div class="empty-sub">Add your first transaction</div></div></div></div>
         <div class="card"><div class="card-title" id="t-by-cat">Expenses by Category</div><div id="cat-list"><div class="empty-state" style="padding:30px 0"><div class="empty-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><div class="empty-title">No data yet</div><div class="empty-sub">Appears after first entry</div></div></div></div>
       </div>
@@ -3658,24 +3665,18 @@ async function initReferral(user) {
 }
 
 function renderReferralCard(code, referralCount, referredBy) {
-  const el = document.getElementById('referral-card');
+  const el = document.getElementById('gift-dropdown-body');
   if (!el) return;
   const link = `https://mytaxfly.com/?ref=${code}`;
   el.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px">
-      <div>
-        <div style="font-size:14px;font-weight:700;color:var(--text)">🎁 Refer a Friend</div>
-        <div style="font-size:12px;color:var(--text2);margin-top:2px">You get 1 free month · They get 50% off their first month</div>
-      </div>
-      <div style="font-size:13px;font-weight:700;color:var(--accent)">${referralCount} referral${referralCount !== 1 ? 's' : ''}</div>
-    </div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:10px">You get 1 free month · They get 50% off their first month</div>
+    <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:10px">${referralCount} referral${referralCount !== 1 ? 's' : ''} so far</div>
     <div style="display:flex;gap:8px;align-items:center">
-      <div style="flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:12px;color:var(--text2);font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${link}</div>
-      <button onclick="copyReferralLink('${link}', this)" style="background:var(--accent);color:#000;border:none;border-radius:8px;padding:9px 16px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit">Copy Link</button>
+      <div style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:11px;color:var(--text2);font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${link}</div>
+      <button onclick="copyReferralLink('${link}', this)" style="background:var(--accent);color:#000;border:none;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit">Copy</button>
     </div>
-    ${referredBy ? `<div style="margin-top:10px;font-size:11px;color:var(--text3)">✓ You were referred — use <strong style="color:var(--accent)">REFER50</strong> at checkout for 50% off your first month</div>` : ''}
+    ${referredBy ? `<div style="margin-top:8px;font-size:11px;color:var(--text3)">✓ You were referred — use <strong style="color:var(--accent)">REFER50</strong> at checkout for 50% off</div>` : ''}
   `;
-  el.style.display = 'block';
 }
 
 function copyReferralLink(link, btn) {
@@ -5612,9 +5613,20 @@ function toggleLangMenu(){
   document.getElementById('app-lang-dropdown') && document.getElementById('app-lang-dropdown').classList.toggle('open');
 }
 
+function toggleGiftMenu(){
+  const d=document.getElementById('gift-dropdown');
+  const isOpen = d.style.display==='block';
+  closeGearMenu();
+  d.style.display = isOpen ? 'none' : 'block';
+}
+function closeGiftMenu(){
+  document.getElementById('gift-dropdown').style.display='none';
+}
 function toggleGearMenu(){
   const d=document.getElementById('gear-dropdown');
-  d.style.display = d.style.display==='block' ? 'none' : 'block';
+  const isOpen = d.style.display==='block';
+  closeGiftMenu();
+  d.style.display = isOpen ? 'none' : 'block';
 }
 function closeGearMenu(){
   document.getElementById('gear-dropdown').style.display='none';
@@ -5634,7 +5646,11 @@ document.addEventListener('click', e => {
   const mgw = document.getElementById('mobile-gear-wrap');
   if(mgw && !mgw.contains(e.target))
     document.getElementById('mobile-gear-dropdown').style.display='none';
-  // Close lang dropdown
+  // Close gift dropdown
+  const gifw = document.getElementById('gift-wrap');
+  if(gifw && !gifw.contains(e.target))
+    document.getElementById('gift-dropdown').style.display='none';
+  // Close gear dropdown
   const gw = document.getElementById('gear-wrap');
   if(gw && !gw.contains(e.target))
     document.getElementById('gear-dropdown').style.display='none';
