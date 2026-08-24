@@ -1232,7 +1232,7 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
     <div id="topbar-actions" style="position:fixed;top:16px;right:24px;display:flex;align-items:center;gap:10px;z-index:200">
       <!-- Gift / Referral dropdown -->
       <div class="gear-wrap" id="gift-wrap" style="position:relative">
-        <button class="gear-btn" onclick="toggleGiftMenu()" title="Refer a Friend" style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all 0.15s;color:var(--text2)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg></button>
+        <button class="gear-btn" onclick="toggleGiftMenu()" title="Refer a Friend" style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all 0.15s;color:var(--text2);display:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg></button>
         <div class="gear-dropdown" id="gift-dropdown" style="min-width:280px">
           <div class="gdrop-label">Refer a Friend</div>
           <div id="gift-dropdown-body" style="padding:4px 16px 14px"><div style="font-size:12px;color:var(--text3)">Loading…</div></div>
@@ -3622,6 +3622,12 @@ function refreshDashboard(){
 // ── REFERRAL PROGRAM ──────────────────────────────────────
 async function initReferral(user) {
   try {
+    // Hidden for advisors and whitelabel clients
+    if (isAdvisorUser) return;
+    const { data: acRow } = await sb.from('advisor_clients')
+      .select('advisor_id').eq('client_id', user.id).maybeSingle();
+    if (acRow?.advisor_id) return;
+
     const { data: { session } } = await sb.auth.getSession();
     if (!session) return;
 
@@ -3654,8 +3660,10 @@ async function initReferral(user) {
       }).catch(() => {});
     }
 
-    // 3. Render referral card in dashboard
+    // 3. Render referral dropdown and reveal gift button
     renderReferralCard(code, profile?.referral_count || 0, referred_by);
+    const giftBtn = document.querySelector('#gift-wrap .gear-btn');
+    if (giftBtn) giftBtn.style.display = 'flex';
 
     // 4. If user was referred, show promo code banner at top
     if (referred_by && !profile?.referral_reward_given) {
