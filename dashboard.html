@@ -1313,7 +1313,7 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
         <div class="entry-tab active" id="tab-manual" onclick="switchTab('manual')"><svg style="display:inline;vertical-align:-2px;margin-right:5px" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d='M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7'/><path d='M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z'/></svg><span id="t-tab-manual">Manual Entry</span></div>
         <div class="entry-tab" id="tab-upload" onclick="switchTab('upload')"><svg style="display:inline;vertical-align:-2px;margin-right:5px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span id="t-tab-upload">Upload Receipt</span></div>
         <div class="entry-tab" id="tab-csv" onclick="switchTab('csv')"><svg style="display:inline;vertical-align:-2px;margin-right:5px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 19 19 12"/></svg>Import CSV</div>
-        <div class="entry-tab biz-only" id="tab-bank" onclick="switchTab('bank')"><svg style="display:inline;vertical-align:-2px;margin-right:5px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>Bank Sync</div>
+        <div class="entry-tab biz-only" id="tab-bank" onclick="switchTab('bank')"><svg style="display:inline;vertical-align:-2px;margin-right:5px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>Bank Sync <span style="font-size:9px;background:var(--accent);color:#000;border-radius:4px;padding:1px 5px;font-weight:700;margin-left:4px;vertical-align:1px">SOON</span></div>
       </div>
       <div id="panel-manual">
         <div class="entry-form">
@@ -1364,38 +1364,13 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
         <div id="csv-preview"></div>
       </div>
       <div id="panel-bank" style="display:none">
-        <!-- Not connected -->
-        <div id="bank-not-connected" style="text-align:center;padding:40px 20px">
-          <div style="width:64px;height:64px;background:rgba(0,200,150,0.1);border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px">
+        <div style="text-align:center;padding:48px 20px">
+          <div style="width:64px;height:64px;background:rgba(0,200,150,0.08);border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;border:1px solid rgba(0,200,150,0.15)">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
           </div>
-          <div style="font-size:20px;font-weight:800;color:var(--text);margin-bottom:12px">Connect Your Bank</div>
-          <div style="font-size:13px;color:var(--text2);max-width:380px;margin:0 auto 28px;line-height:1.7">Automatically import transactions from Chase, Mercury, Wise, Bank of America, Wells Fargo and 12,000+ more banks via Plaid.</div>
-          <button class="btn-primary" onclick="connectBank()" style="padding:12px 28px;font-size:14px">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:-2px;margin-right:6px"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-            Connect Bank
-          </button>
-          <div style="margin-top:16px;font-size:11px;color:var(--text2)">Secured by Plaid · Bank-level encryption</div>
-        </div>
-        <!-- Connected -->
-        <div id="bank-connected" style="display:none;padding:24px">
-          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin-bottom:16px">
-            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
-              <div>
-                <div style="font-size:11px;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Connected Bank</div>
-                <div id="bank-account-name" style="font-size:16px;font-weight:800;color:var(--text)">—</div>
-                <div id="bank-last-synced" style="font-size:12px;color:var(--text2);margin-top:2px">Never synced</div>
-              </div>
-              <div style="display:flex;gap:8px">
-                <button class="btn-primary" onclick="syncBank()" id="btn-sync-bank" style="padding:8px 18px;font-size:13px">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:-2px;margin-right:5px"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-                  Sync Now
-                </button>
-                <button class="btn-sec" onclick="disconnectBank()" style="padding:8px 14px;font-size:13px;color:#ef4444;border-color:rgba(239,68,68,0.3)">Disconnect</button>
-              </div>
-            </div>
-          </div>
-          <div id="bank-sync-status" style="font-size:13px;color:var(--text2);text-align:center;padding:8px"></div>
+          <div style="display:inline-block;font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--accent);background:rgba(0,200,150,0.1);border:1px solid rgba(0,200,150,0.2);border-radius:20px;padding:4px 12px;margin-bottom:14px">COMING SOON</div>
+          <div style="font-size:20px;font-weight:800;color:var(--text);margin-bottom:10px">Bank Sync via Plaid</div>
+          <div style="font-size:13px;color:var(--text2);max-width:360px;margin:0 auto;line-height:1.7">Automatically import transactions from Chase, Mercury, Wise, Bank of America, Wells Fargo and 12,000+ more banks. No manual entry needed.</div>
         </div>
       </div>
     </div>
