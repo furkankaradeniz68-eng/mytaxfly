@@ -50,7 +50,13 @@ s.parentNode.insertBefore(t,s)}(window, document,'script',
 fbq('init', '1799163168200739');
 fbq('track', 'PageView');
 // Purchase event — fired once per checkout completion (Stripe redirects here)
-fbq('track', 'Purchase', { currency: 'USD', value: 9.00 });
+// Value is read from ?plan= URL param set by the Stripe payment link success URL
+(function() {
+  var planValues = { basic: 9.00, pro: 29.00, business: 49.00 };
+  var plan = new URLSearchParams(window.location.search).get('plan') || 'basic';
+  var value = planValues[plan] || 9.00;
+  fbq('track', 'Purchase', { currency: 'USD', value: value, content_name: plan });
+})();
 </script>
 <noscript><img height="1" width="1" style="display:none"
 src="https://www.facebook.com/tr?id=1799163168200739&ev=PageView&noscript=1"
