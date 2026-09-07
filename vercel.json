@@ -9,6 +9,7 @@
   "rewrites": [
     { "source": "/", "destination": "/index.html" },
     { "source": "/dashboard", "destination": "/dashboard.html" },
+    { "source": "/demo", "destination": "/demo.html" },
     { "source": "/success", "destination": "/success.html" },
     { "source": "/imprint", "destination": "/legal.html" },
     { "source": "/privacy", "destination": "/legal.html" },
@@ -46,7 +47,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.anthropic.com https://open.er-api.com https://cdn.jsdelivr.net https://js.stripe.com; frame-src https://js.stripe.com; object-src 'none';"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com https://cdn.jsdelivr.net https://www.googletagmanager.com https://connect.facebook.net https://assets.calendly.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://assets.calendly.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.anthropic.com https://open.er-api.com https://cdn.jsdelivr.net https://js.stripe.com https://www.google-analytics.com https://calendly.com; frame-src https://js.stripe.com https://calendly.com; object-src 'none';"
         }
       ]
     }
