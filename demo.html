@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book a Demo Call · MyTaxFly</title>
+<meta name="description" content="Book a free 30-minute demo call with MyTaxFly. See how AI handles your US LLC bookkeeping, taxes, and IRS forms — live, just for you.">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-EEWELM9YZ1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-EEWELM9YZ1');
+</script>
+
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1799163168200739');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1799163168200739&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#080b10;
+    --bg2:#0d1117;
+    --bg3:#13161e;
+    --border:#1e2633;
+    --accent:#00c896;
+    --accent2:#00a87e;
+    --text:#e8edf5;
+    --text2:#a0aec0;
+    --text3:#5a6478;
+  }
+  body{background:var(--bg);color:var(--text);font-family:'Montserrat',sans-serif;min-height:100vh}
+
+  /* NAV */
+  nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 40px;height:64px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:rgba(8,11,16,0.92);backdrop-filter:blur(12px)}
+  .nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+  .nav-logo-text{font-size:20px;font-weight:800;color:var(--text)}
+  .nav-logo-sub{font-size:10px;color:var(--text3);margin-top:1px}
+  .nav-right{display:flex;align-items:center;gap:12px}
+  .btn-ghost{background:none;border:1px solid var(--border);border-radius:8px;padding:8px 16px;color:var(--text2);font-family:'Montserrat',sans-serif;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;transition:all 0.15s}
+  .btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+  .btn-nav{background:var(--accent);border:none;border-radius:8px;padding:9px 20px;color:#080b10;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;transition:all 0.15s}
+  .btn-nav:hover{background:var(--accent2)}
+
+  /* MAIN LAYOUT */
+  .page{padding:100px 40px 60px;max-width:1100px;margin:0 auto}
+
+  /* GRID */
+  .demo-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start}
+
+  /* LEFT SIDE */
+  .demo-left{}
+  .demo-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(0,200,150,0.1);border:1px solid rgba(0,200,150,0.2);border-radius:20px;padding:6px 14px;font-size:12px;font-weight:600;color:var(--accent);margin-bottom:24px}
+  .demo-badge .dot{width:7px;height:7px;background:var(--accent);border-radius:50%;animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+  .demo-h1{font-size:38px;font-weight:800;line-height:1.15;margin-bottom:16px}
+  .demo-h1 span{color:var(--accent)}
+  .demo-sub{font-size:15px;color:var(--text2);line-height:1.7;margin-bottom:36px}
+
+  .perks{display:flex;flex-direction:column;gap:18px;margin-bottom:40px}
+  .perk{display:flex;align-items:flex-start;gap:14px}
+  .perk-icon{width:36px;height:36px;background:rgba(0,200,150,0.1);border:1px solid rgba(0,200,150,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+  .perk-text strong{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px}
+  .perk-text span{font-size:13px;color:var(--text2);line-height:1.5}
+
+  .demo-meta{display:flex;gap:24px;flex-wrap:wrap}
+  .meta-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text3);font-weight:600}
+  .meta-item svg{color:var(--accent)}
+
+  /* RIGHT SIDE - FORM CARD */
+  .demo-card{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:36px;position:sticky;top:88px}
+  .demo-card-title{font-size:16px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}
+  .demo-card-title span{color:var(--accent)}
+  .demo-card-sub{font-size:13px;color:var(--text3);margin-bottom:28px}
+
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .form-group{margin-bottom:16px}
+  .form-label{display:block;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px}
+  .form-input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-family:'Montserrat',sans-serif;font-size:14px;outline:none;transition:border-color 0.2s}
+  .form-input:focus{border-color:var(--accent)}
+  .form-input::placeholder{color:var(--text3)}
+  select.form-input{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235a6478' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+  select.form-input option{background:var(--bg3)}
+
+  .btn-submit{width:100%;background:var(--accent);border:none;border-radius:12px;padding:15px;color:#080b10;font-family:'Montserrat',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all 0.2s;margin-top:4px;display:flex;align-items:center;justify-content:center;gap:8px}
+  .btn-submit:hover{background:var(--accent2);transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,200,150,0.25)}
+  .btn-submit:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+  .form-note{font-size:11px;color:var(--text3);text-align:center;margin-top:10px}
+
+  /* CALENDAR SECTION */
+  .calendar-section{display:none}
+  .calendar-section.visible{display:block}
+  .calendar-header{text-align:center;margin-bottom:24px}
+  .calendar-header h3{font-size:20px;font-weight:800;margin-bottom:6px}
+  .calendar-header p{font-size:13px;color:var(--text2)}
+  .calendar-embed{width:100%;border:none;border-radius:12px;overflow:hidden;background:var(--bg3)}
+
+  /* SUCCESS */
+  .form-section{transition:opacity 0.3s}
+  .success-note{background:rgba(0,200,150,0.08);border:1px solid rgba(0,200,150,0.2);border-radius:10px;padding:12px 16px;font-size:13px;color:var(--accent);font-weight:600;margin-bottom:20px;display:none}
+  .success-note.visible{display:block}
+
+  /* RESPONSIVE */
+  @media(max-width:768px){
+    nav{padding:0 20px}
+    .page{padding:88px 20px 40px}
+    .demo-grid{grid-template-columns:1fr;gap:36px}
+    .demo-h1{font-size:28px}
+    .demo-card{position:static}
+    .form-row{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/" class="nav-logo">
+    <div>
+      <div class="nav-logo-text">mytaxfly</div>
+      <div class="nav-logo-sub">Your LLC. Our AI. Zero stress.</div>
+    </div>
+  </a>
+  <div class="nav-right">
+    <a href="/dashboard" class="btn-ghost">Sign in</a>
+    <a href="/#pricing" class="btn-nav">Start free trial →</a>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="page">
+  <div class="demo-grid">
+
+    <!-- LEFT: Description -->
+    <div class="demo-left">
+      <div class="demo-badge"><span class="dot"></span> Free · 30 minutes · No sales pitch</div>
+      <h1 class="demo-h1">Book your free<br><span>Demo Call</span></h1>
+      <p class="demo-sub">See MyTaxFly live — built specifically for foreign US LLC founders. We'll walk through your exact situation and show you how the AI handles everything.</p>
+
+      <div class="perks">
+        <div class="perk">
+          <div class="perk-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+          </div>
+          <div class="perk-text">
+            <strong>Live AI walkthrough</strong>
+            <span>We show you auto-categorization, receipt scanning and IRS form generation on a real example.</span>
+          </div>
+        </div>
+        <div class="perk">
+          <div class="perk-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          </div>
+          <div class="perk-text">
+            <strong>IRS Form 1120 & 5472</strong>
+            <span>See exactly how MyTaxFly generates your tax forms automatically — ready to file in minutes.</span>
+          </div>
+        </div>
+        <div class="perk">
+          <div class="perk-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <div class="perk-text">
+            <strong>Tailored to your situation</strong>
+            <span>Delaware LLC, Wyoming, single-member or multi-member — we address your specific structure.</span>
+          </div>
+        </div>
+        <div class="perk">
+          <div class="perk-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          </div>
+          <div class="perk-text">
+            <strong>White-label for agencies</strong>
+            <span>Running a formation agency? We'll show you how to offer MyTaxFly under your own brand.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="demo-meta">
+        <div class="meta-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          30 minutes
+        </div>
+        <div class="meta-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10l-4 4l-4-4"/><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/></svg>
+          Google Meet
+        </div>
+        <div class="meta-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          No commitment
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Form Card -->
+    <div class="demo-card">
+      <div class="demo-card-title">BOOK YOUR FREE <span>DEMO CALL</span></div>
+      <div class="demo-card-sub">Fill in your details — then pick a time that works for you.</div>
+
+      <div class="success-note" id="success-note">✓ Perfect! Now pick a time below.</div>
+
+      <!-- FORM -->
+      <div class="form-section" id="form-section">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">First Name *</label>
+            <input class="form-input" id="f-first" type="text" placeholder="John" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Last Name *</label>
+            <input class="form-input" id="f-last" type="text" placeholder="Smith" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email *</label>
+          <input class="form-input" id="f-email" type="email" placeholder="john@example.com" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone (optional)</label>
+          <input class="form-input" id="f-phone" type="tel" placeholder="+1 555 000 0000">
+        </div>
+        <div class="form-group">
+          <label class="form-label">What describes you best?</label>
+          <select class="form-input" id="f-type">
+            <option value="">— Please select —</option>
+            <option value="founder">Foreign LLC Founder</option>
+            <option value="agency">Formation / Immigration Agency</option>
+            <option value="accountant">Accountant / CPA</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Anything you'd like to discuss?</label>
+          <input class="form-input" id="f-note" type="text" placeholder="e.g. multi-member LLC, white-label pricing...">
+        </div>
+
+        <div id="form-error" style="display:none;font-size:12px;color:#ff6b35;margin-bottom:12px;background:rgba(255,107,53,0.08);border:1px solid rgba(255,107,53,0.2);border-radius:8px;padding:10px 14px"></div>
+
+        <button class="btn-submit" id="btn-submit" onclick="submitDemoForm()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Book My Demo Call →
+        </button>
+        <div class="form-note">Free · 30 min · No commitment</div>
+      </div>
+
+      <!-- CALENDAR (shown after form submit) -->
+      <div class="calendar-section" id="calendar-section">
+        <div class="calendar-header">
+          <h3>Pick your time 🗓</h3>
+          <p>Choose a slot that works for you. You'll get a Google Meet link by email.</p>
+        </div>
+        <!-- Calendly inline widget -->
+        <div class="calendly-inline-widget" id="calendly-widget" data-url="https://calendly.com/mytaxfly/30min?hide_gdpr_banner=1&primary_color=00c896" style="min-width:280px;height:650px"></div>
+        <script src="https://assets.calendly.com/assets/external/widget.js" async></script>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function submitDemoForm() {
+  const first = document.getElementById('f-first').value.trim();
+  const last  = document.getElementById('f-last').value.trim();
+  const email = document.getElementById('f-email').value.trim();
+  const errEl = document.getElementById('form-error');
+
+  // Validate
+  if (!first || !last || !email) {
+    errEl.textContent = 'Please fill in your first name, last name and email.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    errEl.textContent = 'Please enter a valid email address.';
+    errEl.style.display = 'block';
+    return;
+  }
+  errEl.style.display = 'none';
+
+  // Disable button
+  const btn = document.getElementById('btn-submit');
+  btn.disabled = true;
+  btn.textContent = 'Loading…';
+
+  // Fire Meta Lead event
+  if (window.fbq) fbq('track', 'Lead', { content_name: 'Demo Call Request' });
+
+  // Fire GA event
+  if (window.gtag) gtag('event', 'demo_request', { first_name: first, email: email });
+
+  // Pre-fill Calendly with name & email
+  const widget = document.getElementById('calendly-widget');
+  if (widget) {
+    widget.dataset.url = 'https://calendly.com/mytaxfly/30min?hide_gdpr_banner=1&primary_color=00c896'
+      + '&name=' + encodeURIComponent(first + ' ' + last)
+      + '&email=' + encodeURIComponent(email);
+  }
+
+  // Show calendar, hide form
+  setTimeout(() => {
+    document.getElementById('form-section').style.opacity = '0';
+    setTimeout(() => {
+      document.getElementById('form-section').style.display = 'none';
+      document.getElementById('success-note').classList.add('visible');
+      document.getElementById('calendar-section').classList.add('visible');
+    }, 300);
+  }, 400);
+}
+
+// Allow Enter key to submit
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.activeElement.closest('#form-section')) {
+    submitDemoForm();
+  }
+});
+</script>
+</body>
+</html>
