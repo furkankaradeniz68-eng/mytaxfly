@@ -11,7 +11,6 @@
 <script defer src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
-<script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0d0f14;--bg2:#13161e;--bg3:#1a1e28;--border:#252a38;--accent:#00c896;--accent2:#0099ff;--warn:#ff6b35;--text:#e8eaf2;--text2:#7a8099;--text3:#4a5068;--card:#161922;--radius:12px;}
@@ -1381,7 +1380,7 @@ src="https://www.facebook.com/tr?id=1799163168200739&ev=PageView&noscript=1"
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
           </div>
           <div style="display:inline-block;font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--accent);background:rgba(0,200,150,0.1);border:1px solid rgba(0,200,150,0.2);border-radius:20px;padding:4px 12px;margin-bottom:14px">COMING SOON</div>
-          <div style="font-size:20px;font-weight:800;color:var(--text);margin-bottom:10px">Bank Sync via Plaid</div>
+          <div style="font-size:20px;font-weight:800;color:var(--text);margin-bottom:10px">Bank Sync</div>
           <div style="font-size:13px;color:var(--text2);max-width:360px;margin:0 auto;line-height:1.7">Automatically import transactions from Chase, Mercury, Wise, Bank of America, Wells Fargo and 12,000+ more banks. No manual entry needed.</div>
         </div>
       </div>
@@ -3429,7 +3428,6 @@ async function launchApp(user){
 
     // ── Check if this client has an advisor assigned → show "My Advisor Chat" ──
     checkClientAdvisorChat(user.id);
-    checkBankConnections();
     // ── Referral: generate code if missing, process reward if referred ──────
     initReferral(user);
   } catch(err) {
@@ -6355,102 +6353,7 @@ if (IS_SHARE_VIEW) {
   }
 })();
 
-// ── PLAID BANK SYNC ───────────────────────────────────
-async function checkBankConnections() {
-  try {
-    const { data: { session } } = await sb.auth.getSession();
-    if (!session) return;
-    const { data: conn } = await sb.from('bank_connections').select('*').eq('user_id', session.user.id).eq('bank', 'plaid').maybeSingle();
-    if (conn) showBankConnected(conn);
-    else {
-      document.getElementById('bank-not-connected').style.display = 'block';
-      document.getElementById('bank-connected').style.display = 'none';
-    }
-  } catch(e) { console.error('checkBankConnections:', e); }
-}
-
-function showBankConnected(conn) {
-  document.getElementById('bank-not-connected').style.display = 'none';
-  document.getElementById('bank-connected').style.display = 'block';
-  document.getElementById('bank-account-name').textContent = conn.account_name || 'Bank Account';
-  document.getElementById('bank-last-synced').textContent = conn.last_synced_at
-    ? 'Last synced: ' + new Date(conn.last_synced_at).toLocaleString()
-    : 'Never synced';
-}
-
-async function connectBank() {
-  try {
-    const { data: { session } } = await sb.auth.getSession();
-    if (!session) return;
-    const res = await fetch('/api/plaid-create-link-token', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + session.access_token }
-    });
-    const { link_token, error } = await res.json();
-    if (error) { showError(error); return; }
-    const handler = Plaid.create({
-      token: link_token,
-      onSuccess: async (public_token, metadata) => {
-        const r = await fetch('/api/plaid-exchange-token', {
-          method: 'POST',
-          headers: { 'Authorization': 'Bearer ' + session.access_token, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ publicToken: public_token, institutionName: metadata.institution?.name })
-        });
-        const d = await r.json();
-        if (d.success) { await checkBankConnections(); syncBank(); }
-        else showError(d.error || 'Failed to connect bank');
-      },
-      onExit: (err) => { if (err) console.error('Plaid exit:', err); }
-    });
-    handler.open();
-  } catch(e) { showError('Failed to open bank connection'); console.error(e); }
-}
-
-async function syncBank() {
-  const btn = document.getElementById('btn-sync-bank');
-  const status = document.getElementById('bank-sync-status');
-  if (btn) { btn.disabled = true; btn.textContent = 'Syncing...'; }
-  if (status) status.textContent = 'Importing transactions...';
-  try {
-    const { data: { session } } = await sb.auth.getSession();
-    if (!session) return;
-    const res = await fetch('/api/plaid-sync', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + session.access_token }
-    });
-    const d = await res.json();
-    if (d.error) {
-      if (status) status.textContent = 'Error: ' + d.error;
-    } else {
-      if (status) status.textContent = d.imported > 0
-        ? `✓ Imported ${d.imported} new transaction${d.imported !== 1 ? 's' : ''}`
-        : '✓ Already up to date';
-      await checkBankConnections();
-      if (d.imported > 0) await loadTransactions(session.user.id);
-    }
-  } catch(e) {
-    if (status) status.textContent = 'Sync failed';
-    console.error(e);
-  } finally {
-    if (btn) { btn.disabled = false; btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:-2px;margin-right:5px"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Sync Now'; }
-  }
-}
-
-async function disconnectBank() {
-  if (!confirm('Disconnect your bank? Imported transactions will remain.')) return;
-  const { data: { session } } = await sb.auth.getSession();
-  if (!session) return;
-  await sb.from('bank_connections').delete().eq('user_id', session.user.id).eq('bank', 'plaid');
-  document.getElementById('bank-not-connected').style.display = 'block';
-  document.getElementById('bank-connected').style.display = 'none';
-}
-
-function selectBank(bank) {
-  selectedBank = bank;
-  document.querySelectorAll('.bank-card').forEach(c => c.classList.remove('selected'));
-  const el = document.getElementById('bank-' + bank);
-  if (el) el.classList.add('selected');
-}
+// Bank Sync — coming soon (Plaid removed)
 
 function handleBankDrop(e) {
   e.preventDefault();
