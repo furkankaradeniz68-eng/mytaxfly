@@ -1579,7 +1579,7 @@ src="https://www.facebook.com/tr?id=1799163168200739&ev=PageView&noscript=1"
             <div style="width:34px;height:34px;border-radius:50%;background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:800;color:#a78bfa">3</div>
             <div>
               <div style="font-size:13px;font-weight:700;margin-bottom:3px">We mail it to the IRS</div>
-              <div style="font-size:12px;color:var(--text3);line-height:1.6">Your signed filing is printed and sent via <strong style="color:var(--text)">USPS Certified Mail</strong> to IRS Ogden, UT 84409. You receive a tracking number.</div>
+              <div style="font-size:12px;color:var(--text3);line-height:1.6">Your signed filing is printed and sent via <strong style="color:var(--text)">USPS Certified Mail</strong> to the correct IRS address for your entity type. You receive a tracking number.</div>
             </div>
           </div>
         </div>
@@ -1613,7 +1613,7 @@ src="https://www.facebook.com/tr?id=1799163168200739&ev=PageView&noscript=1"
         <svg style="display:inline;vertical-align:-3px;margin-right:8px" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,13 22,4"/></svg>
         Send to IRS via USPS Certified Mail
       </button>
-      <div style="font-size:11px;color:var(--text3);text-align:center;margin-bottom:28px">USPS Certified Mail · With tracking number · Delivered to IRS Ogden, UT 84409</div>
+      <div id="irs-page-addr-hint" style="font-size:11px;color:var(--text3);text-align:center;margin-bottom:28px">USPS Certified Mail · With tracking number · Delivered to IRS Ogden, UT 84409</div>
 
       <!-- History -->
       <div class="card">
@@ -1659,6 +1659,9 @@ src="https://www.facebook.com/tr?id=1799163168200739&ev=PageView&noscript=1"
               <option value="Office &amp; Supplies">Office &amp; Supplies</option>
               <option value="Other">Other</option>
               <option value="Uncategorized">Uncategorized</option>
+              <option value="Owner Contribution">Owner Contribution (→ Form 5472)</option>
+              <option value="Owner Distribution">Owner Distribution (→ Form 5472)</option>
+              <option value="Related-Party Transaction">Related-Party Transaction (→ Form 5472)</option>
             </select>
           </div>
           <div id="doc-list-full"></div>
@@ -3615,8 +3618,8 @@ function setType(type){
 // ── DASHBOARD ─────────────────────────────────────────────
 function refreshDashboard(){
   const filtered=getFilteredTx();
-  const inc=filtered.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
-  const exp=filtered.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+  const inc=filtered.filter(t=>t.type==='income'&&!isOwnerTransfer(t)).reduce((s,t)=>s+t.amount,0);
+  const exp=filtered.filter(t=>t.type==='expense'&&!isOwnerTransfer(t)).reduce((s,t)=>s+t.amount,0);
   const prf=inc-exp;
   document.getElementById('stat-income').textContent=fmt(inc);
   document.getElementById('stat-expense').textContent=fmt(exp);
@@ -3636,6 +3639,9 @@ function refreshDashboard(){
     'Shipping':         s('<rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>'),
     'Office & Supplies':s('<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>'),
     'Other':            s('<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'),
+    'Owner Contribution': s('<line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>','#16a34a'),
+    'Owner Distribution': s('<line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>','#dc2626'),
+    'Related-Party Transaction': s('<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>','#a78bfa'),
   };
 })();
   const txList=document.getElementById('tx-list');
@@ -3647,7 +3653,7 @@ function refreshDashboard(){
     txList.innerHTML=filtered.slice(0,5).map(t=>`<div class="tx-item"><div class="tx-left"><div class="tx-icon">${icons[t.category]||''}</div><div><div class="tx-name">${t.vendor}</div><div class="tx-cat">${t.category}</div></div></div><div style="display:flex;align-items:center;gap:6px"><div class="tx-amount ${t.type==='income'?'in':'out'}">${t.type==='income'?'+':'-'}${fmt(t.amount)}</div>${t.filename?`<button class="tx-delete" style="color:${t.fileUrl?'var(--accent)':'var(--text3)'};opacity:${t.fileUrl?'1':'0.35'};pointer-events:${t.fileUrl?'auto':'none'}" ${t.fileUrl?`onclick="event.stopPropagation();window.open('${t.fileUrl}','_blank')"`:''}title="Download">${eyeSvg}</button>`:''}<button class="tx-delete" onclick="event.stopPropagation();openEditModal('${t._id}')" title="Edit" style="color:var(--text3)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="tx-delete" onclick="event.stopPropagation();deleteTransaction('${t._id}')" title="Delete transaction">${trashSvgSm}</button></div></div>`).join('')+'<div class="tx-view-all"><button onclick="showPage(\'documents\',document.getElementById(\'nav-docs-item\'))">View All →</button></div>';
   }
   const cats={};
-  filtered.filter(t=>t.type==='expense').forEach(t=>{cats[t.category]=(cats[t.category]||0)+t.amount;});
+  filtered.filter(t=>t.type==='expense'&&!isOwnerTransfer(t)).forEach(t=>{cats[t.category]=(cats[t.category]||0)+t.amount;});
   const tot=Object.values(cats).reduce((s,v)=>s+v,0)||1;
   const cls=['','b2','b3','b4'];
   const catList=document.getElementById('cat-list');
@@ -4490,12 +4496,12 @@ td{padding:9px 12px;border-bottom:1px solid #eee;font-size:13px}
 function generateReport(type){
   const filtered=getReportFilteredTx();
   if(!filtered.length){alert('No transactions in this period.');return;}
-  const inc=filtered.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
-  const exp=filtered.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+  const inc=filtered.filter(t=>t.type==='income'&&!isOwnerTransfer(t)).reduce((s,t)=>s+t.amount,0);
+  const exp=filtered.filter(t=>t.type==='expense'&&!isOwnerTransfer(t)).reduce((s,t)=>s+t.amount,0);
   const profit=inc-exp;
   const date=new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
   const cats={};
-  filtered.filter(t=>t.type==='expense').forEach(t=>{cats[t.category]=(cats[t.category]||0)+t.amount;});
+  filtered.filter(t=>t.type==='expense'&&!isOwnerTransfer(t)).forEach(t=>{cats[t.category]=(cats[t.category]||0)+t.amount;});
   const deductible=filtered.filter(t=>t.deductible).reduce((s,t)=>s+t.amount,0);
   // Advisor context banner (injected into PDF when in advisor mode)
   const advisorBanner = advisorMode
@@ -4664,7 +4670,8 @@ async function importCSVRows(rows){
   for(let i=0;i<parsed.length;i+=BATCH){
     const batch=parsed.slice(i,i+BATCH);
     const prompt=`Categorize these ${batch.length} US LLC transactions into IRS Schedule C categories.
-Categories: Software & Tools | Marketing | Office & Supplies | Travel | Meals | Professional Services | Other
+Categories: Software & Tools | Marketing | Office & Supplies | Travel | Meals | Professional Services | Other | Owner Contribution | Owner Distribution | Related-Party Transaction
+Note: Use "Owner Contribution" only when the LLC owner is putting personal money INTO the LLC. Use "Owner Distribution" only when the LLC owner is taking money OUT of the LLC for personal use. Use "Related-Party Transaction" only for transactions between the LLC and another company owned by the same person. These are NOT business expenses/income — they appear on Form 5472 Part IV or Part V only.
 Respond ONLY with a JSON array, one object per transaction:
 [{"vendor":"cleaned name","category":"category","deductible":true,"deductible_percent":100,"note":"short IRS note"}]
 
@@ -4799,6 +4806,9 @@ function renderDeadlines() {
 }
 
 const TAX_PROFILE_KEY = 'mtf_tax_profile';
+
+const OWNER_TRANSFER_CATEGORIES = ['Owner Contribution', 'Owner Distribution', 'Related-Party Transaction'];
+function isOwnerTransfer(t) { return OWNER_TRANSFER_CATEGORIES.includes(t.category); }
 
 function loadTaxProfile() {
   const p = JSON.parse(localStorage.getItem(TAX_PROFILE_KEY) || '{}');
@@ -5141,11 +5151,11 @@ async function exportScheduleK1Package() {
 // ── Form 1065 HTML builder ────────────────────────────────────────────────────
 
 function buildForm1065HTML(p, partners, filtered, taxYear, sigData, breakBefore=false) {
-  const inc    = filtered.filter(t=>t.type==='income').reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
-  const exp    = filtered.filter(t=>t.type==='expense').reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
+  const inc    = filtered.filter(t=>t.type==='income'&&!isOwnerTransfer(t)).reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
+  const exp    = filtered.filter(t=>t.type==='expense'&&!isOwnerTransfer(t)).reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
   const profit = inc - exp;
   const cats   = {};
-  filtered.filter(t=>t.type==='expense').forEach(t=>{ cats[t.category]=(cats[t.category]||0)+parseFloat(t.amount||0); });
+  filtered.filter(t=>t.type==='expense'&&!isOwnerTransfer(t)).forEach(t=>{ cats[t.category]=(cats[t.category]||0)+parseFloat(t.amount||0); });
   const wages      = Object.entries(cats).filter(([k])=>/salary|wage|payroll|contractor/i.test(k)).reduce((s,[,v])=>s+v,0);
   const rent       = Object.entries(cats).filter(([k])=>/rent/i.test(k)).reduce((s,[,v])=>s+v,0);
   const otherDed   = Math.max(0, exp - wages - rent);
@@ -5275,11 +5285,11 @@ function buildForm1065HTML(p, partners, filtered, taxYear, sigData, breakBefore=
 // ── Schedule K-1 HTML builder (one per partner) ───────────────────────────────
 
 function buildScheduleK1HTML(p, filtered, taxYear, partner, partnerIndex, totalPartners, sigData, breakBefore=false) {
-  const inc    = filtered.filter(t=>t.type==='income').reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
-  const exp    = filtered.filter(t=>t.type==='expense').reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
+  const inc    = filtered.filter(t=>t.type==='income'&&!isOwnerTransfer(t)).reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
+  const exp    = filtered.filter(t=>t.type==='expense'&&!isOwnerTransfer(t)).reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
   const profit = inc - exp;
   const cats   = {};
-  filtered.filter(t=>t.type==='expense').forEach(t=>{ cats[t.category]=(cats[t.category]||0)+parseFloat(t.amount||0); });
+  filtered.filter(t=>t.type==='expense'&&!isOwnerTransfer(t)).forEach(t=>{ cats[t.category]=(cats[t.category]||0)+parseFloat(t.amount||0); });
   const wages    = Object.entries(cats).filter(([k])=>/salary|wage|payroll|contractor/i.test(k)).reduce((s,[,v])=>s+v,0);
   const rent     = Object.entries(cats).filter(([k])=>/rent/i.test(k)).reduce((s,[,v])=>s+v,0);
   const otherDed = Math.max(0, exp - wages - rent);
@@ -5392,7 +5402,7 @@ function buildForm1120HTML(p, filtered, taxYear, sigData, breakBefore=false) {
   const exp    = filtered.filter(t => t.type==='expense').reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
   const profit = inc - exp;
   const cats   = {};
-  filtered.filter(t=>t.type==='expense').forEach(t=>{ cats[t.category]=(cats[t.category]||0)+parseFloat(t.amount||0); });
+  filtered.filter(t=>t.type==='expense'&&!isOwnerTransfer(t)).forEach(t=>{ cats[t.category]=(cats[t.category]||0)+parseFloat(t.amount||0); });
   const advertising = Object.entries(cats).filter(([k])=>/market|advertis/i.test(k)).reduce((s,[,v])=>s+v,0);
   const wages       = Object.entries(cats).filter(([k])=>/salary|wage|payroll|contractor/i.test(k)).reduce((s,[,v])=>s+v,0);
   const rent        = Object.entries(cats).filter(([k])=>/rent/i.test(k)).reduce((s,[,v])=>s+v,0);
@@ -5490,8 +5500,8 @@ function buildForm1120HTML(p, filtered, taxYear, sigData, breakBefore=false) {
 
 // ── Shared helper: build the clean-style HTML for Form 5472 ──────────────────
 function buildForm5472HTML(p, filtered, taxYear, sigData, breakBefore=false) {
-  const inc     = filtered.filter(t=>t.type==='income').reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
-  const exp     = filtered.filter(t=>t.type==='expense').reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
+  const inc     = filtered.filter(t=>t.type==='income'&&!isOwnerTransfer(t)).reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
+  const exp     = filtered.filter(t=>t.type==='expense'&&!isOwnerTransfer(t)).reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
   const corpName = llcName || p.llcName || '';
   const fmtAmt = (n,pos=true) => {
     if (!n||n===0) return '<span style="color:#aaa">—</span>';
@@ -5549,7 +5559,21 @@ function buildForm5472HTML(p, filtered, taxYear, sigData, breakBefore=false) {
     </table>
   </div>
 
-  <div style="margin-bottom:18px">
+  ${(()=>{
+    const ownerTx   = filtered.filter(t => isOwnerTransfer(t));
+    const contribs  = ownerTx.filter(t => t.category === 'Owner Contribution');
+    const distribs  = ownerTx.filter(t => t.category === 'Owner Distribution');
+    const totalIn   = contribs.reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
+    const totalOut  = distribs.reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
+    const fmt2 = n => n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+    const ownerRows = ownerTx.map(t=>`<tr style="border-bottom:1px solid #eee">
+      <td style="padding:5px 8px;font-size:10px;color:#888">${t.date||''}</td>
+      <td style="padding:5px 8px;font-size:11px">${t.vendor||''}</td>
+      <td style="padding:5px 8px;font-size:10px;font-weight:700;color:${t.category==='Owner Contribution'?'#16a34a':'#dc2626'}">${t.category}</td>
+      <td style="padding:5px 10px;text-align:right;font-size:11px;font-weight:600;color:${t.category==='Owner Contribution'?'#16a34a':'#dc2626'}">${t.category==='Owner Contribution'?'+':'-'}\$${fmt2(parseFloat(t.amount)||0)}</td>
+    </tr>`).join('');
+    const noTxNote = ownerTx.length===0 ? `<tr><td colspan="4" style="padding:12px 8px;font-size:11px;color:#999;text-align:center;font-style:italic">No owner transfers recorded for this tax year. Add transactions with category "Owner Contribution" or "Owner Distribution" to populate Part IV.</td></tr>` : '';
+    return `<div style="margin-bottom:18px">
     <div style="font-size:11px;font-weight:700;border-left:3px solid #00c896;padding-left:8px;background:#f5f5f5;padding:6px 10px;margin-bottom:8px">Part IV — Monetary Transactions Between LLC and Foreign Owner</div>
     <table style="width:100%;border-collapse:collapse">
       <thead><tr style="background:#f5f5f5;border-bottom:2px solid #ddd">
@@ -5558,29 +5582,62 @@ function buildForm5472HTML(p, filtered, taxYear, sigData, breakBefore=false) {
         <th style="padding:6px 10px;text-align:right;font-size:10px;font-weight:700;text-transform:uppercase;color:#555">Amount (USD)</th>
       </thead>
       <tbody>
-        <tr style="border-bottom:1px solid #eee;page-break-inside:avoid"><td style="padding:5px 8px;font-size:10px;color:#888">9b</td><td style="padding:5px 8px;font-size:11px">Amounts received for services — Revenue from clients</td><td style="padding:5px 10px;text-align:right;font-size:11px">\$${inc.toLocaleString('en-US',{minimumFractionDigits:2})}</td></tr>
-        <tr style="border-bottom:1px solid #eee"><td style="padding:5px 8px;font-size:10px;color:#888">17</td><td style="padding:5px 8px;font-size:11px">Amounts paid — Operating expenses (see transaction list below)</td><td style="padding:5px 10px;text-align:right;font-size:11px;color:#dc2626">(\$${exp.toLocaleString('en-US',{minimumFractionDigits:2})})</td></tr>
-        <tr style="background:#f9f9f9;border-top:2px solid #aaa"><td style="padding:6px 8px;font-size:10px;font-weight:700">19</td><td style="padding:6px 8px;font-size:11px;font-weight:700">Total (lines 4a–18)</td><td style="padding:6px 10px;text-align:right;font-size:11px;font-weight:700">\$${(inc+exp).toLocaleString('en-US',{minimumFractionDigits:2})}</td></tr>
+        <tr style="border-bottom:1px solid #eee"><td style="padding:5px 8px;font-size:10px;color:#888">52</td><td style="padding:5px 8px;font-size:11px">Capital contributions from owner to LLC</td><td style="padding:5px 10px;text-align:right;font-size:11px;color:#16a34a;font-weight:600">${totalIn>0?'+\$'+fmt2(totalIn):'—'}</td></tr>
+        <tr style="border-bottom:1px solid #eee"><td style="padding:5px 8px;font-size:10px;color:#888">53</td><td style="padding:5px 8px;font-size:11px">Distributions / withdrawals from LLC to owner</td><td style="padding:5px 10px;text-align:right;font-size:11px;color:#dc2626;font-weight:600">${totalOut>0?'(\$'+fmt2(totalOut)+')':'—'}</td></tr>
+        <tr style="background:#f9f9f9;border-top:2px solid #aaa"><td style="padding:6px 8px;font-size:10px;font-weight:700">Net</td><td style="padding:6px 8px;font-size:11px;font-weight:700">Net owner↔LLC flow</td><td style="padding:6px 10px;text-align:right;font-size:11px;font-weight:700">\$${fmt2(totalIn-totalOut)}</td></tr>
       </tbody>
     </table>
-    <div style="font-size:10px;color:#744210;background:#fff8f0;border:1px solid #f6ad55;border-radius:4px;padding:8px 10px;margin-top:6px">
-      <strong>⚠ Part IV Note:</strong> Your CPA must review and classify which transactions represent direct owner↔LLC flows (capital contributions, distributions, loans). Third-party expenses are generally not reportable here and belong on supporting schedules.
+    <div style="font-size:10px;color:#14532d;background:#f0fdf4;border:1px solid #86efac;border-radius:4px;padding:8px 10px;margin-top:6px">
+      ✓ Part IV only includes transactions categorized as "Owner Contribution" or "Owner Distribution" — regular business expenses and revenue are excluded per IRS §6038A requirements.
     </div>
   </div>
 
   <div style="margin-bottom:18px">
-    <div style="font-size:11px;font-weight:700;border-left:3px solid #00c896;padding-left:8px;background:#f5f5f5;padding:6px 10px;margin-bottom:8px">Attached: Transaction List (${filtered.length} transactions)</div>
+    <div style="font-size:11px;font-weight:700;border-left:3px solid #00c896;padding-left:8px;background:#f5f5f5;padding:6px 10px;margin-bottom:8px">Part IV Detail — Owner Transfer Transactions (${ownerTx.length})</div>
     <table style="width:100%;border-collapse:collapse">
       <thead><tr style="background:#f5f5f5;border-bottom:2px solid #ddd">
         <th style="padding:5px 8px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:#555">Date</th>
-        <th style="padding:5px 8px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:#555">Vendor / Description</th>
-        <th style="padding:5px 8px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:#555">Type</th>
+        <th style="padding:5px 8px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:#555">Description</th>
         <th style="padding:5px 8px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:#555">Category</th>
         <th style="padding:5px 10px;text-align:right;font-size:10px;font-weight:700;text-transform:uppercase;color:#555">Amount</th>
       </thead>
-      <tbody>${txRows}</tbody>
+      <tbody>${ownerRows}${noTxNote}</tbody>
     </table>
-  </div>
+  </div>`;
+  })()}
+
+  ${(()=>{
+    const relTx = filtered.filter(t => t.category === 'Related-Party Transaction');
+    if (relTx.length === 0) return '';
+    const fmt2 = n => (+n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+    const totalRel = relTx.reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
+    const relRows = relTx.map(t=>`<tr style="border-bottom:1px solid #eee">
+      <td style="padding:5px 8px;font-size:10px;color:#888">${t.date||''}</td>
+      <td style="padding:5px 8px;font-size:11px">${t.vendor||''}</td>
+      <td style="padding:5px 8px;font-size:10px;color:#a78bfa;font-weight:700">Related Party</td>
+      <td style="padding:5px 10px;text-align:right;font-size:11px;font-weight:600;color:#a78bfa">\$${fmt2(parseFloat(t.amount)||0)}</td>
+    </tr>`).join('');
+    return `<div style="margin-bottom:18px">
+    <div style="font-size:11px;font-weight:700;border-left:3px solid #a78bfa;padding-left:8px;background:#f5f5f5;padding:6px 10px;margin-bottom:8px">Part V — Related-Party Transactions (Other Companies of Owner)</div>
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr style="background:#f5f5f5;border-bottom:2px solid #ddd">
+        <th style="padding:6px 10px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:#555">Date</th>
+        <th style="padding:6px 10px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:#555">Description / Related Entity</th>
+        <th style="padding:6px 10px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:#555">Type</th>
+        <th style="padding:6px 10px;text-align:right;font-size:10px;font-weight:700;text-transform:uppercase;color:#555">Amount (USD)</th>
+      </thead>
+      <tbody>${relRows}
+        <tr style="background:#f9f9f9;border-top:2px solid #aaa">
+          <td colspan="3" style="padding:6px 8px;font-size:11px;font-weight:700">Total Related-Party Transactions</td>
+          <td style="padding:6px 10px;text-align:right;font-size:11px;font-weight:700;color:#a78bfa">\$${fmt2(totalRel)}</td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="font-size:10px;color:#4c1d95;background:#f5f3ff;border:1px solid #c4b5fd;border-radius:4px;padding:8px 10px;margin-top:6px">
+      ⓘ Part V reports transactions between this LLC and other companies owned by the same foreign owner (related parties). These are separate from Part IV owner↔LLC flows. Your CPA must confirm the related-party relationship before filing.
+    </div>
+  </div>`;
+  })()}
 
   <div style="border:1px solid #ddd;border-radius:6px;padding:12px 14px;margin-top:16px;page-break-inside:avoid">
     <div style="font-size:11px;font-weight:700;margin-bottom:8px">Sign Here</div>
@@ -5659,8 +5716,8 @@ function exportForm5472() {
 }
 
 function buildFilingPackageHTML(p, filtered, taxYear, corpName, sigData) {
-  const inc = filtered.filter(t=>t.type==='income').reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
-  const exp = filtered.filter(t=>t.type==='expense').reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
+  const inc = filtered.filter(t=>t.type==='income'&&!isOwnerTransfer(t)).reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
+  const exp = filtered.filter(t=>t.type==='expense'&&!isOwnerTransfer(t)).reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
   const coverHTML = `<div style="font-family:Arial,sans-serif;padding:60px 48px;background:#fff;text-align:center;min-height:600px;display:flex;flex-direction:column;align-items:center;justify-content:center;page-break-after:always">
     <div style="font-size:28px;font-weight:900;color:#00c896;margin-bottom:6px">MyTaxFly</div>
     <div style="display:inline-block;background:#00c896;color:#fff;font-size:10px;font-weight:700;padding:3px 14px;border-radius:20px;letter-spacing:.5px;margin-bottom:20px">ANNUAL FILING PACKAGE</div>
@@ -5720,8 +5777,8 @@ async function _mergePdfBlobs(blobs) {
 
 // Build each section of the filing package separately then merge — avoids html2pdf canvas-slicing issues
 async function buildFilingPackageBlob(p, filtered, taxYear, corpName, sigData, opts) {
-  const inc = filtered.filter(t=>t.type==='income').reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
-  const exp = filtered.filter(t=>t.type==='expense').reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
+  const inc = filtered.filter(t=>t.type==='income'&&!isOwnerTransfer(t)).reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
+  const exp = filtered.filter(t=>t.type==='expense'&&!isOwnerTransfer(t)).reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
   // Cover page (standalone, no page-break needed)
   const coverHTML = `<div style="font-family:Arial,sans-serif;padding:60px 48px;background:#fff;text-align:center;min-height:600px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
     <div style="font-size:28px;font-weight:900;color:#00c896;margin-bottom:6px">MyTaxFly</div>
@@ -5838,9 +5895,98 @@ async function sendToAdvisor() {
   }
 }
 
+function getIRSConfig() {
+  const active = entities.find(e => e.id === activeEntityId) || entities[0] || {};
+  const isMulti = active.type === 'multi';
+  return isMulti
+    ? { formType: 'multi', formLabel: 'Form 1065 + Schedule K-1', irsLine1: 'P.O. Box 409101', irsCity: 'Ogden', irsState: 'UT', irsZip: '84201-0011', addrDisplay: 'P.O. Box 409101 · Ogden, UT 84201-0011' }
+    : { formType: 'single', formLabel: 'Pro Forma 1120 + Form 5472', irsLine1: 'P.O. Box 409101', irsCity: 'Ogden', irsState: 'UT', irsZip: '84409', addrDisplay: 'P.O. Box 409101 · Ogden, UT 84409' };
+}
+
+async function buildMultiMemberFilingBlob(p, filtered, taxYear, sigData, opts) {
+  const partners = [
+    { name: p.shName||'Primary Member', country: p.shCountry||'', address: p.shAddress||'', ftin: p.shFtin||'', ownership: p.shOwnership??100 },
+    ...(p.partners||[])
+  ];
+  const blobs = await Promise.all([
+    _renderHtmlToBlob(buildForm1065HTML(p, partners, filtered, taxYear, sigData, false), opts),
+    ...partners.map((pt, i) => _renderHtmlToBlob(buildScheduleK1HTML(p, filtered, taxYear, pt, i, partners.length, sigData, true), opts))
+  ]);
+  return _mergePdfBlobs(blobs);
+}
+
+function _proceed5472Filing() {
+  document.getElementById('modal-5472-confirm').style.display = 'none';
+  _openIRSFilingModalDirect();
+}
+
 async function openIRSFilingModal() {
   const p = getTaxProfile();
   if (!p.ein) { alert('Please complete your LLC profile first (EIN is required).'); return; }
+
+  const cfg = getIRSConfig();
+  // For single-member, show 5472 Part IV confirmation first
+  if (cfg.formType === 'single') {
+    const _irsFrom = new Date(irsFilingYear, 0, 1);
+    const _irsTo   = new Date(irsFilingYear, 11, 31, 23, 59, 59);
+    const yearTx   = transactions.filter(t => { const d=new Date(t.date); return d>=_irsFrom && d<=_irsTo; });
+    const ownerTx  = yearTx.filter(t => isOwnerTransfer(t));
+    const fmt2 = n => (+n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+    const relTx   = yearTx.filter(t => t.category === 'Related-Party Transaction');
+    const fmt2 = n => (+n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+    const listEl = document.getElementById('confirm-5472-list');
+
+    const buildRows = (txArr) => txArr.map(t => {
+      const isContrib = t.category === 'Owner Contribution';
+      const isRel     = t.category === 'Related-Party Transaction';
+      const color     = isRel ? '#a78bfa' : isContrib ? '#16a34a' : '#dc2626';
+      const sign      = isRel ? '' : isContrib ? '+' : '-';
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--text)">${t.vendor||t.category}</div>
+          <div style="font-size:11px;color:var(--text3)">${t.date} · <span style="color:${color};font-weight:700">${t.category}</span></div>
+        </div>
+        <div style="font-size:13px;font-weight:700;color:${color}">${sign}\$${fmt2(parseFloat(t.amount)||0)}</div>
+      </div>`;
+    }).join('');
+
+    if (ownerTx.length === 0 && relTx.length === 0) {
+      listEl.innerHTML = `<div style="background:rgba(246,173,85,0.1);border:1px solid rgba(246,173,85,0.3);border-radius:10px;padding:14px 16px;font-size:13px;color:#f6ad55">
+        <strong>⚠ No owner transfers or related-party transactions found for ${irsFilingYear}.</strong><br>
+        <span style="font-size:12px;color:var(--text3);margin-top:4px;display:block">Form 5472 Part IV will show $0. If you made contributions or took distributions this year, add them as "Owner Contribution" or "Owner Distribution" transactions before filing.</span>
+      </div>`;
+    } else {
+      let html = '';
+      if (ownerTx.length > 0) {
+        html += `<div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin:8px 0 4px">Part IV — Owner Transfers</div>
+          <div style="border:1px solid var(--border);border-radius:10px;padding:4px 14px;margin-bottom:12px">${buildRows(ownerTx)}</div>`;
+      }
+      if (relTx.length > 0) {
+        html += `<div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin:8px 0 4px">Part V — Related-Party Transactions</div>
+          <div style="border:1px solid rgba(167,139,250,0.3);border-radius:10px;padding:4px 14px;margin-bottom:12px">${buildRows(relTx)}</div>`;
+      }
+      html += `<div style="font-size:12px;color:var(--text3);padding:4px 0">${ownerTx.length + relTx.length} transaction${ownerTx.length+relTx.length!==1?'s':''} · Tax year ${irsFilingYear}</div>`;
+      listEl.innerHTML = html;
+    }
+    document.getElementById('modal-5472-confirm').style.display = 'flex';
+    return;
+  }
+
+  _openIRSFilingModalDirect();
+}
+
+async function _openIRSFilingModalDirect() {
+  const p = getTaxProfile();
+
+  // Set entity-specific IRS address and forms
+  const cfg = getIRSConfig();
+  const recipEl = document.getElementById('irs-modal-recipient-addr');
+  const formsEl = document.getElementById('irs-modal-forms');
+  const hintEl  = document.getElementById('irs-page-addr-hint');
+  if (recipEl) recipEl.textContent = cfg.addrDisplay;
+  if (formsEl) formsEl.textContent = cfg.formLabel;
+  if (hintEl)  hintEl.textContent  = `USPS Certified Mail · With tracking number · Delivered to IRS Ogden, UT ${cfg.irsZip}`;
 
   // Populate sender address block
   const fromEl = document.getElementById('irs-modal-from');
@@ -5886,6 +6032,7 @@ async function openIRSFilingModal() {
 
 async function sendToIRS() {
   const p       = getTaxProfile();
+  const cfg     = getIRSConfig();
   const btn     = document.getElementById('irs-send-btn');
   const status  = document.getElementById('irs-send-status');
 
@@ -5898,22 +6045,25 @@ async function sendToIRS() {
     const { data: { user } } = await sb.auth.getUser();
     const sigData = user?.user_metadata?.signature_data || null;
 
-    // Build filing package PDF — filter transactions for the chosen complete tax year
-    const _irsFrom  = new Date(irsFilingYear, 0, 1);
-    const _irsTo    = new Date(irsFilingYear, 11, 31, 23, 59, 59);
-    const filtered  = transactions.filter(t => { const d=new Date(t.date); return d>=_irsFrom && d<=_irsTo; });
-    const taxYear   = irsFilingYear;
-    const corpName  = llcName || p.llcName || '';
+    // Filter transactions for the chosen tax year
+    const _irsFrom = new Date(irsFilingYear, 0, 1);
+    const _irsTo   = new Date(irsFilingYear, 11, 31, 23, 59, 59);
+    const filtered = transactions.filter(t => { const d=new Date(t.date); return d>=_irsFrom && d<=_irsTo; });
+    const taxYear  = irsFilingYear;
+    const corpName = llcName || p.llcName || '';
 
-    // Render each section separately then merge — avoids canvas-slicing page-break artifacts
     const opts = {
-      margin: [12.7, 12.7, 12.7, 12.7],  // 0.5 in margins — US Letter
+      margin: [12.7, 12.7, 12.7, 12.7],
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2, useCORS: true },
       pagebreak: { mode: ['css', 'legacy'] },
-      jsPDF: { unit: 'mm', format: [215.9, 279.4], orientation: 'portrait' }  // US Letter 8.5×11 in
+      jsPDF: { unit: 'mm', format: [215.9, 279.4], orientation: 'portrait' }
     };
-    const blob = await buildFilingPackageBlob(p, filtered, taxYear, corpName, sigData, opts);
+
+    // Build the correct PDF based on entity type
+    const blob = cfg.formType === 'multi'
+      ? await buildMultiMemberFilingBlob(p, filtered, taxYear, sigData, opts)
+      : await buildFilingPackageBlob(p, filtered, taxYear, corpName, sigData, opts);
 
     btn.textContent = 'Mailing to IRS…';
 
@@ -5932,7 +6082,11 @@ async function sendToIRS() {
         fromName:    corpName,
         fromAddress: p.address || '',
         fromCity:    p.city    || '',
-        taxYear
+        taxYear,
+        irsLine1:    cfg.irsLine1,
+        irsCity:     cfg.irsCity,
+        irsState:    cfg.irsState,
+        irsZip:      cfg.irsZip
       })
     });
     const data = await res.json();
@@ -5940,10 +6094,28 @@ async function sendToIRS() {
 
     status.style.display = 'block';
     status.style.color   = '#00c896';
-    status.innerHTML     = `✓ Letter submitted! Tracking: <strong>${data.tracking || data.id}</strong><br><small style="color:var(--text3)">Estimated delivery 5–7 business days · USPS Certified Mail</small>`;
+    status.innerHTML     = `✓ Letter submitted! Tracking: <strong>${data.tracking || data.id}</strong><br>
+      <small style="color:var(--text3)">Estimated delivery 5–7 business days · USPS Certified Mail</small><br>
+      <div style="margin-top:10px;padding:10px 12px;background:rgba(246,173,85,0.08);border:1px solid rgba(246,173,85,0.25);border-radius:8px;font-size:11px;color:#f6ad55;line-height:1.6;text-align:left">
+        ⓘ <strong>If the IRS contacts you:</strong> Any response letters will be sent to your registered agent's address. Your registered agent will scan and forward them to your email. Forward any IRS notices to <strong>support@mytaxfly.com</strong> and we will help you respond.
+      </div>`;
     btn.textContent = '✓ Sent!';
-    saveIRSLetter({ id: data.id, tracking: data.tracking, expected_delivery: data.expected_delivery, status: data.status||'submitted', taxYear, sentAt: new Date().toISOString() });
+    saveIRSLetter({ id: data.id, tracking: data.tracking, expected_delivery: data.expected_delivery, status: data.status||'submitted', taxYear, formType: cfg.formType, sentAt: new Date().toISOString() });
     renderIRSHistory();
+    // Auto-update advisor filing status (Punkt 10)
+    try {
+      const { data: { user: currentUser } } = await sb.auth.getUser();
+      if (currentUser) {
+        const { data: acRow } = await sb.from('advisor_clients')
+          .select('advisor_id').eq('client_id', currentUser.id).maybeSingle();
+        if (acRow?.advisor_id) {
+          await sb.from('advisor_clients')
+            .update({ status: 'submitted', notes: `Filed ${cfg.formType === 'multi' ? 'Form 1065 + K-1' : 'Form 1120 + 5472'} for tax year ${taxYear} via USPS Certified Mail on ${new Date().toLocaleDateString('en-US')}. Tracking: ${data.tracking || data.id}` })
+            .eq('advisor_id', acRow.advisor_id)
+            .eq('client_id', currentUser.id);
+        }
+      }
+    } catch(e) { console.warn('Advisor status update failed:', e.message); }
   } catch(e) {
     status.style.display = 'block';
     status.style.color   = '#e53e3e';
@@ -5992,6 +6164,7 @@ function renderIRSHistory(){
     <thead><tr style="color:var(--text3);text-align:left;border-bottom:1px solid var(--border)">
       <th style="padding:6px 10px;font-weight:600">Date</th>
       <th style="padding:6px 10px;font-weight:600">Tax Year</th>
+      <th style="padding:6px 10px;font-weight:600">Forms</th>
       <th style="padding:6px 10px;font-weight:600">Lob ID</th>
       <th style="padding:6px 10px;font-weight:600">Tracking #</th>
       <th style="padding:6px 10px;font-weight:600">Est. Delivery</th>
@@ -6000,6 +6173,7 @@ function renderIRSHistory(){
     <tbody>${h.map(l=>`<tr style="border-bottom:1px solid var(--border)">
       <td style="padding:9px 10px;color:var(--text2)">${new Date(l.sentAt).toLocaleDateString()}</td>
       <td style="padding:9px 10px;color:var(--text2)">${l.taxYear||'—'}</td>
+      <td style="padding:9px 10px;color:var(--text2);font-size:11px">${l.formType==='multi'?'1065 + K-1':'1120 + 5472'}</td>
       <td style="padding:9px 10px;font-family:monospace;font-size:11px;color:var(--text3)">${l.id||'—'}</td>
       <td style="padding:9px 10px;font-family:monospace;font-size:11px;color:#a78bfa">${l.tracking||'—'}</td>
       <td style="padding:9px 10px;color:var(--text2)">${l.expected_delivery?new Date(l.expected_delivery).toLocaleDateString():'5–7 business days'}</td>
@@ -8134,6 +8308,9 @@ document.addEventListener('click', e => {
           <option>Office & Supplies</option>
           <option>Other</option>
           <option>Income</option>
+          <option>Owner Contribution</option>
+          <option>Owner Distribution</option>
+          <option>Related-Party Transaction</option>
         </select>
       </div>
       <div>
@@ -8441,6 +8618,19 @@ document.addEventListener('click', e => {
 </div>
 
 <!-- IRS Filing Modal -->
+<!-- 5472 Owner Transfer Confirmation Modal -->
+<div id="modal-5472-confirm" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:10002;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px 32px;width:520px;max-width:92vw;max-height:88vh;overflow-y:auto">
+    <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:4px">Review Form 5472 — Part IV</div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:20px">These are the transactions that will appear on Form 5472 Part IV (direct owner↔LLC flows). Regular business expenses and revenue are excluded.</div>
+    <div id="confirm-5472-list" style="margin-bottom:20px"></div>
+    <div style="display:flex;gap:10px">
+      <button onclick="document.getElementById('modal-5472-confirm').style.display='none'" style="flex:1;padding:12px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-size:13px;font-family:'Montserrat',sans-serif">Cancel</button>
+      <button id="btn-5472-confirm" onclick="_proceed5472Filing()" style="flex:2;padding:12px;border-radius:10px;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;border:none;cursor:pointer;font-size:13px;font-weight:700;font-family:'Montserrat',sans-serif">Looks correct — Continue →</button>
+    </div>
+  </div>
+</div>
+
 <div id="irs-filing-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:10001;align-items:center;justify-content:center;backdrop-filter:blur(4px)" onclick="if(event.target===this)document.getElementById('irs-filing-modal').style.display='none'">
   <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:32px;width:480px;max-width:92vw;max-height:90vh;overflow-y:auto">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
@@ -8453,7 +8643,7 @@ document.addEventListener('click', e => {
     <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px">
       <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Recipient (IRS)</div>
       <div style="font-size:13px;font-weight:600;color:var(--text)">Internal Revenue Service</div>
-      <div style="font-size:12px;color:var(--text2)">P.O. Box 409101 · Ogden, UT 84409</div>
+      <div id="irs-modal-recipient-addr" style="font-size:12px;color:var(--text2)">P.O. Box 409101 · Ogden, UT 84409</div>
     </div>
 
     <!-- Sender (from tax profile) -->
@@ -8473,7 +8663,7 @@ document.addEventListener('click', e => {
     <div style="background:var(--bg3);border:1px solid rgba(124,58,237,0.25);border-radius:10px;padding:12px 14px;margin-bottom:14px">
       <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Filing Details</div>
       <div style="font-size:12px;color:var(--text2);margin-bottom:3px">📅 Tax Year: <strong id="irs-modal-taxyear" style="color:#a78bfa">—</strong> &nbsp;(Jan 1 – Dec 31)</div>
-      <div style="font-size:12px;color:var(--text2);margin-bottom:3px">📄 Forms: <strong style="color:var(--text)">Pro Forma 1120 + Form 5472</strong></div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:3px">📄 Forms: <strong id="irs-modal-forms" style="color:var(--text)">Pro Forma 1120 + Form 5472</strong></div>
       <div style="font-size:12px;color:var(--text2)">📬 Estimated delivery: <strong style="color:var(--text)">5–7 business days</strong> · USPS Certified Mail</div>
     </div>
 
