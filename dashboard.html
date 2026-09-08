@@ -1306,11 +1306,7 @@ src="https://www.facebook.com/tr?id=1799163168200739&ev=PageView&noscript=1"
       </div>
       <div class="card">
         <div class="card-title" id="t-deadlines" style="display:flex;align-items:center;gap:8px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f6ad55" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d='M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z'/><line x1='12' y1='9' x2='12' y2='13'/><line x1='12' y1='17' x2='12.01' y2='17'/></svg>Upcoming IRS Deadlines</div>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:4px">
-          <div style="background:var(--bg3);border-radius:8px;padding:14px"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:4px"><span id="t-q-taxes">Quarterly Taxes</span></div><div style="font-size:15px;font-weight:700">June 15, 2026</div><div style="font-size:11px;color:var(--warn);margin-top:2px">In 24 days</div></div>
-          <div style="background:var(--bg3);border-radius:8px;padding:14px"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:4px"><span id="t-annual">Annual Report</span></div><div style="font-size:15px;font-weight:700">April 15, 2027</div><div style="font-size:11px;color:var(--accent);margin-top:2px">In 328 days</div></div>
-          <div style="background:var(--bg3);border-radius:8px;padding:14px"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:4px"><span id="t-boi">BOI Report</span></div><div style="font-size:15px;font-weight:700"><span id="t-filed">Filed ✓</span></div><div style="font-size:11px;color:var(--accent);margin-top:2px"><span id="t-completed">Completed</span></div></div>
-        </div>
+        <div id="deadlines-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:4px"></div>
         <div class="disclaimer-bar"><span id="t-disclaimer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f6ad55" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d='M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z'/><line x1='12' y1='9' x2='12' y2='13'/><line x1='12' y1='17' x2='12.01' y2='17'/></svg> MyTaxFly is not a licensed tax advisor. Always consult a qualified CPA.</span></div>
       </div>
     </div>
@@ -3441,6 +3437,7 @@ async function launchApp(user){
     loadChatSessions();
     initCookieBanner();
     loadEntities();  // init entity switcher with user LLC name
+    renderDeadlines();
 
     // Show app immediately — don't wait for data
     document.getElementById('login-screen').style.display='none';
@@ -4728,6 +4725,79 @@ async function generateAIReport(){
 }
 
 // ── TAX PROFILE ───────────────────────────────────────────
+function renderDeadlines() {
+  const grid = document.getElementById('deadlines-grid');
+  if (!grid) return;
+  const now = new Date();
+  const yr  = now.getFullYear();
+
+  // Returns the next occurrence of a fixed date (month 0-based)
+  function nextDate(month, day) {
+    const d = new Date(yr, month, day);
+    return d < now ? new Date(yr + 1, month, day) : d;
+  }
+
+  function daysUntil(d) {
+    return Math.ceil((d - now) / 86400000);
+  }
+
+  function fmt(d) {
+    return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  }
+
+  function urgencyColor(days) {
+    if (days <= 14) return '#e53e3e';
+    if (days <= 45) return '#f6ad55';
+    return 'var(--accent)';
+  }
+
+  function badge(label) {
+    return `<span style="display:inline-block;font-size:9px;font-weight:700;padding:2px 6px;background:rgba(0,200,150,0.12);color:#00c896;border:1px solid rgba(0,200,150,0.25);border-radius:20px;margin-right:3px;margin-top:4px">${label}</span>`;
+  }
+
+  const deadlines = [
+    {
+      label:  'Multi-Member LLC',
+      date:   nextDate(2, 15),  // March 15
+      forms:  ['Form 1065', 'Schedule K-1'],
+      note:   'Partnership Return'
+    },
+    {
+      label:  'Single-Member LLC',
+      date:   nextDate(3, 15),  // April 15
+      forms:  ['Form 1120', 'Form 5472'],
+      note:   'Annual Filing'
+    },
+    {
+      label:  'BOI Report',
+      date:   null,             // already filed / ongoing
+      forms:  ['FinCEN BOI'],
+      note:   'One-time · New companies: 90 days'
+    }
+  ];
+
+  grid.innerHTML = deadlines.map(dl => {
+    if (!dl.date) {
+      return `<div style="background:var(--bg3);border-radius:8px;padding:14px">
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:4px">${dl.label}</div>
+        <div style="font-size:15px;font-weight:700;color:var(--accent)">Filed ✓</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">${dl.note}</div>
+        <div style="margin-top:6px">${dl.forms.map(badge).join('')}</div>
+      </div>`;
+    }
+    const days  = daysUntil(dl.date);
+    const color = urgencyColor(days);
+    const urgencyLabel = days <= 0 ? 'Overdue!' : days === 1 ? 'Tomorrow!' : `In ${days} days`;
+    return `<div style="background:var(--bg3);border-radius:8px;padding:14px;border-left:3px solid ${color}">
+      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:4px">${dl.label}</div>
+      <div style="font-size:14px;font-weight:700">${fmt(dl.date)}</div>
+      <div style="font-size:11px;color:${color};margin-top:2px;font-weight:600">${urgencyLabel}</div>
+      <div style="font-size:10px;color:var(--text3);margin-top:1px">${dl.note}</div>
+      <div style="margin-top:6px">${dl.forms.map(badge).join('')}</div>
+    </div>`;
+  }).join('');
+}
+
 const TAX_PROFILE_KEY = 'mtf_tax_profile';
 
 function loadTaxProfile() {
@@ -6163,7 +6233,6 @@ function applyAppTranslations(lang){
   set('t-stat-calc', tr.stat_calc);
   set('t-recent-tx', tr.recent_tx); set('t-by-cat', tr.by_cat);
   set('t-deadlines', tr.deadlines);
-  set('t-q-taxes', tr.q_taxes); set('t-annual', tr.annual); set('t-boi', tr.boi);
   set('t-filed', tr.filed); set('t-completed', tr.completed);
   set('t-disclaimer', tr.disclaimer);
 
