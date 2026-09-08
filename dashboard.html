@@ -1515,10 +1515,42 @@ src="https://www.facebook.com/tr?id=1799163168200739&ev=PageView&noscript=1"
             <div class="form-group"><div class="f-label">Country of Citizenship</div><input class="f-input" id="tp-sh-country" placeholder="e.g. Germany"></div>
             <div class="form-group" style="grid-column:1/-1"><div class="f-label">Street Address, City, Country</div><input class="f-input" id="tp-sh-address" placeholder="e.g. Musterstraße 1, 10115 Berlin, Germany"></div>
             <div class="form-group"><div class="f-label">Foreign Tax ID (FTIN)</div><input class="f-input" id="tp-sh-ftin" placeholder="e.g. 86 123 456 789"></div>
+            <div class="form-group"><div class="f-label">Ownership % (Single-Member = 100%)</div><input class="f-input" id="tp-sh-ownership" placeholder="100" type="number" min="1" max="100"></div>
             <div class="form-group"><div class="f-label">Country of Tax Residence</div><input class="f-input" id="tp-sh-res" placeholder="e.g. Germany"></div>
           </div>
+          <!-- Multi-Member Partners Section -->
+          <div style="font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin:16px 0 10px;display:flex;align-items:center;justify-content:space-between">
+            <span>Additional Partners (Multi-Member LLC)</span>
+            <button onclick="addPartnerRow()" style="font-size:11px;padding:5px 12px;background:rgba(0,200,150,0.1);color:#00c896;border:1px solid rgba(0,200,150,0.3);border-radius:8px;cursor:pointer;font-weight:700">+ Add Partner</button>
+          </div>
+          <div id="partners-rows"></div>
           <button class="btn-primary" style="width:auto;padding:12px 24px;margin-right:8px" onclick="saveTaxProfile()"><svg style="display:inline;vertical-align:-2px;margin-right:5px" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d='M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z'/><polyline points='17 21 17 13 7 13 7 21'/><polyline points='7 3 7 8 15 8'/></svg>Save Profile</button>
           <div id="tp-saved" style="display:inline;font-size:12px;color:#00c896;display:none">✓ Saved</div>
+        </div>
+        <!-- Multi-Member LLC Form Export (always visible below the card) -->
+        <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:16px">
+          <div style="font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Multi-Member LLC (Partnership)</div>
+          <div style="font-size:12px;color:var(--text2);margin-bottom:12px">For LLCs with 2+ members. Export <strong style="color:var(--text)">Form 1065</strong> (Partnership Return) and one <strong style="color:var(--text)">Schedule K-1</strong> per partner, showing each partner's share of income and deductions.</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div style="position:relative">
+              <button class="btn-primary" style="width:100%;padding:13px 8px;font-size:12px;font-weight:700;background:linear-gradient(135deg,#00c896,#00a87a)" onclick="gatedAction(exportForm1065,'business')">
+                <svg style="display:inline;vertical-align:-3px;margin-right:5px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                Form 1065
+              </button>
+              <div id="irs-lock-1065" style="display:none;position:absolute;inset:0;background:rgba(13,15,20,0.85);border-radius:10px;align-items:center;justify-content:center;gap:8px;cursor:pointer;backdrop-filter:blur(2px)" onclick="showUpgradeModal('business')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x='5' y='11' width='14' height='10' rx='2'/><path d='M8 11V7a4 4 0 0 1 8 0v4'/></svg><span style="font-size:12px;font-weight:700;color:var(--text)">Business — <span style="color:#00c896">Upgrade →</span></span>
+              </div>
+            </div>
+            <div style="position:relative">
+              <button class="btn-primary" style="width:100%;padding:13px 8px;font-size:12px;font-weight:700;background:linear-gradient(135deg,#7c3aed,#5b21b6)" onclick="gatedAction(exportScheduleK1Package,'business')">
+                <svg style="display:inline;vertical-align:-3px;margin-right:5px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                Schedule K-1 Package
+              </button>
+              <div id="irs-lock-k1" style="display:none;position:absolute;inset:0;background:rgba(13,15,20,0.85);border-radius:10px;align-items:center;justify-content:center;gap:8px;cursor:pointer;backdrop-filter:blur(2px)" onclick="showUpgradeModal('business')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x='5' y='11' width='14' height='10' rx='2'/><path d='M8 11V7a4 4 0 0 1 8 0v4'/></svg><span style="font-size:12px;font-weight:700;color:var(--text)">Business — <span style="color:#00c896">Upgrade →</span></span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -4700,11 +4732,18 @@ const TAX_PROFILE_KEY = 'mtf_tax_profile';
 
 function loadTaxProfile() {
   const p = JSON.parse(localStorage.getItem(TAX_PROFILE_KEY) || '{}');
-  const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+  const set = (id, val) => { const el = document.getElementById(id); if (el && val != null) el.value = val; };
   set('tp-ein', p.ein); set('tp-address', p.address); set('tp-city', p.city);
   set('tp-inc-date', p.incDate); set('tp-activity', p.activity); set('tp-country', p.country);
   set('tp-sh-name', p.shName); set('tp-sh-address', p.shAddress);
   set('tp-sh-country', p.shCountry); set('tp-sh-ftin', p.shFtin); set('tp-sh-res', p.shRes);
+  set('tp-sh-ownership', p.shOwnership != null ? p.shOwnership : 100);
+  // Load partners
+  const rows = document.getElementById('partners-rows');
+  if (rows) {
+    rows.innerHTML = '';
+    (p.partners || []).forEach(pt => addPartnerRow(pt));
+  }
   // Hide setup form once profile is saved
   if (p.ein) {
     const sec = document.getElementById('tax-profile-section');
@@ -4718,7 +4757,9 @@ async function saveTaxProfile() {
     ein: g('tp-ein'), address: g('tp-address'), city: g('tp-city'),
     incDate: g('tp-inc-date'), activity: g('tp-activity'), country: g('tp-country'),
     shName: g('tp-sh-name'), shAddress: g('tp-sh-address'),
-    shCountry: g('tp-sh-country'), shFtin: g('tp-sh-ftin'), shRes: g('tp-sh-res')
+    shCountry: g('tp-sh-country'), shFtin: g('tp-sh-ftin'), shRes: g('tp-sh-res'),
+    shOwnership: parseFloat(document.getElementById('tp-sh-ownership')?.value || '100') || 100,
+    partners: getPartnersFromUI()
   };
   // Write to localStorage (fast, synchronous)
   localStorage.setItem(TAX_PROFILE_KEY, JSON.stringify(p));
@@ -4890,6 +4931,353 @@ ${filtered.map(t => `<tr><td>${t.date}</td><td>${t.vendor}</td><td>${t.type}</td
 
 // ── COOKIE BANNER ─────────────────────────────────────────
 // ── Shared helper: build the clean-style HTML for Form 1120 ──────────────────
+// ── Partner row UI helpers ────────────────────────────────────────────────────
+
+function addPartnerRow(data={}) {
+  const rows = document.getElementById('partners-rows');
+  if (!rows) return;
+  const idx = rows.querySelectorAll('.partner-row').length + 1;
+  const div = document.createElement('div');
+  div.className = 'partner-row';
+  div.style.cssText = 'background:rgba(0,200,150,0.04);border:1px solid rgba(0,200,150,0.15);border-radius:10px;padding:12px 14px;margin-bottom:10px;position:relative';
+  div.innerHTML = `
+    <div style="font-size:11px;font-weight:700;color:#00c896;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between">
+      Partner ${idx}
+      <button onclick="this.closest('.partner-row').remove();renumberPartnerRows()" style="font-size:11px;padding:2px 8px;background:rgba(220,38,38,0.1);color:#dc2626;border:1px solid rgba(220,38,38,0.2);border-radius:6px;cursor:pointer">Remove</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="form-group"><div class="f-label">Full Name</div><input class="f-input pt-name" placeholder="e.g. Maria Schmidt" value="${data.name||''}"></div>
+      <div class="form-group"><div class="f-label">Country of Citizenship</div><input class="f-input pt-country" placeholder="e.g. Germany" value="${data.country||''}"></div>
+      <div class="form-group" style="grid-column:1/-1"><div class="f-label">Street Address, City, Country</div><input class="f-input pt-address" placeholder="e.g. Hauptstraße 5, 10117 Berlin, Germany" value="${data.address||''}"></div>
+      <div class="form-group"><div class="f-label">Foreign Tax ID (FTIN)</div><input class="f-input pt-ftin" placeholder="e.g. 12 345 678 901" value="${data.ftin||''}"></div>
+      <div class="form-group"><div class="f-label">Ownership %</div><input class="f-input pt-ownership" type="number" min="1" max="99" placeholder="e.g. 30" value="${data.ownership||''}"></div>
+    </div>`;
+  rows.appendChild(div);
+}
+
+function renumberPartnerRows() {
+  document.querySelectorAll('.partner-row').forEach((row, i) => {
+    const label = row.querySelector('div[style*="font-size:11px"]');
+    if (label) label.firstChild.textContent = `Partner ${i + 1}`;
+  });
+}
+
+function getPartnersFromUI() {
+  return Array.from(document.querySelectorAll('.partner-row')).map(row => ({
+    name:      row.querySelector('.pt-name')?.value?.trim()      || '',
+    country:   row.querySelector('.pt-country')?.value?.trim()   || '',
+    address:   row.querySelector('.pt-address')?.value?.trim()   || '',
+    ftin:      row.querySelector('.pt-ftin')?.value?.trim()      || '',
+    ownership: parseFloat(row.querySelector('.pt-ownership')?.value) || 0
+  }));
+}
+
+// ── Form 1065 export ─────────────────────────────────────────────────────────
+
+function exportForm1065() {
+  const p = getTaxProfile();
+  if (!p.ein) { alert('Please complete your LLC profile first (EIN is required).'); return; }
+  const partners = [
+    { name: p.shName||'Primary Member', country: p.shCountry||'', address: p.shAddress||'', ftin: p.shFtin||'', ownership: p.shOwnership??100 },
+    ...(p.partners||[])
+  ];
+  if (partners.length < 2) { alert('Add at least one additional partner in your LLC profile to generate Form 1065.'); return; }
+  const filtered = getReportFilteredTx();
+  const taxYear  = reportPeriodFrom ? reportPeriodFrom.getFullYear() : new Date().getFullYear() - 1;
+  const corpName = llcName || p.llcName || '';
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:820px;background:#fff;';
+  const form = document.createElement('div');
+  form.innerHTML = buildForm1065HTML(p, partners, filtered, taxYear);
+  wrap.appendChild(form);
+  document.body.appendChild(wrap);
+  html2pdf().set({
+    margin: [14,10,14,10],
+    filename: `Form1065_${corpName.replace(/[^a-zA-Z0-9]/g,'_')}_${taxYear}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true },
+    pagebreak: { mode: ['css', 'legacy'] },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  }).from(form).save().then(() => document.body.removeChild(wrap));
+}
+
+async function exportScheduleK1Package() {
+  const p = getTaxProfile();
+  if (!p.ein) { alert('Please complete your LLC profile first (EIN is required).'); return; }
+  const partners = [
+    { name: p.shName||'Primary Member', country: p.shCountry||'', address: p.shAddress||'', ftin: p.shFtin||'', ownership: p.shOwnership??100 },
+    ...(p.partners||[])
+  ];
+  if (partners.length < 2) { alert('Add at least one additional partner in your LLC profile to generate Schedule K-1.'); return; }
+  const filtered = getReportFilteredTx();
+  const taxYear  = reportPeriodFrom ? reportPeriodFrom.getFullYear() : new Date().getFullYear() - 1;
+  const corpName = llcName || p.llcName || '';
+  const opts = {
+    margin: [14,10,14,10],
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true },
+    pagebreak: { mode: ['css', 'legacy'] },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+  const blobs = await Promise.all(
+    partners.map((pt, i) => _renderHtmlToBlob(buildScheduleK1HTML(p, filtered, taxYear, pt, i, partners.length, null, i > 0), opts))
+  );
+  const merged = await _mergePdfBlobs(blobs);
+  const url = URL.createObjectURL(merged);
+  const a = document.createElement('a');
+  a.href = url; a.download = `ScheduleK1_${corpName.replace(/[^a-zA-Z0-9]/g,'_')}_${taxYear}.pdf`;
+  a.click(); URL.revokeObjectURL(url);
+}
+
+// ── Form 1065 HTML builder ────────────────────────────────────────────────────
+
+function buildForm1065HTML(p, partners, filtered, taxYear, sigData, breakBefore=false) {
+  const inc    = filtered.filter(t=>t.type==='income').reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
+  const exp    = filtered.filter(t=>t.type==='expense').reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
+  const profit = inc - exp;
+  const cats   = {};
+  filtered.filter(t=>t.type==='expense').forEach(t=>{ cats[t.category]=(cats[t.category]||0)+parseFloat(t.amount||0); });
+  const wages      = Object.entries(cats).filter(([k])=>/salary|wage|payroll|contractor/i.test(k)).reduce((s,[,v])=>s+v,0);
+  const rent       = Object.entries(cats).filter(([k])=>/rent/i.test(k)).reduce((s,[,v])=>s+v,0);
+  const otherDed   = Math.max(0, exp - wages - rent);
+  const corpName   = llcName || p.llcName || '';
+  const totalOwn   = partners.reduce((s,pt)=>s+(pt.ownership||0),0);
+  const fmt = n => n ? '$'+Math.round(Math.abs(n)).toLocaleString('en-US') : '—';
+  const fmtC = (n,pos=true) => {
+    if (!n||n===0) return '<span style="color:#aaa">—</span>';
+    return `<span style="color:${pos?'#16a34a':'#dc2626'};font-weight:600">${pos?'+':'-'}$${Math.abs(Math.round(n)).toLocaleString('en-US')}</span>`;
+  };
+  const row  = (ln,desc,val,bold,pos=true) => `<tr style="border-bottom:1px solid #eee;page-break-inside:avoid"><td style="padding:5px 8px;font-size:10px;color:#888;width:32px">${ln}</td><td style="padding:5px 8px;font-size:11px;${bold?'font-weight:700':'color:#333'}">${desc}</td><td style="padding:5px 10px;text-align:right;font-size:11px;white-space:nowrap">${val!==null?fmtC(val,pos):'<span style="color:#aaa">—</span>'}</td></tr>`;
+  const sHd  = t => `<tr style="page-break-after:avoid"><td colspan="3" style="padding:6px 10px;font-size:11px;font-weight:700;background:#f5f5f5;border-left:3px solid #00c896;border-bottom:1px solid #ddd">${t}</td></tr>`;
+
+  const partnerRows = partners.map((pt, i) => {
+    const share = totalOwn > 0 ? (pt.ownership||0)/totalOwn : 0;
+    const ptInc = inc * share; const ptExp = exp * share; const ptProfit = profit * share;
+    return `<tr style="border-bottom:1px solid #eee;page-break-inside:avoid">
+      <td style="padding:6px 10px;font-size:11px;font-weight:700">${String.fromCharCode(65+i)}. ${pt.name||'Partner '+(i+1)}</td>
+      <td style="padding:6px 10px;font-size:11px;color:#555">${pt.country||'—'}</td>
+      <td style="padding:6px 10px;font-size:11px;text-align:center">${(pt.ownership||0).toFixed(1)}%</td>
+      <td style="padding:6px 10px;font-size:11px;text-align:right;color:#16a34a;font-weight:600">+$${Math.round(ptInc).toLocaleString()}</td>
+      <td style="padding:6px 10px;font-size:11px;text-align:right;color:#dc2626;font-weight:600">-$${Math.round(ptExp).toLocaleString()}</td>
+      <td style="padding:6px 10px;font-size:11px;text-align:right;font-weight:700;color:${ptProfit>=0?'#16a34a':'#dc2626'}">${ptProfit>=0?'+':''}\$${Math.round(Math.abs(ptProfit)).toLocaleString()}</td>
+    </tr>`;
+  }).join('');
+
+  return `<div style="font-family:Arial,sans-serif;max-width:780px;color:#1a1a1a;font-size:12px;padding:32px 36px;background:#fff${breakBefore?';page-break-before:always':''}">
+  <div style="text-align:center;margin-bottom:24px">
+    <div style="font-size:20px;font-weight:900;color:#00c896">MyTaxFly</div>
+    <div style="display:inline-block;background:#00c896;color:#fff;font-size:9px;font-weight:700;padding:2px 10px;border-radius:20px;letter-spacing:.5px;margin:4px 0">PRE-FILLED WORKING DRAFT</div>
+    <div style="font-size:14px;font-weight:800;margin-top:4px">Pro Forma Form 1065 — U.S. Return of Partnership Income</div>
+    <div style="font-size:10px;color:#888;margin-top:2px">Tax Year ${taxYear} · Multi-Member LLC (Partnership) · Review with your CPA before filing</div>
+  </div>
+
+  <div style="background:#f5f5f5;padding:14px 16px;border-radius:6px;margin-bottom:18px;page-break-inside:avoid">
+    <table style="width:100%;border-collapse:collapse">
+      <tr>
+        <td style="width:50%;padding:3px 8px 3px 0;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">A — Name of Partnership</div><div style="font-size:13px;font-weight:800">${corpName}</div></td>
+        <td style="width:25%;padding:3px 8px;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">D — EIN</div><div style="font-size:12px;font-weight:700;font-family:monospace">${p.ein}</div></td>
+        <td style="width:25%;padding:3px 0 3px 8px;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">Number of Partners</div><div style="font-size:12px;font-weight:700">${partners.length}</div></td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px 3px 0;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">Address</div><div style="font-size:11px">${p.address||''} ${p.city||''}</div></td>
+        <td style="padding:3px 8px;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">C — Date of Organization</div><div style="font-size:11px">${p.incDate||''}</div></td>
+        <td style="padding:3px 0 3px 8px;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">Tax Year</div><div style="font-size:11px">Jan 1 – Dec 31, ${taxYear}</div></td>
+      </tr>
+    </table>
+    <div style="margin-top:8px;font-size:10px;color:#555">☑ B — Principal Business Activity: ${p.activity||'Consulting / Services'} &nbsp;·&nbsp; ☑ F — Accounting Method: Cash</div>
+  </div>
+
+  <table style="width:100%;border-collapse:collapse;margin-bottom:16px">
+    ${sHd('Part I — Income')}
+    ${row('1a','Gross receipts or sales',inc>0?inc:null,false)}
+    ${row('2','Cost of goods sold',null,false)}
+    ${row('3','Gross profit',inc>0?inc:null,true)}
+    ${row('4–7','Other income (interest, dividends, royalties, net gains)',null,false)}
+    ${row('8','Total Income',inc>0?inc:null,true)}
+    ${sHd('Part I — Deductions')}
+    ${row('9','Salaries and wages (other than to partners)',wages>0?wages:null,false,false)}
+    ${row('13','Rent',rent>0?rent:null,false,false)}
+    ${row('20','Other deductions (software, professional services, processing fees)',otherDed>0?otherDed:null,false,false)}
+    ${row('21','Total Deductions',exp>0?exp:null,true,false)}
+    ${row('22','Ordinary Business Income (Loss)',profit,true,profit>=0)}
+  </table>
+
+  <div style="background:#f0fdf4;border:2px solid #00c896;border-radius:8px;padding:16px;margin:16px 0;text-align:center;page-break-inside:avoid">
+    <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Ordinary Business Income — Tax Year ${taxYear}</div>
+    <div style="font-size:32px;font-weight:900;color:${profit>=0?'#16a34a':'#dc2626'}">${profit>=0?'+':''}\$${Math.abs(Math.round(profit)).toLocaleString('en-US')}</div>
+    <div style="font-size:10px;color:#777;margin-top:6px">Gross Revenue $${Math.round(inc).toLocaleString()} · Total Deductions $${Math.round(exp).toLocaleString()}</div>
+  </div>
+
+  <!-- Schedule K — Partners' Distributive Share -->
+  <div style="margin-top:20px;margin-bottom:8px;font-size:13px;font-weight:800;color:#1a1a1a;border-bottom:2px solid #00c896;padding-bottom:6px;page-break-after:avoid">Schedule K — Partners' Distributive Share Items</div>
+  <table style="width:100%;border-collapse:collapse;margin-bottom:16px;page-break-inside:avoid">
+    <thead>
+      <tr style="background:#f5f5f5">
+        <th style="padding:7px 10px;font-size:11px;text-align:left;border-bottom:2px solid #ddd">Partner (A–Z)</th>
+        <th style="padding:7px 10px;font-size:11px;text-align:left;border-bottom:2px solid #ddd">Country</th>
+        <th style="padding:7px 10px;font-size:11px;text-align:center;border-bottom:2px solid #ddd">Ownership %</th>
+        <th style="padding:7px 10px;font-size:11px;text-align:right;border-bottom:2px solid #ddd">Share of Income</th>
+        <th style="padding:7px 10px;font-size:11px;text-align:right;border-bottom:2px solid #ddd">Share of Deductions</th>
+        <th style="padding:7px 10px;font-size:11px;text-align:right;border-bottom:2px solid #ddd">Net Profit / Loss</th>
+      </tr>
+    </thead>
+    <tbody>${partnerRows}</tbody>
+    <tfoot>
+      <tr style="background:#f0fdf4">
+        <td colspan="2" style="padding:7px 10px;font-size:11px;font-weight:700">Total</td>
+        <td style="padding:7px 10px;font-size:11px;text-align:center;font-weight:700">${totalOwn.toFixed(1)}%</td>
+        <td style="padding:7px 10px;font-size:11px;text-align:right;color:#16a34a;font-weight:700">+$${Math.round(inc).toLocaleString()}</td>
+        <td style="padding:7px 10px;font-size:11px;text-align:right;color:#dc2626;font-weight:700">-$${Math.round(exp).toLocaleString()}</td>
+        <td style="padding:7px 10px;font-size:11px;text-align:right;font-weight:900;color:${profit>=0?'#16a34a':'#dc2626'}">${profit>=0?'+':''}\$${Math.round(Math.abs(profit)).toLocaleString()}</td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <div style="border:1px solid #ddd;border-radius:6px;padding:12px 14px;margin-top:16px;page-break-inside:avoid">
+    <div style="font-size:11px;font-weight:700;margin-bottom:8px">Sign Here</div>
+    <div style="font-size:10px;color:#555;margin-bottom:10px;line-height:1.5">Under penalties of perjury, I declare that I have examined this return, including accompanying schedules and statements, and to the best of my knowledge and belief, it is true, correct, and complete.</div>
+    <table style="width:100%;border-collapse:collapse">
+      <tr style="page-break-inside:avoid">
+        <td style="border-bottom:1px solid #999;padding-bottom:4px;width:45%;font-size:10px;color:#888;vertical-align:bottom">
+          ${sigData?`<img src="${sigData}" style="height:38px;display:block;margin-bottom:2px">`:'<div style="height:38px"></div>'}
+          Signature of General Partner / Member
+        </td>
+        <td style="width:5%"></td>
+        <td style="border-bottom:1px solid #999;padding-bottom:4px;width:22%;font-size:10px;color:#888;vertical-align:bottom">
+          ${sigData?`<div style="font-size:11px;color:#111;margin-bottom:2px">${new Date().toLocaleDateString('en-US')}</div>`:'<div style="height:38px"></div>'}
+          Date
+        </td>
+        <td style="width:5%"></td>
+        <td style="border-bottom:1px solid #999;padding-bottom:4px;width:23%;font-size:10px;color:#888;vertical-align:bottom">
+          <div style="height:38px"></div>
+          Title
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <div style="margin-top:14px;padding:10px 14px;background:#fff8f0;border:1px solid #f6ad55;border-radius:6px;font-size:10px;color:#744210;line-height:1.5;page-break-inside:avoid">
+    <strong>⚠ Important:</strong> This is a pre-filled working draft generated by <strong>MyTaxFly</strong>. It is NOT a filed tax return. Review all figures with a qualified CPA before filing. Form 1065 is due March 15 of the following year (April 15 with extension). File electronically or mail to the appropriate IRS Service Center.
+  </div>
+  <div style="margin-top:12px;text-align:center;font-size:10px;color:#bbb;border-top:1px solid #eee;padding-top:10px">Generated by <strong style="color:#00c896">MyTaxFly</strong> · mytaxfly.com · Tax Year ${taxYear}</div>
+</div>`;
+}
+
+// ── Schedule K-1 HTML builder (one per partner) ───────────────────────────────
+
+function buildScheduleK1HTML(p, filtered, taxYear, partner, partnerIndex, totalPartners, sigData, breakBefore=false) {
+  const inc    = filtered.filter(t=>t.type==='income').reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
+  const exp    = filtered.filter(t=>t.type==='expense').reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
+  const profit = inc - exp;
+  const cats   = {};
+  filtered.filter(t=>t.type==='expense').forEach(t=>{ cats[t.category]=(cats[t.category]||0)+parseFloat(t.amount||0); });
+  const wages    = Object.entries(cats).filter(([k])=>/salary|wage|payroll|contractor/i.test(k)).reduce((s,[,v])=>s+v,0);
+  const rent     = Object.entries(cats).filter(([k])=>/rent/i.test(k)).reduce((s,[,v])=>s+v,0);
+  const otherDed = Math.max(0, exp - wages - rent);
+  const corpName = llcName || p.llcName || '';
+
+  // Collect all partners to compute total ownership for this K-1's partner
+  const allPartners = [
+    { name: p.shName, ownership: p.shOwnership??100 },
+    ...(p.partners||[])
+  ];
+  const totalOwn = allPartners.reduce((s,pt)=>s+(pt.ownership||0),0);
+  const share    = totalOwn > 0 ? (partner.ownership||0) / totalOwn : 0;
+  const ptInc    = inc * share;
+  const ptWages  = wages * share;
+  const ptRent   = rent * share;
+  const ptOther  = otherDed * share;
+  const ptExp    = exp * share;
+  const ptProfit = profit * share;
+  const partnerLetter = String.fromCharCode(65 + partnerIndex);
+
+  const fmtC = (n, pos=true) => {
+    if (!n||n===0) return '<span style="color:#aaa">—</span>';
+    return `<span style="color:${pos?'#16a34a':'#dc2626'};font-weight:600">${pos?'+':''}-{${pos?'':'-'}}$${Math.abs(Math.round(n)).toLocaleString('en-US')}</span>`.replace('-{false}','').replace('{true}','');
+  };
+  const fmt2 = (n, pos=true) => {
+    if (!n && n!==0) return '<span style="color:#aaa">—</span>';
+    const sign = pos ? (n>=0?'+':'-') : '-';
+    return `<span style="color:${n>=0&&pos?'#16a34a':'#dc2626'};font-weight:600">${sign}$${Math.abs(Math.round(n)).toLocaleString('en-US')}</span>`;
+  };
+  const row = (ln,desc,val) => `<tr style="border-bottom:1px solid #eee;page-break-inside:avoid">
+    <td style="padding:5px 8px;font-size:10px;color:#888;width:32px">${ln}</td>
+    <td style="padding:5px 8px;font-size:11px;color:#333">${desc}</td>
+    <td style="padding:5px 10px;text-align:right;font-size:11px;white-space:nowrap">${val}</td>
+  </tr>`;
+
+  return `<div style="font-family:Arial,sans-serif;max-width:780px;color:#1a1a1a;font-size:12px;padding:32px 36px;background:#fff${breakBefore?';page-break-before:always':''}">
+  <div style="text-align:center;margin-bottom:24px">
+    <div style="font-size:20px;font-weight:900;color:#00c896">MyTaxFly</div>
+    <div style="display:inline-block;background:#7c3aed;color:#fff;font-size:9px;font-weight:700;padding:2px 10px;border-radius:20px;letter-spacing:.5px;margin:4px 0">SCHEDULE K-1</div>
+    <div style="font-size:14px;font-weight:800;margin-top:4px">Schedule K-1 (Form 1065) — Partner's Share of Income, Deductions, Credits</div>
+    <div style="font-size:10px;color:#888;margin-top:2px">Tax Year ${taxYear} · Partner ${partnerLetter} of ${totalPartners} · ${partner.name||'Partner '+(partnerIndex+1)}</div>
+  </div>
+
+  <!-- Two-column header: partnership info + partner info -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px">
+    <div style="background:#f5f5f5;padding:12px 14px;border-radius:6px">
+      <div style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Part I — Partnership Information</div>
+      <div style="font-size:10px;color:#888;margin-bottom:2px">Partnership Name</div>
+      <div style="font-size:12px;font-weight:700;margin-bottom:6px">${corpName}</div>
+      <div style="font-size:10px;color:#888;margin-bottom:2px">EIN</div>
+      <div style="font-size:11px;font-family:monospace;margin-bottom:6px">${p.ein}</div>
+      <div style="font-size:10px;color:#888;margin-bottom:2px">Address</div>
+      <div style="font-size:11px">${p.address||''} ${p.city||''}</div>
+    </div>
+    <div style="background:#f5f5f5;padding:12px 14px;border-radius:6px">
+      <div style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Part II — Partner Information</div>
+      <div style="font-size:10px;color:#888;margin-bottom:2px">Partner Name</div>
+      <div style="font-size:12px;font-weight:700;margin-bottom:6px">${partner.name||'—'}</div>
+      <div style="font-size:10px;color:#888;margin-bottom:2px">Country of Residence</div>
+      <div style="font-size:11px;margin-bottom:6px">${partner.country||'—'}</div>
+      <div style="font-size:10px;color:#888;margin-bottom:2px">Foreign Tax ID (FTIN)</div>
+      <div style="font-size:11px;font-family:monospace">${partner.ftin||'—'}</div>
+    </div>
+  </div>
+
+  <!-- Ownership summary -->
+  <div style="background:rgba(124,58,237,0.06);border:1px solid rgba(124,58,237,0.2);border-radius:8px;padding:12px 16px;margin-bottom:18px;display:flex;gap:24px;align-items:center;page-break-inside:avoid">
+    <div style="text-align:center;flex:1"><div style="font-size:10px;color:#888;margin-bottom:3px">Ownership Share</div><div style="font-size:22px;font-weight:900;color:#7c3aed">${(partner.ownership||0).toFixed(1)}%</div></div>
+    <div style="width:1px;background:#e2e8f0;align-self:stretch"></div>
+    <div style="text-align:center;flex:1"><div style="font-size:10px;color:#888;margin-bottom:3px">Partner Letter</div><div style="font-size:22px;font-weight:900;color:#7c3aed">${partnerLetter}</div></div>
+    <div style="width:1px;background:#e2e8f0;align-self:stretch"></div>
+    <div style="text-align:center;flex:1"><div style="font-size:10px;color:#888;margin-bottom:3px">Tax Year</div><div style="font-size:18px;font-weight:800;color:#333">${taxYear}</div></div>
+    <div style="width:1px;background:#e2e8f0;align-self:stretch"></div>
+    <div style="text-align:center;flex:1"><div style="font-size:10px;color:#888;margin-bottom:3px">Profit / Loss Share</div><div style="font-size:18px;font-weight:900;color:${ptProfit>=0?'#16a34a':'#dc2626'}">${ptProfit>=0?'+':''}\$${Math.abs(Math.round(ptProfit)).toLocaleString()}</div></div>
+  </div>
+
+  <!-- Part III — Distributive Share -->
+  <div style="margin-bottom:8px;font-size:13px;font-weight:800;color:#1a1a1a;border-bottom:2px solid #7c3aed;padding-bottom:6px;page-break-after:avoid">Part III — Partner's Share of Current Year Income &amp; Deductions</div>
+  <table style="width:100%;border-collapse:collapse;margin-bottom:16px">
+    <tr style="background:#f5f5f5;page-break-after:avoid"><td colspan="3" style="padding:6px 10px;font-size:11px;font-weight:700;border-left:3px solid #00c896;border-bottom:1px solid #ddd">Income</td></tr>
+    ${row('1','Ordinary business income (loss) — partner share',`<span style="color:${ptProfit>=0?'#16a34a':'#dc2626'};font-weight:700">${ptProfit>=0?'+':''}\$${Math.abs(Math.round(ptProfit)).toLocaleString()}</span>`)}
+    ${row('2','Net rental real estate income (loss)',`<span style="color:#aaa">—</span>`)}
+    ${row('3','Other net rental income',`<span style="color:#aaa">—</span>`)}
+    ${row('4','Guaranteed payments to partner',`<span style="color:#aaa">—</span>`)}
+    ${row('5','Interest income',`<span style="color:#aaa">—</span>`)}
+    <tr style="background:#f5f5f5;page-break-after:avoid"><td colspan="3" style="padding:6px 10px;font-size:11px;font-weight:700;border-left:3px solid #00c896;border-bottom:1px solid #ddd">Deductions (Partner Share)</td></tr>
+    ${row('11','Salaries & wages (partner share)',ptWages>0?`<span style="color:#dc2626;font-weight:600">-$${Math.round(ptWages).toLocaleString()}</span>`:'<span style="color:#aaa">—</span>')}
+    ${row('12','Rent (partner share)',ptRent>0?`<span style="color:#dc2626;font-weight:600">-$${Math.round(ptRent).toLocaleString()}</span>`:'<span style="color:#aaa">—</span>')}
+    ${row('13','Other deductions (partner share)',ptOther>0?`<span style="color:#dc2626;font-weight:600">-$${Math.round(ptOther).toLocaleString()}</span>`:'<span style="color:#aaa">—</span>')}
+    <tr style="background:#f5f5f5;page-break-after:avoid"><td colspan="3" style="padding:6px 10px;font-size:11px;font-weight:700;border-left:3px solid #00c896;border-bottom:1px solid #ddd">Revenue Summary</td></tr>
+    ${row('—','Gross revenue (partner share)',`<span style="color:#16a34a;font-weight:600">+$${Math.round(ptInc).toLocaleString()}</span>`)}
+    ${row('—','Total deductions (partner share)',`<span style="color:#dc2626;font-weight:600">-$${Math.round(ptExp).toLocaleString()}</span>`)}
+    <tr style="background:#f0fdf4;page-break-inside:avoid">
+      <td style="padding:8px 10px;font-size:11px;font-weight:700">NET</td>
+      <td style="padding:8px 10px;font-size:11px;font-weight:700">Net Profit / Loss (Partner's Share)</td>
+      <td style="padding:8px 10px;text-align:right;font-size:14px;font-weight:900;color:${ptProfit>=0?'#16a34a':'#dc2626'}">${ptProfit>=0?'+':''}\$${Math.abs(Math.round(ptProfit)).toLocaleString()}</td>
+    </tr>
+  </table>
+
+  <div style="margin-top:14px;padding:10px 14px;background:#fff8f0;border:1px solid #f6ad55;border-radius:6px;font-size:10px;color:#744210;line-height:1.5;page-break-inside:avoid">
+    <strong>⚠ Important:</strong> This Schedule K-1 is a pre-filled working draft generated by <strong>MyTaxFly</strong>. It is NOT a filed tax document. Partner ${partner.name||partnerLetter} should report their share of income on their home-country tax return as required. Review with a qualified CPA before use.
+  </div>
+  <div style="margin-top:12px;text-align:center;font-size:10px;color:#bbb;border-top:1px solid #eee;padding-top:10px">Generated by <strong style="color:#00c896">MyTaxFly</strong> · mytaxfly.com · Tax Year ${taxYear} · Partner ${partnerLetter}: ${partner.name||'—'}</div>
+</div>`;
+}
+
+// ── Form 1120 HTML builder ────────────────────────────────────────────────────
 function buildForm1120HTML(p, filtered, taxYear, sigData, breakBefore=false) {
   const inc    = filtered.filter(t => t.type==='income').reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
   const exp    = filtered.filter(t => t.type==='expense').reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
@@ -5572,6 +5960,11 @@ function applyPlanGating(plan){
   ['irs-lock-1120','irs-lock-5472','irs-lock-package'].forEach(id => {
     const el = document.getElementById(id);
     if(el) el.style.display = lvl < PLAN_LEVEL['pro'] ? 'flex' : 'none';
+  });
+  // ── Multi-member LLC locks (Business plan) ──
+  ['irs-lock-1065','irs-lock-k1'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.style.display = lvl < PLAN_LEVEL['business'] ? 'flex' : 'none';
   });
 
   // ── Entity Switcher (Business) ──
