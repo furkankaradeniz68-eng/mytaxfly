@@ -2385,6 +2385,8 @@ async function handleLogout(){
   if (clientRealtimeChannel) { try { sb.removeChannel(clientRealtimeChannel); } catch(e){} clientRealtimeChannel = null; }
   if (notesPollingInterval) { clearInterval(notesPollingInterval); notesPollingInterval = null; }
   sessionStorage.removeItem('mtf_portal_mode');
+  // Clear all user-specific data from localStorage (prevents data leaking to next user on shared browser)
+  ['mtf_tax_profile','mtf_signature','mtf_entities','mtf_irs_letters','mtf_user_id'].forEach(k => localStorage.removeItem(k));
   // Update UI immediately — don't wait for signOut network request (hangs in mobile WebViews)
   _appInitialized = false;
   transactions=[];chatHistory=[];chatSessions=[];currentChatId=null;userEmail='';userName='';llcName='';
@@ -3379,6 +3381,12 @@ async function launchApp(user){
     const [pFrom,pTo]=getPeriodRange('month');
     periodFrom=pFrom; periodTo=pTo;
     document.querySelectorAll('.stat-change').forEach(el=>{if(!el.id)el.textContent='This Month';});
+    // ── If a different user logged in, clear stale localStorage from previous session ──
+    const cachedUserId = localStorage.getItem('mtf_user_id');
+    if (cachedUserId && cachedUserId !== user.id) {
+      ['mtf_tax_profile','mtf_signature','mtf_entities','mtf_irs_letters'].forEach(k => localStorage.removeItem(k));
+    }
+    localStorage.setItem('mtf_user_id', user.id);
     // ── Sync cloud profile → localStorage (so reads stay synchronous) ──
     const cloudMeta = user.user_metadata || {};
     if (cloudMeta.tax_profile)   localStorage.setItem(TAX_PROFILE_KEY,     JSON.stringify(cloudMeta.tax_profile));
