@@ -4955,6 +4955,45 @@ function addPartnerRow(data={}) {
   rows.appendChild(div);
 }
 
+function addAccPartnerRow(data={}) {
+  const rows = document.getElementById('acc-partners-rows');
+  if (!rows) return;
+  const idx = rows.querySelectorAll('.acc-partner-row').length + 1;
+  const div = document.createElement('div');
+  div.className = 'acc-partner-row';
+  div.style.cssText = 'background:rgba(0,200,150,0.04);border:1px solid rgba(0,200,150,0.15);border-radius:10px;padding:12px 14px;margin-bottom:10px';
+  div.innerHTML = `
+    <div style="font-size:11px;font-weight:700;color:#00c896;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between">
+      Partner ${idx}
+      <button onclick="this.closest('.acc-partner-row').remove();renumberAccPartnerRows()" style="font-size:11px;padding:2px 8px;background:rgba(220,38,38,0.1);color:#dc2626;border:1px solid rgba(220,38,38,0.2);border-radius:6px;cursor:pointer">Entfernen</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="form-group"><div class="f-label">Name</div><input class="f-input acc-pt-name" placeholder="z.B. Maria Schmidt" value="${data.name||''}"></div>
+      <div class="form-group"><div class="f-label">Land</div><input class="f-input acc-pt-country" placeholder="z.B. Germany" value="${data.country||''}"></div>
+      <div class="form-group" style="grid-column:1/-1"><div class="f-label">Adresse</div><input class="f-input acc-pt-address" placeholder="z.B. Hauptstraße 5, 10117 Berlin, Germany" value="${data.address||''}"></div>
+      <div class="form-group"><div class="f-label">Foreign Tax ID (FTIN)</div><input class="f-input acc-pt-ftin" placeholder="z.B. 12 345 678" value="${data.ftin||''}"></div>
+      <div class="form-group"><div class="f-label">Ownership %</div><input class="f-input acc-pt-ownership" type="number" min="1" max="99" placeholder="z.B. 30" value="${data.ownership||''}"></div>
+    </div>`;
+  rows.appendChild(div);
+}
+
+function renumberAccPartnerRows() {
+  document.querySelectorAll('.acc-partner-row').forEach((row, i) => {
+    const label = row.querySelector('div[style*="font-size:11px"]');
+    if (label) label.firstChild.textContent = `Partner ${i + 1}`;
+  });
+}
+
+function getAccPartnersFromUI() {
+  return Array.from(document.querySelectorAll('.acc-partner-row')).map(row => ({
+    name:      row.querySelector('.acc-pt-name')?.value?.trim()      || '',
+    country:   row.querySelector('.acc-pt-country')?.value?.trim()   || '',
+    address:   row.querySelector('.acc-pt-address')?.value?.trim()   || '',
+    ftin:      row.querySelector('.acc-pt-ftin')?.value?.trim()      || '',
+    ownership: parseFloat(row.querySelector('.acc-pt-ownership')?.value) || 0
+  }));
+}
+
 function renumberPartnerRows() {
   document.querySelectorAll('.partner-row').forEach((row, i) => {
     const label = row.querySelector('div[style*="font-size:11px"]');
@@ -6308,6 +6347,10 @@ async function openAccountModal() {
   set('acc-inc-date', p.incDate); set('acc-activity', p.activity); set('acc-country', p.country);
   set('acc-sh-name', p.shName); set('acc-sh-address', p.shAddress);
   set('acc-sh-country', p.shCountry); set('acc-sh-ftin', p.shFtin); set('acc-sh-res', p.shRes);
+  set('acc-sh-ownership', p.shOwnership != null ? p.shOwnership : 100);
+  // Load partners into account modal
+  const accRows = document.getElementById('acc-partners-rows');
+  if (accRows) { accRows.innerHTML = ''; (p.partners || []).forEach(pt => addAccPartnerRow(pt)); }
   // Pre-fill with cached values so the modal opens immediately
   const emailEl = document.getElementById('acc-email');
   if (emailEl) emailEl.value = userEmail || '';
@@ -6377,7 +6420,9 @@ function saveAccountModal() {
     ein:       g('acc-ein'),      address:   g('acc-address'), city:     g('acc-city'),
     incDate:   g('acc-inc-date'), activity:  g('acc-activity'), country: g('acc-country'),
     shName:    g('acc-sh-name'),  shAddress: g('acc-sh-address'),
-    shCountry: g('acc-sh-country'), shFtin:  g('acc-sh-ftin'), shRes:   g('acc-sh-res')
+    shCountry: g('acc-sh-country'), shFtin:  g('acc-sh-ftin'), shRes:   g('acc-sh-res'),
+    shOwnership: parseFloat(document.getElementById('acc-sh-ownership')?.value || '100') || 100,
+    partners: getAccPartnersFromUI()
   };
   localStorage.setItem(TAX_PROFILE_KEY, JSON.stringify(p));
 
@@ -6409,9 +6454,12 @@ function saveAccountModal() {
     ein:'tp-ein', address:'tp-address', city:'tp-city',
     incDate:'tp-inc-date', activity:'tp-activity', country:'tp-country',
     shName:'tp-sh-name', shAddress:'tp-sh-address', shCountry:'tp-sh-country',
-    shFtin:'tp-sh-ftin', shRes:'tp-sh-res'
+    shFtin:'tp-sh-ftin', shRes:'tp-sh-res', shOwnership:'tp-sh-ownership'
   };
-  Object.entries(map).forEach(([k,id])=>{ const el=document.getElementById(id); if(el) el.value=p[k]||''; });
+  Object.entries(map).forEach(([k,id])=>{ const el=document.getElementById(id); if(el) el.value=p[k]!=null?p[k]:''; });
+  // Mirror partners to the Reports page partner rows
+  const rows = document.getElementById('partners-rows');
+  if (rows) { rows.innerHTML = ''; (p.partners||[]).forEach(pt => addPartnerRow(pt)); }
   if (p.ein) { const sec=document.getElementById('tax-profile-section'); if(sec) sec.style.display='none'; }
   const s = document.getElementById('acc-saved');
   if (s) { s.style.display='block'; setTimeout(()=>s.style.display='none', 2500); }
@@ -6502,17 +6550,28 @@ function renderEntityModalList() {
   if (!list) return;
   const isBiz = currentPlan === 'business';
 
-  list.innerHTML = entities.map((e) => `
-    <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--bg3);border-radius:8px;margin-bottom:8px" id="entity-row-${e.id}">
-      <span class="entity-dot" style="background:${e.id===activeEntityId?'var(--accent)':'var(--border)'}"></span>
-      <span id="entity-label-${e.id}" style="flex:1;font-size:13px;font-weight:600;color:var(--text)">${e.name}</span>
-      <input id="entity-input-${e.id}" class="f-input" value="${e.name}" style="flex:1;display:none;font-size:13px;padding:6px 10px">
-      <button id="entity-edit-btn-${e.id}" onclick="startRename('${e.id}')" title="Rename" style="background:none;border:none;color:var(--text3);cursor:pointer;padding:4px;line-height:1;display:flex">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d='M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7'/><path d='M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z'/></svg>
-      </button>
-      <button id="entity-save-btn-${e.id}" onclick="saveRename('${e.id}')" style="display:none;background:var(--accent);border:none;color:#000;font-size:11px;font-weight:700;padding:5px 10px;border-radius:6px;cursor:pointer">Save</button>
-      ${entities.length > 1 ? `<button onclick="removeEntity('${e.id}')" title="Remove" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;line-height:1;padding:0 2px">&times;</button>` : ''}
-    </div>`).join('');
+  list.innerHTML = entities.map((e) => {
+    const isMulti = e.type === 'multi';
+    const typeBadge = isMulti
+      ? `<span style="font-size:10px;font-weight:700;padding:2px 7px;background:rgba(124,58,237,0.15);color:#a78bfa;border-radius:20px;border:1px solid rgba(124,58,237,0.25);white-space:nowrap">Multi</span>`
+      : `<span style="font-size:10px;font-weight:700;padding:2px 7px;background:rgba(0,200,150,0.1);color:#00c896;border-radius:20px;border:1px solid rgba(0,200,150,0.2);white-space:nowrap">Single</span>`;
+    const partnerCount = isMulti ? ` · ${(e.partners||[]).length + 1} Partner` : '';
+    return `
+    <div style="background:var(--bg3);border-radius:10px;margin-bottom:8px;overflow:hidden" id="entity-row-${e.id}">
+      <div style="display:flex;align-items:center;gap:8px;padding:10px 12px">
+        <span class="entity-dot" style="background:${e.id===activeEntityId?'var(--accent)':'var(--border)'}"></span>
+        <span id="entity-label-${e.id}" style="flex:1;font-size:13px;font-weight:600;color:var(--text)">${e.name}</span>
+        <input id="entity-input-${e.id}" class="f-input" value="${e.name}" style="flex:1;display:none;font-size:13px;padding:6px 10px">
+        ${typeBadge}
+        <button id="entity-edit-btn-${e.id}" onclick="startRename('${e.id}')" title="Umbenennen" style="background:none;border:none;color:var(--text3);cursor:pointer;padding:4px;line-height:1;display:flex">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d='M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7'/><path d='M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z'/></svg>
+        </button>
+        <button id="entity-save-btn-${e.id}" onclick="saveRename('${e.id}')" style="display:none;background:var(--accent);border:none;color:#000;font-size:11px;font-weight:700;padding:5px 10px;border-radius:6px;cursor:pointer">Save</button>
+        ${entities.length > 1 ? `<button onclick="removeEntity('${e.id}')" title="Löschen" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;line-height:1;padding:0 2px">&times;</button>` : ''}
+      </div>
+      ${isMulti ? `<div style="padding:4px 12px 10px 32px;font-size:11px;color:var(--text3)">${partnerCount} · <span onclick="openEntitySetup('${e.id}')" style="color:#00c896;cursor:pointer;text-decoration:underline">Partner bearbeiten →</span></div>` : ''}
+    </div>`;
+  }).join('');
 
   // show/hide add vs upgrade section
   const addSec = document.getElementById('entity-add-section');
@@ -6549,16 +6608,180 @@ function saveRename(id) {
   renderEntityModalList();
 }
 
+let _newEntityType = 'single';
+
+function setNewEntityType(type) {
+  _newEntityType = type;
+  const btnSingle = document.getElementById('entity-type-single');
+  const btnMulti  = document.getElementById('entity-type-multi');
+  const multiSec  = document.getElementById('entity-multi-section');
+  if (btnSingle) {
+    btnSingle.style.borderColor = type === 'single' ? 'var(--accent)' : 'var(--border)';
+    btnSingle.style.background  = type === 'single' ? 'rgba(0,200,150,0.12)' : 'transparent';
+    btnSingle.style.color       = type === 'single' ? '#00c896' : 'var(--text3)';
+  }
+  if (btnMulti) {
+    btnMulti.style.borderColor = type === 'multi' ? '#7c3aed' : 'var(--border)';
+    btnMulti.style.background  = type === 'multi' ? 'rgba(124,58,237,0.12)' : 'transparent';
+    btnMulti.style.color       = type === 'multi' ? '#a78bfa' : 'var(--text3)';
+  }
+  if (multiSec) multiSec.style.display = type === 'multi' ? 'block' : 'none';
+}
+
+function addNewEntityPartnerRow(data={}) {
+  const rows = document.getElementById('enew-partners-rows');
+  if (!rows) return;
+  const idx = rows.querySelectorAll('.enew-partner-row').length + 2; // 2 because primary is #1
+  const div = document.createElement('div');
+  div.className = 'enew-partner-row';
+  div.style.cssText = 'background:rgba(0,200,150,0.04);border:1px solid rgba(0,200,150,0.15);border-radius:10px;padding:10px 12px;margin-bottom:8px';
+  div.innerHTML = `
+    <div style="font-size:11px;font-weight:700;color:#00c896;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
+      Gesellschafter ${idx}
+      <button onclick="this.closest('.enew-partner-row').remove();updateOwnershipSum()" style="font-size:11px;padding:2px 8px;background:rgba(220,38,38,0.1);color:#dc2626;border:1px solid rgba(220,38,38,0.2);border-radius:6px;cursor:pointer">✕</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div class="form-group"><div class="f-label">Name</div><input class="f-input enew-pt-name" placeholder="z.B. Maria Schmidt" value="${data.name||''}" oninput="updateOwnershipSum()"></div>
+      <div class="form-group"><div class="f-label">Ownership %</div><input class="f-input enew-pt-ownership" type="number" min="1" max="99" placeholder="z.B. 30" value="${data.ownership||''}" oninput="updateOwnershipSum()"></div>
+      <div class="form-group"><div class="f-label">Land</div><input class="f-input enew-pt-country" placeholder="z.B. Germany" value="${data.country||''}"></div>
+      <div class="form-group"><div class="f-label">Foreign Tax ID (FTIN)</div><input class="f-input enew-pt-ftin" placeholder="optional" value="${data.ftin||''}"></div>
+      <div class="form-group" style="grid-column:1/-1"><div class="f-label">Adresse</div><input class="f-input enew-pt-address" placeholder="z.B. Hauptstraße 5, 10117 Berlin" value="${data.address||''}"></div>
+    </div>`;
+  rows.appendChild(div);
+  updateOwnershipSum();
+}
+
+function updateOwnershipSum() {
+  const primary = parseFloat(document.getElementById('enew-sh-ownership')?.value || 0) || 0;
+  const others  = Array.from(document.querySelectorAll('.enew-pt-ownership')).reduce((s,el) => s + (parseFloat(el.value)||0), 0);
+  const total   = primary + others;
+  const el      = document.getElementById('enew-ownership-sum');
+  if (!el) return;
+  const ok = Math.abs(total - 100) < 0.1;
+  el.textContent = `Gesamt: ${total.toFixed(1)}% ${ok ? '✓' : '— muss 100% ergeben'}`;
+  el.style.color = ok ? '#00c896' : '#f59e0b';
+}
+
 function addEntity() {
   if (entities.length >= 5) return;
   const inp = document.getElementById('entity-new-name');
   const name = inp?.value?.trim();
   if (!name) return;
   const id = 'e_' + Date.now();
-  entities.push({ id, name });
+  const entityObj = { id, name, type: _newEntityType };
+  if (_newEntityType === 'multi') {
+    entityObj.shName      = document.getElementById('enew-sh-name')?.value?.trim() || '';
+    entityObj.shOwnership = parseFloat(document.getElementById('enew-sh-ownership')?.value || 100) || 100;
+    entityObj.partners    = Array.from(document.querySelectorAll('.enew-partner-row')).map(row => ({
+      name:      row.querySelector('.enew-pt-name')?.value?.trim()      || '',
+      country:   row.querySelector('.enew-pt-country')?.value?.trim()   || '',
+      address:   row.querySelector('.enew-pt-address')?.value?.trim()   || '',
+      ftin:      row.querySelector('.enew-pt-ftin')?.value?.trim()      || '',
+      ownership: parseFloat(row.querySelector('.enew-pt-ownership')?.value) || 0
+    }));
+  }
+  entities.push(entityObj);
   saveEntities();
+  // Reset form
   inp.value = '';
+  if (document.getElementById('enew-sh-name')) document.getElementById('enew-sh-name').value = '';
+  if (document.getElementById('enew-sh-ownership')) document.getElementById('enew-sh-ownership').value = '';
+  if (document.getElementById('enew-partners-rows')) document.getElementById('enew-partners-rows').innerHTML = '';
+  setNewEntityType('single');
   renderEntitySwitcher();
+  renderEntityModalList();
+}
+
+function openEntitySetup(id) {
+  const e = entities.find(x => x.id === id);
+  if (!e) return;
+  // Build a setup modal overlay
+  const existing = document.getElementById('entity-setup-overlay');
+  if (existing) existing.remove();
+  const overlay = document.createElement('div');
+  overlay.id = 'entity-setup-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:20000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)';
+
+  const partnerRowsHTML = (e.partners||[]).map((pt,i) => `
+    <div class="esetup-partner-row" style="background:rgba(0,200,150,0.04);border:1px solid rgba(0,200,150,0.15);border-radius:10px;padding:10px 12px;margin-bottom:8px">
+      <div style="font-size:11px;font-weight:700;color:#00c896;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
+        Gesellschafter ${i+2}
+        <button onclick="this.closest('.esetup-partner-row').remove()" style="font-size:11px;padding:2px 8px;background:rgba(220,38,38,0.1);color:#dc2626;border:1px solid rgba(220,38,38,0.2);border-radius:6px;cursor:pointer">✕</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div class="form-group"><div class="f-label">Name</div><input class="f-input esetup-pt-name" value="${pt.name||''}" placeholder="z.B. Maria Schmidt"></div>
+        <div class="form-group"><div class="f-label">Ownership %</div><input class="f-input esetup-pt-ownership" type="number" min="1" max="99" value="${pt.ownership||''}" placeholder="z.B. 30"></div>
+        <div class="form-group"><div class="f-label">Land</div><input class="f-input esetup-pt-country" value="${pt.country||''}" placeholder="z.B. Germany"></div>
+        <div class="form-group"><div class="f-label">Foreign Tax ID (FTIN)</div><input class="f-input esetup-pt-ftin" value="${pt.ftin||''}" placeholder="optional"></div>
+        <div class="form-group" style="grid-column:1/-1"><div class="f-label">Adresse</div><input class="f-input esetup-pt-address" value="${pt.address||''}" placeholder="z.B. Hauptstraße 5, 10117 Berlin"></div>
+      </div>
+    </div>`).join('');
+
+  overlay.innerHTML = `
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;width:500px;max-width:92vw;max-height:88vh;overflow-y:auto">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+        <div>
+          <div style="font-size:16px;font-weight:800;color:var(--text)">${e.name}</div>
+          <div style="font-size:11px;color:#a78bfa;margin-top:2px">Multi-Member LLC — Partner Setup</div>
+        </div>
+        <button onclick="document.getElementById('entity-setup-overlay').remove()" style="background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;line-height:1">&times;</button>
+      </div>
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Gesellschafter 1 (Du)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+        <div class="form-group"><div class="f-label">Dein Name</div><input class="f-input" id="esetup-sh-name" value="${e.shName||''}" placeholder="z.B. Max Mustermann"></div>
+        <div class="form-group"><div class="f-label">Ownership %</div><input class="f-input" id="esetup-sh-ownership" type="number" min="1" max="99" value="${e.shOwnership!=null?e.shOwnership:''}" placeholder="z.B. 70"></div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Weitere Gesellschafter</div>
+        <button onclick="addEsetupPartnerRow()" style="font-size:11px;padding:4px 10px;background:rgba(0,200,150,0.1);color:#00c896;border:1px solid rgba(0,200,150,0.3);border-radius:7px;cursor:pointer;font-weight:700">+ Partner</button>
+      </div>
+      <div id="esetup-partners-rows">${partnerRowsHTML}</div>
+      <div style="height:1px;background:var(--border);margin:16px 0"></div>
+      <div style="display:flex;gap:8px">
+        <button onclick="saveEntitySetup('${id}')" style="flex:1;padding:11px;background:var(--accent);color:#000;font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;border:none;border-radius:10px;cursor:pointer">Speichern</button>
+        <button onclick="document.getElementById('entity-setup-overlay').remove()" style="padding:11px 18px;background:none;border:1px solid var(--border);border-radius:10px;color:var(--text2);font-family:'Montserrat',sans-serif;font-weight:600;cursor:pointer">Abbrechen</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', ev => { if (ev.target === overlay) overlay.remove(); });
+}
+
+function addEsetupPartnerRow(data={}) {
+  const rows = document.getElementById('esetup-partners-rows');
+  if (!rows) return;
+  const idx = rows.querySelectorAll('.esetup-partner-row').length + 2;
+  const div = document.createElement('div');
+  div.className = 'esetup-partner-row';
+  div.style.cssText = 'background:rgba(0,200,150,0.04);border:1px solid rgba(0,200,150,0.15);border-radius:10px;padding:10px 12px;margin-bottom:8px';
+  div.innerHTML = `
+    <div style="font-size:11px;font-weight:700;color:#00c896;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
+      Gesellschafter ${idx}
+      <button onclick="this.closest('.esetup-partner-row').remove()" style="font-size:11px;padding:2px 8px;background:rgba(220,38,38,0.1);color:#dc2626;border:1px solid rgba(220,38,38,0.2);border-radius:6px;cursor:pointer">✕</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div class="form-group"><div class="f-label">Name</div><input class="f-input esetup-pt-name" placeholder="z.B. Maria Schmidt" value="${data.name||''}"></div>
+      <div class="form-group"><div class="f-label">Ownership %</div><input class="f-input esetup-pt-ownership" type="number" min="1" max="99" placeholder="z.B. 30" value="${data.ownership||''}"></div>
+      <div class="form-group"><div class="f-label">Land</div><input class="f-input esetup-pt-country" placeholder="z.B. Germany" value="${data.country||''}"></div>
+      <div class="form-group"><div class="f-label">Foreign Tax ID (FTIN)</div><input class="f-input esetup-pt-ftin" placeholder="optional" value="${data.ftin||''}"></div>
+      <div class="form-group" style="grid-column:1/-1"><div class="f-label">Adresse</div><input class="f-input esetup-pt-address" placeholder="z.B. Hauptstraße 5, 10117 Berlin" value="${data.address||''}"></div>
+    </div>`;
+  rows.appendChild(div);
+}
+
+function saveEntitySetup(id) {
+  const e = entities.find(x => x.id === id);
+  if (!e) return;
+  e.shName      = document.getElementById('esetup-sh-name')?.value?.trim() || '';
+  e.shOwnership = parseFloat(document.getElementById('esetup-sh-ownership')?.value || 100) || 100;
+  e.partners    = Array.from(document.querySelectorAll('.esetup-partner-row')).map(row => ({
+    name:      row.querySelector('.esetup-pt-name')?.value?.trim()      || '',
+    country:   row.querySelector('.esetup-pt-country')?.value?.trim()   || '',
+    address:   row.querySelector('.esetup-pt-address')?.value?.trim()   || '',
+    ftin:      row.querySelector('.esetup-pt-ftin')?.value?.trim()      || '',
+    ownership: parseFloat(row.querySelector('.esetup-pt-ownership')?.value) || 0
+  }));
+  saveEntities();
+  document.getElementById('entity-setup-overlay')?.remove();
   renderEntityModalList();
 }
 
@@ -7953,10 +8176,22 @@ document.addEventListener('click', e => {
       <div style="margin-bottom:6px">
         <div class="form-group"><div class="f-label">Street Address, City, Country</div><input class="f-input" id="acc-sh-address" placeholder="e.g. Musterstraße 1, 10115 Berlin, Germany"></div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:6px">
         <div class="form-group"><div class="f-label">Foreign Tax ID (FTIN)</div><input class="f-input" id="acc-sh-ftin" placeholder="e.g. 86 123 456 789"></div>
         <div class="form-group"><div class="f-label">Country of Tax Residence</div><input class="f-input" id="acc-sh-res" placeholder="e.g. Germany"></div>
       </div>
+      <div style="margin-bottom:16px">
+        <div class="form-group"><div class="f-label">Ownership % <span style="font-weight:400;color:var(--text3)">(Single-Member = 100 · Multi-Member = dein Anteil)</span></div><input class="f-input" id="acc-sh-ownership" placeholder="100" type="number" min="1" max="100"></div>
+      </div>
+      <!-- Multi-Member Partners -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Weitere Gesellschafter (Multi-Member LLC)</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">Nur ausfüllen wenn deine LLC mehrere Mitglieder hat — für Form 1065 &amp; Schedule K-1.</div>
+        </div>
+        <button onclick="addAccPartnerRow()" style="flex-shrink:0;font-size:11px;padding:5px 12px;background:rgba(0,200,150,0.1);color:#00c896;border:1px solid rgba(0,200,150,0.3);border-radius:8px;cursor:pointer;font-weight:700;margin-left:12px">+ Partner</button>
+      </div>
+      <div id="acc-partners-rows" style="margin-bottom:16px"></div>
       <div style="height:1px;background:var(--border);margin:16px 0"></div>
       <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">IRS Filing Signature</div>
       <div style="font-size:12px;color:var(--text3);margin-bottom:10px">Draw your signature below — it will be applied to IRS forms before sending via certified mail. You can update it anytime.</div>
@@ -8074,7 +8309,7 @@ document.addEventListener('click', e => {
 </div>
 <!-- ENTITY MANAGEMENT MODAL -->
 <div id="entity-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:10000;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
-  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;width:460px;max-width:92vw">
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;width:500px;max-width:92vw;max-height:88vh;overflow-y:auto">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
       <div style="font-size:16px;font-weight:800;color:var(--text)">My Entities</div>
       <button onclick="closeEntityModal()" style="background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;line-height:1">&times;</button>
@@ -8082,10 +8317,43 @@ document.addEventListener('click', e => {
     <div id="entity-modal-list" style="margin-bottom:4px"></div>
     <!-- Business: Add form -->
     <div id="entity-add-section" style="border-top:1px solid var(--border);padding-top:16px;margin-top:8px">
-      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Add LLC / Entity</div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <input class="f-input" id="entity-new-name" placeholder="e.g. My Holdings LLC" style="flex:1;min-width:0;width:0">
-        <button onclick="addEntity()" style="padding:10px 18px;white-space:nowrap;flex-shrink:0;background:var(--accent);color:#000;font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;border:none;border-radius:10px;cursor:pointer">Add</button>
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Add LLC / Entity</div>
+      <div class="form-group" style="margin-bottom:10px"><div class="f-label">LLC Name</div>
+        <input class="f-input" id="entity-new-name" placeholder="e.g. My Holdings LLC">
+      </div>
+      <!-- Type toggle -->
+      <div class="f-label" style="margin-bottom:6px">LLC Type</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button id="entity-type-single" onclick="setNewEntityType('single')" style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--accent);background:rgba(0,200,150,0.12);color:#00c896;font-weight:700;font-size:12px;cursor:pointer;transition:all .2s">
+          Single-Member LLC
+        </button>
+        <button id="entity-type-multi" onclick="setNewEntityType('multi')" style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);background:transparent;color:var(--text3);font-weight:700;font-size:12px;cursor:pointer;transition:all .2s">
+          Multi-Member LLC
+        </button>
+      </div>
+      <!-- Multi-member partner form (hidden by default) -->
+      <div id="entity-multi-section" style="display:none">
+        <div style="background:rgba(124,58,237,0.06);border:1px solid rgba(124,58,237,0.2);border-radius:10px;padding:12px 14px;margin-bottom:10px">
+          <div style="font-size:11px;color:#a78bfa;font-weight:600;margin-bottom:4px">Multi-Member LLC — Form 1065 &amp; Schedule K-1</div>
+          <div style="font-size:11px;color:var(--text3)">Trage alle Gesellschafter ein. Die Gewinnaufteilung richtet sich nach dem Ownership %.</div>
+        </div>
+        <!-- Primary member (you) -->
+        <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Dein Anteil (Gesellschafter 1)</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+          <div class="form-group"><div class="f-label">Dein Name</div><input class="f-input" id="enew-sh-name" placeholder="z.B. Max Mustermann"></div>
+          <div class="form-group"><div class="f-label">Ownership %</div><input class="f-input" id="enew-sh-ownership" type="number" min="1" max="99" placeholder="z.B. 70"></div>
+        </div>
+        <!-- Additional partners -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Weitere Gesellschafter</div>
+          <button onclick="addNewEntityPartnerRow()" style="font-size:11px;padding:4px 10px;background:rgba(0,200,150,0.1);color:#00c896;border:1px solid rgba(0,200,150,0.3);border-radius:7px;cursor:pointer;font-weight:700">+ Partner</button>
+        </div>
+        <div id="enew-partners-rows"></div>
+        <!-- Ownership sum indicator -->
+        <div id="enew-ownership-sum" style="font-size:11px;color:var(--text3);margin-top:6px;margin-bottom:4px"></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button onclick="addEntity()" style="flex:1;padding:11px 18px;background:var(--accent);color:#000;font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;border:none;border-radius:10px;cursor:pointer">Add Entity</button>
       </div>
       <div id="entity-limit-note" style="display:none;font-size:11px;color:var(--warn);margin-top:8px">Maximum 5 entities reached.</div>
     </div>
