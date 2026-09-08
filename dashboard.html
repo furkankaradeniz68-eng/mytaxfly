@@ -5941,8 +5941,6 @@ async function openIRSFilingModal() {
     const _irsTo   = new Date(irsFilingYear, 11, 31, 23, 59, 59);
     const yearTx   = transactions.filter(t => { const d=new Date(t.date); return d>=_irsFrom && d<=_irsTo; });
     const ownerTx  = yearTx.filter(t => isOwnerTransfer(t));
-    const fmt2 = n => (+n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-
     const relTx   = yearTx.filter(t => t.category === 'Related-Party Transaction');
     const fmt2 = n => (+n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
     const listEl = document.getElementById('confirm-5472-list');
