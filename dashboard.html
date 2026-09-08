@@ -144,6 +144,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
 .advisor-status.active{background:rgba(0,200,150,0.12);color:var(--accent);}
 .advisor-status.pending{background:rgba(246,173,85,0.12);color:#f6ad55;}
 .advisor-status.review{background:rgba(255,107,53,0.12);color:var(--warn);}
+.advisor-status.submitted{background:rgba(0,200,150,0.18);color:#00c896;border:1px solid rgba(0,200,150,0.3);}
 .advisor-arrow{color:var(--text3);font-size:18px;}
 .advisor-empty{text-align:center;padding:60px 20px;color:var(--text3);}
 /* Status dropdown */
@@ -151,6 +152,12 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
 .advisor-status-select.active{background-color:rgba(0,200,150,0.12);color:var(--accent);}
 .advisor-status-select.pending{background-color:rgba(246,173,85,0.12);color:#f6ad55;}
 .advisor-status-select.review{background-color:rgba(255,107,53,0.12);color:var(--warn);}
+.advisor-status-select.submitted{background-color:rgba(0,200,150,0.18);color:#00c896;}
+.adv-filter-pill{padding:6px 14px;border-radius:99px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text3);font-family:'Montserrat',sans-serif;transition:all 0.15s;}
+.adv-filter-pill.active{background:var(--accent);color:#0d0f14;border-color:var(--accent);}
+.adv-filing-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;}
+.adv-filing-badge.filed{background:rgba(0,200,150,0.12);color:#00c896;}
+.adv-filing-badge.unfiled{background:rgba(246,173,85,0.12);color:#f6ad55;}
 /* Card note row */
 .advisor-card-note{width:100%;background:transparent;border:none;border-top:1px solid var(--border);padding:10px 0 0;margin-top:14px;font-family:'Montserrat',sans-serif;font-size:12px;color:var(--text3);resize:none;outline:none;line-height:1.5;transition:color 0.2s;}
 .advisor-card-note::placeholder{color:var(--text3);opacity:0.6;}
@@ -1029,8 +1036,20 @@ src="https://www.facebook.com/tr?id=1799163168200739&ev=PageView&noscript=1"
       <div class="advisor-client-count"><span id="adv-stat-clients">—</span> Clients</div>
     </div>
     <div class="advisor-sub" id="advisor-sub">Select a client to view their dashboard and transactions</div>
-    <div style="margin-bottom:20px">
-      <input type="text" id="advisor-search" placeholder="🔍  Search clients by name or email…" oninput="filterAdvisorClients(this.value)" style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:11px 16px;color:var(--text1);font-family:'Montserrat',sans-serif;font-size:13px;outline:none;transition:border-color 0.2s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+    <!-- Filing summary banner -->
+    <div id="adv-filing-banner" style="display:none;background:rgba(246,173,85,0.08);border:1px solid rgba(246,173,85,0.25);border-radius:12px;padding:12px 18px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <div style="font-size:13px;color:#f6ad55;font-weight:700" id="adv-banner-text">— clients have not yet filed</div>
+      <div style="font-size:11px;color:var(--text3)" id="adv-banner-year"></div>
+    </div>
+
+    <!-- Search + filter row -->
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap">
+      <input type="text" id="advisor-search" placeholder="🔍  Search by name or email…" oninput="filterAdvisorClients(this.value)" style="flex:1;min-width:180px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 16px;color:var(--text1);font-family:'Montserrat',sans-serif;font-size:13px;outline:none;transition:border-color 0.2s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <button class="adv-filter-pill active" id="adv-pill-all"     onclick="setAdvisorFilter('all')">All</button>
+        <button class="adv-filter-pill"        id="adv-pill-unfiled" onclick="setAdvisorFilter('unfiled')">⚠ Not Filed</button>
+        <button class="adv-filter-pill"        id="adv-pill-filed"   onclick="setAdvisorFilter('filed')">✓ Filed</button>
+      </div>
     </div>
     <div class="advisor-clients-grid" id="advisor-clients-grid">
       <div class="advisor-empty">Loading clients...</div>
@@ -2565,15 +2584,24 @@ async function loadAdvisorClients(advisorId) {
         statsPerClient[tx.user_id].lastDate = tx.date;
     });
 
-    // Summary stats
-    let totalRevenue = 0;
-    let activeCount = 0;
+    // Summary stats + filing banner
+    const filingYear = new Date().getFullYear() - 1;
+    let unfiledCount = 0;
     (profiles || []).forEach(p => {
-      totalRevenue += statsPerClient[p.id]?.revenue || 0;
-      if (statusMap[p.id] === 'active') activeCount++;
+      if (statusMap[p.id] !== 'submitted') unfiledCount++;
     });
-
-    document.getElementById('adv-stat-clients').textContent = (profiles || []).length;
+    const total = (profiles || []).length;
+    document.getElementById('adv-stat-clients').textContent = total;
+    const banner = document.getElementById('adv-filing-banner');
+    if (banner && total > 0) {
+      banner.style.display = 'flex';
+      document.getElementById('adv-banner-text').textContent =
+        unfiledCount === 0
+          ? `✓ All ${total} clients have filed for ${filingYear}`
+          : `⚠ ${unfiledCount} of ${total} clients have not yet filed for ${filingYear}`;
+      document.getElementById('adv-banner-text').style.color = unfiledCount === 0 ? '#00c896' : '#f6ad55';
+      document.getElementById('adv-banner-year').textContent = `Tax year ${filingYear} · April 15, ${filingYear + 1} deadline`;
+    }
 
     // Render client cards
     if (!profiles || profiles.length === 0) {
@@ -2581,7 +2609,21 @@ async function loadAdvisorClients(advisorId) {
       return;
     }
 
-    grid.innerHTML = profiles.map(p => {
+    // Sort: unfiled first, then filed
+    const sorted = [...profiles].sort((a, b) => {
+      const aFiled = statusMap[a.id] === 'submitted' ? 1 : 0;
+      const bFiled = statusMap[b.id] === 'submitted' ? 1 : 0;
+      return aFiled - bFiled;
+    });
+
+    // Store for filter
+    window._advisorAllClients = sorted.map(p => ({
+      id: p.id, name: p.name, email: p.email,
+      status: statusMap[p.id] || 'active',
+      filed: statusMap[p.id] === 'submitted'
+    }));
+
+    grid.innerHTML = sorted.map(p => {
       const stats   = statsPerClient[p.id] || { revenue: 0, expenses: 0, lastDate: null, txCount: 0 };
       const status  = statusMap[p.id] || 'active';
       const note    = (notesMap[p.id] || '').replace(/"/g,'&quot;');
@@ -2591,15 +2633,23 @@ async function loadAdvisorClients(advisorId) {
       const txCount = stats.txCount || 0;
       const safeId  = p.id.replace(/-/g,'');
       const safeName = (p.name||p.email).replace(/'/g,"\\'");
+      const filed   = status === 'submitted';
+      const filingBadge = filed
+        ? `<span class="adv-filing-badge filed">✓ Filed ${filingYear}</span>`
+        : `<span class="adv-filing-badge unfiled">⚠ Not Filed ${filingYear}</span>`;
 
       return `
-        <div class="advisor-client-card" style="flex-direction:column;align-items:stretch;cursor:default">
+        <div class="advisor-client-card" data-filed="${filed}" style="flex-direction:column;align-items:stretch;cursor:default">
           <div class="advisor-card-top-row" onclick="openClientView('${p.id}','${safeName}')">
             <div class="advisor-client-left">
-              <div class="advisor-client-avatar">${initial}</div>
+              <div class="advisor-client-avatar" style="${filed ? 'background:rgba(0,200,150,0.15);border-color:rgba(0,200,150,0.3)' : ''}">${initial}</div>
               <div style="min-width:0;flex:1">
-                <div class="advisor-client-name">${p.name || p.email.split('@')[0]}</div>
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                  <div class="advisor-client-name">${p.name || p.email.split('@')[0]}</div>
+                  ${filingBadge}
+                </div>
                 <div class="advisor-client-email">${p.email}</div>
+                ${filed && note ? `<div style="font-size:11px;color:var(--text3);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:300px">📬 ${note.replace(/&quot;/g,'"').split('.')[0]}</div>` : ''}
               </div>
             </div>
             <div class="advisor-client-right" style="gap:20px" onclick="event.stopPropagation()">
@@ -2622,9 +2672,10 @@ async function loadAdvisorClients(advisorId) {
               <select class="advisor-status-select ${status}" id="status-${safeId}"
                 onchange="updateClientStatus('${p.id}',this.value,this)"
                 onclick="event.stopPropagation()">
-                <option value="active"  ${status==='active' ?'selected':''}>● Active</option>
-                <option value="pending" ${status==='pending'?'selected':''}>● Pending</option>
-                <option value="review"  ${status==='review' ?'selected':''}>● Needs Review</option>
+                <option value="active"     ${status==='active'    ?'selected':''}>● Active</option>
+                <option value="pending"    ${status==='pending'   ?'selected':''}>● Pending</option>
+                <option value="review"     ${status==='review'    ?'selected':''}>● Needs Review</option>
+                <option value="submitted"  ${status==='submitted' ?'selected':''}>✓ Filed</option>
               </select>
               <button class="advisor-view-btn" onclick="openClientView('${p.id}','${safeName}')">View →</button>
             </div>
@@ -2652,9 +2703,10 @@ async function loadAdvisorClients(advisorId) {
             <select class="advisor-status-select ${status} advisor-mobile-status" id="status-mob-${safeId}"
               onchange="updateClientStatus('${p.id}',this.value,this);document.getElementById('status-${safeId}').value=this.value;document.getElementById('status-${safeId}').className='advisor-status-select '+this.value"
               onclick="event.stopPropagation()">
-              <option value="active"  ${status==='active' ?'selected':''}>● Active</option>
-              <option value="pending" ${status==='pending'?'selected':''}>● Pending</option>
-              <option value="review"  ${status==='review' ?'selected':''}>● Needs Review</option>
+              <option value="active"    ${status==='active'    ?'selected':''}>● Active</option>
+              <option value="pending"   ${status==='pending'   ?'selected':''}>● Pending</option>
+              <option value="review"    ${status==='review'    ?'selected':''}>● Needs Review</option>
+              <option value="submitted" ${status==='submitted' ?'selected':''}>✓ Filed</option>
             </select>
           </div>
           <div class="advisor-card-note-wrap">
@@ -3090,12 +3142,28 @@ async function saveClientNote(clientId, noteText, savedElId) {
 }
 // ── END STATUS + NOTES ────────────────────────────────────────────────────────
 
+let _advisorStatusFilter = 'all';
+
+function setAdvisorFilter(filter) {
+  _advisorStatusFilter = filter;
+  ['all','unfiled','filed'].forEach(f => {
+    const pill = document.getElementById('adv-pill-' + f);
+    if (pill) pill.classList.toggle('active', f === filter);
+  });
+  filterAdvisorClients(document.getElementById('advisor-search')?.value || '');
+}
+
 function filterAdvisorClients(query) {
   const q = query.toLowerCase().trim();
   document.querySelectorAll('#advisor-clients-grid .advisor-client-card').forEach(card => {
-    const name = (card.querySelector('.advisor-client-name')?.textContent || '').toLowerCase();
-    const email = (card.querySelector('.advisor-client-email')?.textContent || '').toLowerCase();
-    card.style.display = (!q || name.includes(q) || email.includes(q)) ? '' : 'none';
+    const name   = (card.querySelector('.advisor-client-name')?.textContent || '').toLowerCase();
+    const email  = (card.querySelector('.advisor-client-email')?.textContent || '').toLowerCase();
+    const filed  = card.dataset.filed === 'true';
+    const search = !q || name.includes(q) || email.includes(q);
+    const status = _advisorStatusFilter === 'all'
+      || (_advisorStatusFilter === 'filed'   &&  filed)
+      || (_advisorStatusFilter === 'unfiled' && !filed);
+    card.style.display = (search && status) ? '' : 'none';
   });
 }
 
