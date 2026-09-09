@@ -5169,16 +5169,29 @@ function getPartnersFromUI() {
   }));
 }
 
+// ── Helper: partner list from active entity (falls back to tax profile) ───────
+function getActivePartners() {
+  const p = getTaxProfile();
+  const activeEntity = entities.find(e => e.id === activeEntityId) || entities[0] || {};
+  if (activeEntity.type === 'multi' && (activeEntity.partners?.length || activeEntity.shName)) {
+    return [
+      { name: activeEntity.shName||'Primary Member', country: activeEntity.shCountry||'', address: activeEntity.shAddress||'', ftin: activeEntity.shFtin||'', ownership: activeEntity.shOwnership??100 },
+      ...(activeEntity.partners||[])
+    ];
+  }
+  return [
+    { name: p.shName||'Primary Member', country: p.shCountry||'', address: p.shAddress||'', ftin: p.shFtin||'', ownership: p.shOwnership??100 },
+    ...(p.partners||[])
+  ];
+}
+
 // ── Form 1065 export ─────────────────────────────────────────────────────────
 
 function exportForm1065() {
   const p = getTaxProfile();
   if (!p.ein) { alert('Please complete your LLC profile first (EIN is required).'); return; }
-  const partners = [
-    { name: p.shName||'Primary Member', country: p.shCountry||'', address: p.shAddress||'', ftin: p.shFtin||'', ownership: p.shOwnership??100 },
-    ...(p.partners||[])
-  ];
-  if (partners.length < 2) { alert('Add at least one additional partner in your LLC profile to generate Form 1065.'); return; }
+  const partners = getActivePartners();
+  if (partners.length < 2) { alert('Add partners in your LLC settings (click your LLC name in the sidebar → Edit).'); return; }
   const filtered = getReportFilteredTx();
   const taxYear  = reportPeriodFrom ? reportPeriodFrom.getFullYear() : new Date().getFullYear() - 1;
   const corpName = llcName || p.llcName || '';
@@ -5201,11 +5214,8 @@ function exportForm1065() {
 async function exportScheduleK1Package() {
   const p = getTaxProfile();
   if (!p.ein) { alert('Please complete your LLC profile first (EIN is required).'); return; }
-  const partners = [
-    { name: p.shName||'Primary Member', country: p.shCountry||'', address: p.shAddress||'', ftin: p.shFtin||'', ownership: p.shOwnership??100 },
-    ...(p.partners||[])
-  ];
-  if (partners.length < 2) { alert('Add at least one additional partner in your LLC profile to generate Schedule K-1.'); return; }
+  const partners = getActivePartners();
+  if (partners.length < 2) { alert('Add partners in your LLC settings (click your LLC name in the sidebar → Edit).'); return; }
   const filtered = getReportFilteredTx();
   const taxYear  = reportPeriodFrom ? reportPeriodFrom.getFullYear() : new Date().getFullYear() - 1;
   const corpName = llcName || p.llcName || '';
@@ -5982,10 +5992,7 @@ function getIRSConfig() {
 }
 
 async function buildMultiMemberFilingBlob(p, filtered, taxYear, sigData, opts) {
-  const partners = [
-    { name: p.shName||'Primary Member', country: p.shCountry||'', address: p.shAddress||'', ftin: p.shFtin||'', ownership: p.shOwnership??100 },
-    ...(p.partners||[])
-  ];
+  const partners = getActivePartners();
   const blobs = await Promise.all([
     _renderHtmlToBlob(buildForm1065HTML(p, partners, filtered, taxYear, sigData, false), opts),
     ...partners.map((pt, i) => _renderHtmlToBlob(buildScheduleK1HTML(p, filtered, taxYear, pt, i, partners.length, sigData, true), opts))
@@ -8792,15 +8799,9 @@ document.addEventListener('click', e => {
       <div style="margin-bottom:16px">
         <div class="form-group"><div class="f-label">Ownership % <span style="font-weight:400;color:var(--text3)">(Single-Member = 100 · Multi-Member = dein Anteil)</span></div><input class="f-input" id="acc-sh-ownership" placeholder="100" type="number" min="1" max="100"></div>
       </div>
-      <!-- Multi-Member Partners -->
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <div>
-          <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Additional Members (Multi-Member LLC)</div>
-          <div style="font-size:11px;color:var(--text3);margin-top:2px">Only fill in if your LLC has multiple members — for Form 1065 &amp; Schedule K-1.</div>
-        </div>
-        <button onclick="addAccPartnerRow()" style="flex-shrink:0;font-size:11px;padding:5px 12px;background:rgba(0,200,150,0.1);color:#00c896;border:1px solid rgba(0,200,150,0.3);border-radius:8px;cursor:pointer;font-weight:700;margin-left:12px">+ Partner</button>
+      <div style="background:rgba(0,200,150,0.06);border:1px solid rgba(0,200,150,0.15);border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--text3)">
+        💡 <strong style="color:var(--text2)">Multi-Member LLC?</strong> Partner und Gesellschafter werden direkt bei der LLC-Entity gepflegt — klick auf deine LLC im Sidebar-Menü und dann auf "Edit".
       </div>
-      <div id="acc-partners-rows" style="margin-bottom:16px"></div>
       <div style="height:1px;background:var(--border);margin:16px 0"></div>
       <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">IRS Filing Signature</div>
       <div style="font-size:12px;color:var(--text3);margin-bottom:10px">Draw your signature below — it will be applied to IRS forms before sending via certified mail. You can update it anytime.</div>
