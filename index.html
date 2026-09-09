@@ -2458,89 +2458,109 @@ window.addEventListener('resize', ()=>{
 })();
 </script>
 
-<!-- ── 30s POPUP ────────────────────────────────────────────── -->
-<div id="mtf-popup-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(8,11,16,0.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);align-items:center;justify-content:center">
-  <div id="mtf-popup-card" style="position:relative;background:#0d1117;border:1px solid rgba(0,200,150,0.22);border-radius:20px;padding:40px 36px;max-width:440px;width:calc(100% - 40px);box-shadow:0 32px 80px rgba(0,0,0,0.6),0 0 0 1px rgba(0,200,150,0.08);transform:translateY(24px) scale(0.97);opacity:0;transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1),opacity 0.28s ease">
+<!-- ── 6s POPUP ─────────────────────────────────────────────── -->
+<style>
+@keyframes pulse-dot {
+  0%, 100% { opacity:1; transform:scale(1); }
+  50%       { opacity:0.5; transform:scale(0.75); }
+}
+#mtf-popup-overlay {
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  background:rgba(8,11,16,0.75);
+  backdrop-filter:blur(7px);
+  -webkit-backdrop-filter:blur(7px);
+  align-items:center;
+  justify-content:center;
+}
+#mtf-popup-overlay.mtf-open { display:flex; }
+#mtf-popup-card {
+  position:relative;
+  background:#0d1117;
+  border:1px solid rgba(0,200,150,0.25);
+  border-radius:20px;
+  padding:40px 36px 32px;
+  max-width:440px;
+  width:calc(100% - 40px);
+  box-shadow:0 40px 100px rgba(0,0,0,0.7), 0 0 0 1px rgba(0,200,150,0.06);
+  transform:translateY(28px) scale(0.96);
+  opacity:0;
+  transition:transform 0.38s cubic-bezier(0.34,1.46,0.64,1), opacity 0.3s ease;
+}
+#mtf-popup-overlay.mtf-open #mtf-popup-card {
+  transform:translateY(0) scale(1);
+  opacity:1;
+}
+</style>
+
+<div id="mtf-popup-overlay">
+  <div id="mtf-popup-card">
 
     <!-- Close -->
-    <button onclick="closeMtfPopup()" style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#8a95a8;font-size:16px;line-height:1;transition:all 0.15s" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">✕</button>
+    <button onclick="closeMtfPopup()" style="position:absolute;top:14px;right:14px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#8a95a8;font-size:14px;line-height:1">✕</button>
 
-    <!-- Logo + online indicator -->
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px">
-      <svg width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="40" height="40" rx="10" fill="rgba(0,200,150,0.12)"/>
-        <path d="M12 28 L20 10 L28 28" stroke="#00c896" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M15 22 L25 22" stroke="#00c896" stroke-width="2" stroke-linecap="round"/>
-      </svg>
+    <!-- Logo + status -->
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:22px">
+      <div style="width:40px;height:40px;border-radius:10px;background:rgba(0,200,150,0.1);border:1px solid rgba(0,200,150,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </div>
       <div>
-        <div style="font-size:14px;font-weight:800;color:#e8edf5;letter-spacing:-0.2px">MyTaxFly</div>
-        <div style="display:flex;align-items:center;gap:5px;margin-top:1px">
-          <span style="width:6px;height:6px;border-radius:50%;background:#00c896;display:inline-block;animation:pulse-dot 2s infinite"></span>
-          <span style="font-size:11px;color:#00c896;font-weight:600">Available now</span>
+        <div style="font-size:15px;font-weight:800;color:#e8edf5;letter-spacing:-0.3px">MyTaxFly</div>
+        <div style="display:flex;align-items:center;gap:5px;margin-top:2px">
+          <span style="width:7px;height:7px;border-radius:50%;background:#00c896;display:inline-block;animation:pulse-dot 2s infinite"></span>
+          <span style="font-size:11px;color:#00c896;font-weight:600">Available now · No waitlist</span>
         </div>
       </div>
     </div>
 
     <!-- Headline -->
-    <h3 style="font-size:22px;font-weight:800;line-height:1.25;margin-bottom:12px;color:#e8edf5">
+    <h3 style="font-size:21px;font-weight:800;line-height:1.25;margin-bottom:12px;color:#e8edf5">
       Your LLC taxes.<br><span style="color:#00c896">Still not sorted?</span>
     </h3>
 
-    <!-- Body copy — sympathetic FOMO -->
-    <p style="font-size:13px;color:#8a95a8;line-height:1.7;margin-bottom:8px">
+    <!-- Body — sympathetic FOMO -->
+    <p style="font-size:13px;color:#8a95a8;line-height:1.72;margin-bottom:8px">
       Most foreign LLC founders either overpay a CPA or miss a deadline they didn't know existed. <strong style="color:#e8edf5">Both cost more than MyTaxFly.</strong>
     </p>
-    <p style="font-size:13px;color:#8a95a8;line-height:1.7;margin-bottom:24px">
-      5 IRS forms. Auto-filled. Signed. Mailed to the IRS. <strong style="color:#e8edf5">Starting at $0.</strong>
+    <p style="font-size:13px;color:#8a95a8;line-height:1.72;margin-bottom:24px">
+      5 IRS forms. Auto-filled. Signed. Mailed directly to the IRS. <strong style="color:#00c896">Starting at $0.</strong>
     </p>
 
     <!-- CTAs -->
-    <div style="display:flex;flex-direction:column;gap:10px">
-      <a href="/demo" style="display:block;text-align:center;padding:14px;background:#00c896;color:#0d1117;font-weight:700;font-size:14px;border-radius:12px;text-decoration:none;transition:background 0.15s" onmouseover="this.style.background='#00e5b0'" onmouseout="this.style.background='#00c896'">Book a free call →</a>
-      <a href="#pricing" onclick="closeMtfPopup()" style="display:block;text-align:center;padding:13px;background:transparent;color:#8a95a8;font-weight:600;font-size:13px;border-radius:12px;text-decoration:none;border:1px solid rgba(255,255,255,0.08);transition:all 0.15s" onmouseover="this.style.borderColor='rgba(0,200,150,0.3)';this.style.color='#e8edf5'" onmouseout="this.style.borderColor='rgba(255,255,255,0.08)';this.style.color='#8a95a8'">Start free trial →</a>
-    </div>
+    <a href="/demo" style="display:block;text-align:center;padding:14px;background:#00c896;color:#0d1117;font-weight:700;font-size:14px;border-radius:12px;text-decoration:none;margin-bottom:10px;font-family:'Montserrat',sans-serif">Book a free call →</a>
+    <a href="#pricing" onclick="closeMtfPopup()" style="display:block;text-align:center;padding:13px;color:#8a95a8;font-weight:600;font-size:13px;border-radius:12px;text-decoration:none;border:1px solid rgba(255,255,255,0.09);font-family:'Montserrat',sans-serif">Start free trial →</a>
 
-    <!-- Fine print -->
-    <p style="font-size:10px;color:#4a5568;text-align:center;margin-top:16px">No credit card · Cancel anytime · Built for foreign LLC founders</p>
+    <p style="font-size:10px;color:#4a5568;text-align:center;margin-top:14px">No credit card · Cancel anytime · Built for foreign LLC founders</p>
   </div>
 </div>
 
-<style>
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50%       { opacity: 0.6; transform: scale(0.8); }
-}
-#mtf-popup-overlay.visible { display:flex !important; }
-#mtf-popup-overlay.visible #mtf-popup-card { transform:translateY(0) scale(1); opacity:1; }
-</style>
-
 <script>
 (function() {
-  let _shown = false;
+  var _shown = false;
   function showMtfPopup() {
     if (_shown || sessionStorage.getItem('mtf_popup_dismissed')) return;
     _shown = true;
-    const overlay = document.getElementById('mtf-popup-overlay');
-    overlay.style.display = 'flex';
-    requestAnimationFrame(() => requestAnimationFrame(() => overlay.classList.add('visible')));
+    var overlay = document.getElementById('mtf-popup-overlay');
+    overlay.classList.add('mtf-open');
   }
   function closeMtfPopup() {
-    const overlay = document.getElementById('mtf-popup-overlay');
-    overlay.classList.remove('visible');
-    setTimeout(() => { overlay.style.display = 'none'; }, 350);
+    var overlay = document.getElementById('mtf-popup-overlay');
+    var card    = document.getElementById('mtf-popup-card');
+    card.style.transform  = 'translateY(20px) scale(0.97)';
+    card.style.opacity    = '0';
+    setTimeout(function() { overlay.classList.remove('mtf-open'); card.style.transform = ''; card.style.opacity = ''; }, 320);
     sessionStorage.setItem('mtf_popup_dismissed', '1');
   }
   window.closeMtfPopup = closeMtfPopup;
 
-  // Show after 30s
-  setTimeout(showMtfPopup, 30000);
+  // Show after 6s
+  setTimeout(showMtfPopup, 6000);
 
-  // Close on overlay click
   document.getElementById('mtf-popup-overlay').addEventListener('click', function(e) {
     if (e.target === this) closeMtfPopup();
   });
-
-  // Close on Escape
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') closeMtfPopup();
   });
