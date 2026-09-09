@@ -7150,6 +7150,9 @@ function switchEntity(id) {
   const dd = document.getElementById('entity-dropdown');
   if (dd) dd.classList.remove('open');
   renderEntitySwitcher();
+  // Always jump to Dashboard view when switching entity so user sees the change
+  const dashNavItem = document.querySelector('.nav-item[onclick*=\"dashboard\"]');
+  showPage('dashboard', dashNavItem || null);
   loadTransactions();
 }
 
@@ -7747,7 +7750,9 @@ async function loadInvoicePage() {
 async function loadInvoices() {
   const { data: { user } } = await sb.auth.getUser();
   if (!user) return;
-  const { data } = await sb.from('invoices').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
+  let query = sb.from('invoices').select('*').eq('user_id', user.id);
+  if (activeEntityId && activeEntityId !== 'default') query = query.eq('entity_id', activeEntityId);
+  const { data } = await query.order('created_at', { ascending: false });
   allInvoices = data || [];
   renderInvoiceList();
 }
@@ -7755,7 +7760,9 @@ async function loadInvoices() {
 async function loadClients() {
   const { data: { user } } = await sb.auth.getUser();
   if (!user) return;
-  const { data } = await sb.from('clients').select('*').eq('user_id', user.id).order('name');
+  let query = sb.from('clients').select('*').eq('user_id', user.id);
+  if (activeEntityId && activeEntityId !== 'default') query = query.eq('entity_id', activeEntityId);
+  const { data } = await query.order('name');
   allClients = data || [];
   renderClientsList();
 }
@@ -7944,7 +7951,8 @@ async function saveInvoice(status) {
     line_items: lineItems,
     notes: document.getElementById('inv-notes').value.trim(),
     // logo is stored in profile, not per-invoice
-    status
+    status,
+    entity_id: activeEntityId || null
   };
   let error;
   if (editingInvoiceId) {
@@ -8106,7 +8114,8 @@ async function doCancelInvoice(id, inv, user) {
     status: 'storno',
     notes: `Cancellation of invoice ${inv.invoice_number}`,
     line_items: (inv.line_items || []).map(it => ({ ...it, total: -(it.total || 0), unit_price: -(it.unit_price || 0) })),
-    cancels_invoice: inv.invoice_number
+    cancels_invoice: inv.invoice_number,
+    entity_id: activeEntityId || null
   };
   const { error: cancelErr } = await sb.from('invoices').insert([cancelPayload]);
   if (cancelErr && cancelErr.message && cancelErr.message.includes('cancels_invoice')) {
@@ -8397,7 +8406,7 @@ async function autoSaveClient(userId, name, email, address) {
   const lim = invLimits();
   if (allClients.length >= lim.clients) return;
   if (allClients.find(c => c.name.toLowerCase() === name.toLowerCase())) return;
-  const { data } = await sb.from('clients').insert([{ user_id: userId, name, email, address }]).select().single();
+  const { data } = await sb.from('clients').insert([{ user_id: userId, name, email, address, entity_id: activeEntityId || null }]).select().single();
   if (data) allClients.push(data);
 }
 
@@ -8417,7 +8426,7 @@ async function saveNewClient() {
   if (!user) { showNcMsg('Not logged in.', 'warn'); return; }
   const email = document.getElementById('nc-email').value.trim();
   const address = document.getElementById('nc-address').value.trim();
-  const { data, error } = await sb.from('clients').insert([{ user_id: user.id, name, email, address }]).select().single();
+  const { data, error } = await sb.from('clients').insert([{ user_id: user.id, name, email, address, entity_id: activeEntityId || null }]).select().single();
   if (error) { showNcMsg('Error: ' + error.message, 'warn'); return; }
   allClients.push(data);
   document.getElementById('nc-name').value = '';
