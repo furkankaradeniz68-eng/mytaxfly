@@ -5195,10 +5195,11 @@ function exportForm1065() {
   const filtered = getReportFilteredTx();
   const taxYear  = reportPeriodFrom ? reportPeriodFrom.getFullYear() : new Date().getFullYear() - 1;
   const corpName = llcName || p.llcName || '';
+  const sigData = localStorage.getItem('mtf_signature') || null;
   const wrap = document.createElement('div');
   wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:820px;background:#fff;';
   const form = document.createElement('div');
-  form.innerHTML = buildForm1065HTML(p, partners, filtered, taxYear);
+  form.innerHTML = buildForm1065HTML(p, partners, filtered, taxYear, sigData);
   wrap.appendChild(form);
   document.body.appendChild(wrap);
   html2pdf().set({
@@ -5226,8 +5227,9 @@ async function exportScheduleK1Package() {
     pagebreak: { mode: ['css', 'legacy'] },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
+  const sigData = localStorage.getItem('mtf_signature') || null;
   const blobs = await Promise.all(
-    partners.map((pt, i) => _renderHtmlToBlob(buildScheduleK1HTML(p, filtered, taxYear, pt, i, partners.length, null, i > 0), opts))
+    partners.map((pt, i) => _renderHtmlToBlob(buildScheduleK1HTML(p, filtered, taxYear, pt, i, partners.length, sigData, i > 0), opts))
   );
   const merged = await _mergePdfBlobs(blobs);
   const url = URL.createObjectURL(merged);
@@ -5351,12 +5353,12 @@ function buildForm1065HTML(p, partners, filtered, taxYear, sigData, breakBefore=
         </td>
         <td style="width:5%"></td>
         <td style="border-bottom:1px solid #999;padding-bottom:4px;width:22%;font-size:10px;color:#888;vertical-align:bottom">
-          ${sigData?`<div style="font-size:11px;color:#111;margin-bottom:2px">${new Date().toLocaleDateString('en-US')}</div>`:'<div style="height:38px"></div>'}
+          <div style="font-size:11px;color:#111;margin-bottom:2px">${new Date().toLocaleDateString('en-US')}</div>
           Date
         </td>
         <td style="width:5%"></td>
         <td style="border-bottom:1px solid #999;padding-bottom:4px;width:23%;font-size:10px;color:#888;vertical-align:bottom">
-          <div style="height:38px"></div>
+          <div style="font-size:11px;color:#111;margin-bottom:2px">Managing Member</div>
           Title
         </td>
       </tr>
@@ -5567,12 +5569,12 @@ function buildForm1120HTML(p, filtered, taxYear, sigData, breakBefore=false) {
         </td>
         <td style="width:5%"></td>
         <td style="border-bottom:1px solid #999;padding-bottom:4px;width:22%;font-size:10px;color:#888;vertical-align:bottom">
-          ${sigData?`<div style="font-size:11px;color:#111;margin-bottom:2px">${new Date().toLocaleDateString('en-US')}</div>`:'<div style="height:38px"></div>'}
+          <div style="font-size:11px;color:#111;margin-bottom:2px">${new Date().toLocaleDateString('en-US')}</div>
           Date
         </td>
         <td style="width:5%"></td>
         <td style="border-bottom:1px solid #999;padding-bottom:4px;width:23%;font-size:10px;color:#888;vertical-align:bottom">
-          ${sigData?`<div style="font-size:11px;color:#111;margin-bottom:2px">Owner / Managing Member</div>`:'<div style="height:38px"></div>'}
+          <div style="font-size:11px;color:#111;margin-bottom:2px">Owner / Managing Member</div>
           Title
         </td>
       </tr>
@@ -5738,12 +5740,12 @@ function buildForm5472HTML(p, filtered, taxYear, sigData, breakBefore=false) {
         </td>
         <td style="width:5%"></td>
         <td style="border-bottom:1px solid #999;padding-bottom:4px;width:22%;font-size:10px;color:#888;vertical-align:bottom">
-          ${sigData?`<div style="font-size:11px;color:#111;margin-bottom:2px">${new Date().toLocaleDateString('en-US')}</div>`:'<div style="height:38px"></div>'}
+          <div style="font-size:11px;color:#111;margin-bottom:2px">${new Date().toLocaleDateString('en-US')}</div>
           Date
         </td>
         <td style="width:5%"></td>
         <td style="border-bottom:1px solid #999;padding-bottom:4px;width:23%;font-size:10px;color:#888;vertical-align:bottom">
-          ${sigData?`<div style="font-size:11px;color:#111;margin-bottom:2px">Owner / Managing Member</div>`:'<div style="height:38px"></div>'}
+          <div style="font-size:11px;color:#111;margin-bottom:2px">Owner / Managing Member</div>
           Title
         </td>
       </tr>
@@ -5763,10 +5765,11 @@ function exportForm1120() {
   const filtered = getReportFilteredTx();
   const taxYear = reportPeriodFrom ? reportPeriodFrom.getFullYear() : new Date().getFullYear() - 1;
   const corpName = llcName || p.llcName || '';
+  const sigData = localStorage.getItem('mtf_signature') || null;
   const wrap = document.createElement('div');
   wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:820px;background:#fff;';
   const form = document.createElement('div');
-  form.innerHTML = buildForm1120HTML(p, filtered, taxYear);
+  form.innerHTML = buildForm1120HTML(p, filtered, taxYear, sigData);
   wrap.appendChild(form);
   document.body.appendChild(wrap);
   html2pdf().set({
@@ -5786,10 +5789,11 @@ function exportForm5472() {
   const filtered = getReportFilteredTx();
   const taxYear = reportPeriodFrom ? reportPeriodFrom.getFullYear() : new Date().getFullYear() - 1;
   const corpName = llcName || p.llcName || '';
+  const sigData = localStorage.getItem('mtf_signature') || null;
   const wrap = document.createElement('div');
   wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:820px;background:#fff;';
   const form = document.createElement('div');
-  form.innerHTML = buildForm5472HTML(p, filtered, taxYear);
+  form.innerHTML = buildForm5472HTML(p, filtered, taxYear, sigData);
   wrap.appendChild(form);
   document.body.appendChild(wrap);
   html2pdf().set({
@@ -8800,7 +8804,7 @@ document.addEventListener('click', e => {
         <div class="form-group"><div class="f-label">Ownership % <span style="font-weight:400;color:var(--text3)">(Single-Member = 100 · Multi-Member = dein Anteil)</span></div><input class="f-input" id="acc-sh-ownership" placeholder="100" type="number" min="1" max="100"></div>
       </div>
       <div style="background:rgba(0,200,150,0.06);border:1px solid rgba(0,200,150,0.15);border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--text3)">
-        💡 <strong style="color:var(--text2)">Multi-Member LLC?</strong> Partner und Gesellschafter werden direkt bei der LLC-Entity gepflegt — klick auf deine LLC im Sidebar-Menü und dann auf "Edit".
+        💡 <strong style="color:var(--text2)">Multi-Member LLC?</strong> Partners are managed in your LLC settings — click your LLC name in the sidebar and select "Edit".
       </div>
       <div style="height:1px;background:var(--border);margin:16px 0"></div>
       <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">IRS Filing Signature</div>
