@@ -2418,7 +2418,7 @@ window.addEventListener('resize', ()=>{
   }
 });
 
-// ── AUTH STATE: show "Dashboard" button if logged in ─────────
+// ── AUTH STATE: show all 3 buttons (Sign Out · Dashboard → · Book a Call) when logged in ──
 (async () => {
   try {
     const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
@@ -2428,32 +2428,50 @@ window.addEventListener('resize', ()=>{
     );
     const { data: { session } } = await sb.auth.getSession();
     if (session) {
-      // "Sign in" ghost button → Sign Out (left, ghost style)
+      // ── DESKTOP ───────────────────────────────────────────────────
+      // 1) "Sign in" ghost → Sign Out
       const signinBtn = document.querySelector('a[href="./dashboard.html"].btn-ghost');
       if (signinBtn) {
         signinBtn.removeAttribute('href');
         signinBtn.style.cssText = 'display:inline-flex;align-items:center;background:transparent;border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:9px 18px;color:#7a8099;font-family:Montserrat,sans-serif;font-size:14px;font-weight:600;text-decoration:none;transition:all 0.2s;cursor:pointer';
         signinBtn.innerHTML = '<span>Sign Out</span>';
+        signinBtn.style.cursor = 'pointer';
         signinBtn.onmouseover = () => { signinBtn.style.borderColor='rgba(255,107,53,0.4)'; signinBtn.style.color='#ff6b35'; };
         signinBtn.onmouseout  = () => { signinBtn.style.borderColor='rgba(255,255,255,0.15)'; signinBtn.style.color='#7a8099'; };
         signinBtn.onclick = async (e) => { e.preventDefault(); await sb.auth.signOut(); window.location.reload(); };
       }
-      // "Start free trial" green CTA → Dashboard (right, green)
-      const ctaBtn = document.querySelector('a[href="#pricing"].btn-nav');
-      if (ctaBtn) {
-        ctaBtn.removeAttribute('href');
-        ctaBtn.innerHTML = '<span>Dashboard →</span>';
-        ctaBtn.style.cursor = 'pointer';
-        ctaBtn.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/dashboard'; });
+      // 2) Insert "Dashboard →" ghost-green button before "Book a Call" (keep Book a Call!)
+      const bookCallBtn = document.querySelector('a[href="/demo"].btn-nav');
+      if (bookCallBtn && bookCallBtn.parentNode) {
+        const dashBtn = document.createElement('a');
+        dashBtn.href = '/dashboard';
+        dashBtn.className = 'btn-ghost';
+        dashBtn.style.cssText = 'border-color:rgba(0,200,150,0.35);color:#00c896;';
+        dashBtn.innerHTML = '<span>Dashboard →</span>';
+        dashBtn.onmouseover = () => { dashBtn.style.borderColor='rgba(0,200,150,0.6)'; dashBtn.style.background='rgba(0,200,150,0.06)'; };
+        dashBtn.onmouseout  = () => { dashBtn.style.borderColor='rgba(0,200,150,0.35)'; dashBtn.style.background=''; };
+        bookCallBtn.parentNode.insertBefore(dashBtn, bookCallBtn);
       }
-      // Mobile menu — logged in: green = Dashboard, grey = Sign Out
+
+      // ── MOBILE MENU ───────────────────────────────────────────────
+      // Green CTA stays "Book a Call →"
       const mobCta = document.getElementById('mob-cta-btn');
       if (mobCta) {
-        mobCta.href = '/dashboard';
-        mobCta.textContent = 'Dashboard →';
-        mobCta.onclick = (e) => { e.preventDefault(); toggleMobileMenu(); window.location.href = '/dashboard'; };
+        mobCta.href = '/demo';
+        mobCta.textContent = 'Book a Call →';
+        mobCta.onclick = null; // keep default link behaviour
       }
+      // Insert "Dashboard →" teal button between Book a Call and Sign In
       const mobSI = document.getElementById('mob-signin-btn');
+      if (mobCta && mobSI) {
+        const mobDash = document.createElement('a');
+        mobDash.href = '/dashboard';
+        mobDash.style.cssText = 'display:block;width:100%;text-align:center;background:rgba(0,200,150,0.10);color:#00c896;font-weight:700;font-size:15px;padding:14px;border-radius:12px;text-decoration:none;font-family:"Montserrat",sans-serif;border:1px solid rgba(0,200,150,0.25);margin-top:8px;';
+        mobDash.textContent = 'Dashboard →';
+        mobDash.onclick = (e) => { e.preventDefault(); toggleMobileMenu(); window.location.href = '/dashboard'; };
+        mobSI.parentNode.insertBefore(mobDash, mobSI);
+      }
+      // "Sign in" link → Sign Out (red)
       if (mobSI) {
         mobSI.removeAttribute('href');
         mobSI.textContent = 'Sign Out';
