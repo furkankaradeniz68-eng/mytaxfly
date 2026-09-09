@@ -118,6 +118,22 @@ src="https://www.facebook.com/tr?id=1799163168200739&ev=PageView&noscript=1"
   .success-note{background:rgba(0,200,150,0.08);border:1px solid rgba(0,200,150,0.2);border-radius:10px;padding:12px 16px;font-size:13px;color:var(--accent);font-weight:600;margin-bottom:20px;display:none}
   .success-note.visible{display:block}
 
+  /* BURGER */
+  .burger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:4px}
+  .burger span{display:block;width:22px;height:2px;background:var(--text);border-radius:2px;transition:all 0.25s}
+  .burger.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+  .burger.open span:nth-child(2){opacity:0;width:0}
+  .burger.open span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+
+  /* MOBILE MENU */
+  .mobile-menu{display:none;position:fixed;inset:0;z-index:200;background:rgba(8,11,16,0.97);backdrop-filter:blur(16px);flex-direction:column;align-items:center;justify-content:center;gap:0}
+  .mobile-menu.open{display:flex}
+  .mobile-menu-close{position:absolute;top:22px;right:22px;background:none;border:none;font-size:22px;color:var(--text2);cursor:pointer}
+  .mobile-menu-links{display:flex;flex-direction:column;align-items:center;gap:28px;margin-bottom:40px}
+  .mobile-menu-links a{font-size:22px;font-weight:700;color:var(--text);text-decoration:none;font-family:'Montserrat',sans-serif}
+  .mobile-menu-links a:hover{color:var(--accent)}
+  .mobile-menu-bottom{display:flex;flex-direction:column;align-items:center;gap:10px;width:280px}
+
   /* RESPONSIVE */
   @media(max-width:768px){
     nav{padding:0 20px}
@@ -126,6 +142,8 @@ src="https://www.facebook.com/tr?id=1799163168200739&ev=PageView&noscript=1"
     .demo-h1{font-size:28px}
     .demo-card{position:static}
     .form-row{grid-template-columns:1fr}
+    .nav-right{display:none}
+    .burger{display:flex}
   }
 </style>
 </head>
@@ -139,11 +157,29 @@ src="https://www.facebook.com/tr?id=1799163168200739&ev=PageView&noscript=1"
       <div class="nav-logo-sub">Your LLC. Our AI. Zero stress.</div>
     </div>
   </a>
-  <div class="nav-right">
-    <a href="/dashboard" class="btn-ghost">Sign in</a>
-    <a href="/#pricing" class="btn-nav">Start free trial →</a>
+  <div class="nav-right" id="nav-right">
+    <a href="/dashboard" class="btn-ghost" id="nav-signin">Sign in</a>
+    <a href="/#pricing" class="btn-nav" id="nav-trial">Start free trial →</a>
   </div>
+  <button class="burger" id="burger" onclick="toggleMobileMenu()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobile-menu">
+  <button class="mobile-menu-close" onclick="toggleMobileMenu()">✕</button>
+  <div class="mobile-menu-links">
+    <a href="/" onclick="toggleMobileMenu()">Home</a>
+    <a href="/#tax-forms" onclick="toggleMobileMenu()" style="color:#00c896">IRS Forms</a>
+    <a href="/#features" onclick="toggleMobileMenu()">Features</a>
+    <a href="/#pricing" onclick="toggleMobileMenu()">Pricing</a>
+  </div>
+  <div class="mobile-menu-bottom">
+    <a id="mob-cta-btn" href="/demo" onclick="toggleMobileMenu()" style="display:block;width:100%;text-align:center;background:#00c896;color:#080b10;font-weight:700;font-size:16px;padding:16px;border-radius:12px;text-decoration:none;font-family:'Montserrat',sans-serif;">Book a Call →</a>
+    <a id="mob-signin-btn" href="/dashboard" onclick="toggleMobileMenu()" style="display:block;width:100%;text-align:center;color:#7a8099;font-size:14px;padding:12px;text-decoration:none;font-family:'Montserrat',sans-serif;">Sign in</a>
+  </div>
+</div>
 
 <!-- MAIN -->
 <div class="page">
@@ -332,6 +368,64 @@ document.addEventListener('keydown', e => {
     submitDemoForm();
   }
 });
+
+// ── MOBILE MENU ────────────────────────────────────────────────
+function toggleMobileMenu() {
+  const menu   = document.getElementById('mobile-menu');
+  const burger = document.getElementById('burger');
+  if (!menu) return;
+  const open = menu.classList.toggle('open');
+  if (burger) burger.classList.toggle('open', open);
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { const m = document.getElementById('mobile-menu'); if (m && m.classList.contains('open')) toggleMobileMenu(); } });
+
+// ── AUTH STATE ─────────────────────────────────────────────────
+(async () => {
+  try {
+    const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+    const sb = createClient('https://yacwkxstvqvdgiiffwos.supabase.co', 'sb_publishable_JAGI28ms4nmK_dDoS1BLzA_O8locPZk');
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) {
+      // DESKTOP — Sign Out + Dashboard → + Book a Call (keep btn-nav as is)
+      const signinBtn = document.getElementById('nav-signin');
+      if (signinBtn) {
+        signinBtn.removeAttribute('href');
+        signinBtn.textContent = 'Sign Out';
+        signinBtn.style.cursor = 'pointer';
+        signinBtn.onclick = async (e) => { e.preventDefault(); await sb.auth.signOut(); window.location.reload(); };
+      }
+      const trialBtn = document.getElementById('nav-trial');
+      if (trialBtn && trialBtn.parentNode) {
+        // Insert Dashboard → before Start free trial
+        const dashBtn = document.createElement('a');
+        dashBtn.href = '/dashboard';
+        dashBtn.className = 'btn-ghost';
+        dashBtn.style.cssText = 'border-color:rgba(0,200,150,0.35);color:#00c896;';
+        dashBtn.textContent = 'Dashboard →';
+        trialBtn.parentNode.insertBefore(dashBtn, trialBtn);
+        // Also update the trial btn to "Book a Call" label
+        trialBtn.href = '/demo';
+        trialBtn.textContent = 'Book a Call →';
+      }
+      // MOBILE — Keep green Book a Call, insert Dashboard →, Sign Out
+      const mobCta = document.getElementById('mob-cta-btn');
+      const mobSI  = document.getElementById('mob-signin-btn');
+      if (mobCta && mobSI) {
+        const mobDash = document.createElement('a');
+        mobDash.href = '/dashboard';
+        mobDash.style.cssText = 'display:block;width:100%;text-align:center;background:rgba(0,200,150,0.10);color:#00c896;font-weight:700;font-size:15px;padding:14px;border-radius:12px;text-decoration:none;font-family:"Montserrat",sans-serif;border:1px solid rgba(0,200,150,0.25);';
+        mobDash.textContent = 'Dashboard →';
+        mobDash.onclick = (e) => { e.preventDefault(); toggleMobileMenu(); window.location.href = '/dashboard'; };
+        mobSI.parentNode.insertBefore(mobDash, mobSI);
+        mobSI.removeAttribute('href');
+        mobSI.textContent = 'Sign Out';
+        mobSI.style.color = '#ff6b35';
+        mobSI.onclick = async (e) => { e.preventDefault(); toggleMobileMenu(); await sb.auth.signOut(); window.location.reload(); };
+      }
+    }
+  } catch(e) {}
+})();
 </script>
 </body>
 </html>
