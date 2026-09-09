@@ -1369,9 +1369,16 @@ footer {
 
   /* Tax forms section — stack on mobile */
   .tax-forms-grid { grid-template-columns:1fr !important; gap:32px !important; padding:0 20px !important; }
-  #tax-forms { padding:60px 0 !important; }
-  #tax-forms .entity-grid { grid-template-columns:1fr !important; }
-  #tax-forms .feature-strip { grid-template-columns:1fr 1fr !important; }
+  #tax-forms { padding:50px 0 !important; }
+  #tax-forms > div { padding:0 20px !important; }
+  #tax-forms .entity-grid { grid-template-columns:1fr !important; gap:16px !important; }
+  #tax-forms .entity-card { padding:18px !important; }
+  #tax-forms .feature-strip { grid-template-columns:1fr 1fr !important; gap:10px !important; }
+  /* Form item cards: hide badge pill on very narrow, prevent overflow */
+  #tax-forms .form-badge { display:none !important; }
+  #tax-forms .form-item { padding:10px 12px !important; }
+  #tax-forms .form-item-text { font-size:13px !important; }
+  #tax-forms .form-item-sub  { font-size:11px !important; }
 
   /* Preview mock — hide sidebar on mobile, show only content */
   .preview-section { padding:40px 0 60px; overflow:hidden; }
@@ -1622,36 +1629,36 @@ src="https://www.facebook.com/tr?id=1799163168200739&ev=PageView&noscript=1"
     </div>
 
     <!-- Entity tabs row -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:32px">
+    <div class="entity-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:32px">
 
       <!-- Single-Member card -->
-      <div style="background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:28px;position:relative;overflow:hidden">
+      <div class="entity-card" style="background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:28px;position:relative;overflow:hidden">
         <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#00c896,#00a87a)"></div>
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
           <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#00c896">Single-Member LLC</span>
           <span style="font-size:10px;padding:2px 8px;background:rgba(0,200,150,0.1);border:1px solid rgba(0,200,150,0.2);border-radius:20px;color:#00c896">Foreign-Owned Corp</span>
         </div>
         <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:18px">
-          <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between">
+          <div class="form-item" style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between">
             <div style="display:flex;align-items:center;gap:10px">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/><polyline points='14 2 14 8 20 8'/></svg>
-              <div><div style="font-size:12px;font-weight:700">Pro Forma Form 1120</div><div style="font-size:10px;color:var(--text3)">Income &amp; deductions mapped automatically</div></div>
+              <div><div class="form-item-text" style="font-size:12px;font-weight:700">Pro Forma Form 1120</div><div class="form-item-sub" style="font-size:10px;color:var(--text3)">Income &amp; deductions mapped automatically</div></div>
             </div>
-            <span style="font-size:10px;font-weight:700;padding:2px 8px;background:rgba(0,200,150,0.12);color:#00c896;border-radius:20px;flex-shrink:0">Pre-filled</span>
+            <span class="form-badge" style="font-size:10px;font-weight:700;padding:2px 8px;background:rgba(0,200,150,0.12);color:#00c896;border-radius:20px;flex-shrink:0">Pre-filled</span>
           </div>
-          <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between">
+          <div class="form-item" style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between">
             <div style="display:flex;align-items:center;gap:10px">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/><polyline points='14 2 14 8 20 8'/></svg>
-              <div><div style="font-size:12px;font-weight:700">Form 5472</div><div style="font-size:10px;color:var(--text3)">All related-party transactions included</div></div>
+              <div><div class="form-item-text" style="font-size:12px;font-weight:700">Form 5472</div><div class="form-item-sub" style="font-size:10px;color:var(--text3)">All related-party transactions included</div></div>
             </div>
-            <span style="font-size:10px;font-weight:700;padding:2px 8px;background:rgba(0,200,150,0.12);color:#00c896;border-radius:20px;flex-shrink:0">Pre-filled</span>
+            <span class="form-badge" style="font-size:10px;font-weight:700;padding:2px 8px;background:rgba(0,200,150,0.12);color:#00c896;border-radius:20px;flex-shrink:0">Pre-filled</span>
           </div>
-          <div style="background:var(--card);border:1px solid rgba(246,173,85,0.2);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between">
+          <div class="form-item" style="background:var(--card);border:1px solid rgba(246,173,85,0.2);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between">
             <div style="display:flex;align-items:center;gap:10px">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f6ad55" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              <div><div style="font-size:12px;font-weight:700;color:#f6ad55">Form 7004 — Extension</div><div style="font-size:10px;color:var(--text3)">+6 months · Deadline: April 15 → Oct 15</div></div>
+              <div><div class="form-item-text" style="font-size:12px;font-weight:700;color:#f6ad55">Form 7004 — Extension</div><div class="form-item-sub" style="font-size:10px;color:var(--text3)">+6 months · Deadline: April 15 → Oct 15</div></div>
             </div>
-            <span style="font-size:10px;font-weight:700;padding:2px 8px;background:rgba(246,173,85,0.12);color:#f6ad55;border-radius:20px;flex-shrink:0">Auto</span>
+            <span class="form-badge" style="font-size:10px;font-weight:700;padding:2px 8px;background:rgba(246,173,85,0.12);color:#f6ad55;border-radius:20px;flex-shrink:0">Auto</span>
           </div>
         </div>
         <div style="font-size:11px;color:var(--text3);display:flex;align-items:center;gap:6px;background:rgba(0,200,150,0.05);border:1px solid rgba(0,200,150,0.12);border-radius:8px;padding:8px 12px">
@@ -1661,33 +1668,33 @@ src="https://www.facebook.com/tr?id=1799163168200739&ev=PageView&noscript=1"
       </div>
 
       <!-- Multi-Member card -->
-      <div style="background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:28px;position:relative;overflow:hidden">
+      <div class="entity-card" style="background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:28px;position:relative;overflow:hidden">
         <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#7c3aed,#5b21b6)"></div>
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
           <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#a78bfa">Multi-Member LLC</span>
           <span style="font-size:10px;padding:2px 8px;background:rgba(124,58,237,0.12);border:1px solid rgba(124,58,237,0.25);border-radius:20px;color:#a78bfa">Partnership</span>
         </div>
         <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:18px">
-          <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between">
+          <div class="form-item" style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between">
             <div style="display:flex;align-items:center;gap:10px">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/><polyline points='14 2 14 8 20 8'/></svg>
-              <div><div style="font-size:12px;font-weight:700">Form 1065</div><div style="font-size:10px;color:var(--text3)">Partnership return · all income &amp; expenses</div></div>
+              <div><div class="form-item-text" style="font-size:12px;font-weight:700">Form 1065</div><div class="form-item-sub" style="font-size:10px;color:var(--text3)">Partnership return · all income &amp; expenses</div></div>
             </div>
-            <span style="font-size:10px;font-weight:700;padding:2px 8px;background:rgba(124,58,237,0.12);color:#a78bfa;border-radius:20px;flex-shrink:0">Pre-filled</span>
+            <span class="form-badge" style="font-size:10px;font-weight:700;padding:2px 8px;background:rgba(124,58,237,0.12);color:#a78bfa;border-radius:20px;flex-shrink:0">Pre-filled</span>
           </div>
-          <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between">
+          <div class="form-item" style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between">
             <div style="display:flex;align-items:center;gap:10px">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d='M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2'/><circle cx='9' cy='7' r='4'/><path d='M23 21v-2a4 4 0 0 0-3-3.87'/><path d='M16 3.13a4 4 0 0 1 0 7.75'/></svg>
-              <div><div style="font-size:12px;font-weight:700">Schedule K-1</div><div style="font-size:10px;color:var(--text3)">One per partner · profit share auto-calculated</div></div>
+              <div><div class="form-item-text" style="font-size:12px;font-weight:700">Schedule K-1</div><div class="form-item-sub" style="font-size:10px;color:var(--text3)">One per partner · profit share auto-calculated</div></div>
             </div>
-            <span style="font-size:10px;font-weight:700;padding:2px 8px;background:rgba(124,58,237,0.12);color:#a78bfa;border-radius:20px;flex-shrink:0">Per Partner</span>
+            <span class="form-badge" style="font-size:10px;font-weight:700;padding:2px 8px;background:rgba(124,58,237,0.12);color:#a78bfa;border-radius:20px;flex-shrink:0">Per Partner</span>
           </div>
-          <div style="background:var(--card);border:1px solid rgba(246,173,85,0.2);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between">
+          <div class="form-item" style="background:var(--card);border:1px solid rgba(246,173,85,0.2);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between">
             <div style="display:flex;align-items:center;gap:10px">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f6ad55" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              <div><div style="font-size:12px;font-weight:700;color:#f6ad55">Form 7004 — Extension</div><div style="font-size:10px;color:var(--text3)">+6 months · Deadline: March 15 → Sep 15</div></div>
+              <div><div class="form-item-text" style="font-size:12px;font-weight:700;color:#f6ad55">Form 7004 — Extension</div><div class="form-item-sub" style="font-size:10px;color:var(--text3)">+6 months · Deadline: March 15 → Sep 15</div></div>
             </div>
-            <span style="font-size:10px;font-weight:700;padding:2px 8px;background:rgba(246,173,85,0.12);color:#f6ad55;border-radius:20px;flex-shrink:0">Auto</span>
+            <span class="form-badge" style="font-size:10px;font-weight:700;padding:2px 8px;background:rgba(246,173,85,0.12);color:#f6ad55;border-radius:20px;flex-shrink:0">Auto</span>
           </div>
         </div>
         <div style="font-size:11px;color:var(--text3);display:flex;align-items:center;gap:6px;background:rgba(124,58,237,0.05);border:1px solid rgba(124,58,237,0.18);border-radius:8px;padding:8px 12px">
@@ -1698,7 +1705,7 @@ src="https://www.facebook.com/tr?id=1799163168200739&ev=PageView&noscript=1"
     </div>
 
     <!-- Bottom feature strip -->
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:36px">
+    <div class="feature-strip" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:36px">
       <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px 18px">
         <div style="margin-bottom:10px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
         <div style="font-size:12px;font-weight:700;margin-bottom:4px">Digital Signature</div>
