@@ -6313,7 +6313,7 @@ function renderIRSDocList() {
 
   const docs = isMulti ? [
     { id: 'doc-1065',   label: 'Form 1065',        sub: 'Partnership Return of Income',                   checked: true,  badge: 'IRS Required', color: '#a78bfa' },
-    { id: 'doc-k1',     label: 'Schedule K-1',      sub: 'Partner's Share of Income, Deductions & Credits', checked: true, badge: 'Per Partner',   color: '#a78bfa' },
+    { id: 'doc-k1',     label: 'Schedule K-1',      sub: "Partner's Share of Income, Deductions & Credits", checked: true, badge: 'Per Partner',   color: '#a78bfa' },
     { id: 'doc-7004m',  label: 'Form 7004',         sub: 'Extension — 6 months automatic (optional)',      checked: false, badge: 'Optional',      color: '#f6ad55' },
     { id: 'doc-ar-m',   label: 'Annual Report',     sub: 'State filing — Delaware, Wyoming or other state', checked: false, badge: 'State',         color: '#00c896' },
   ] : [
@@ -6458,7 +6458,7 @@ function exportAnnualReport() {
     html2canvas: { scale: 2, useCORS: true },
     jsPDF: { unit: 'mm', format: [215.9, 279.4], orientation: 'portrait' }
   };
-  html2pdf().set(opts).from(html).save(\`Annual_Report_Guide_\${corpName.replace(/\s+/g,'_')}_\${taxYear}.pdf\`);
+  html2pdf().set(opts).from(html).save('Annual_Report_Guide_' + corpName.replace(/\s+/g,'_') + '_' + taxYear + '.pdf');
 }
 
 function renderIRSHistory(){
