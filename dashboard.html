@@ -1623,21 +1623,34 @@ src="https://www.facebook.com/tr?id=1799163168200739&ev=PageView&noscript=1"
         </ul>
       </div>
 
-      <!-- Tax Year Selector -->
-      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:16px">
-        <div>
-          <div style="font-size:13px;font-weight:700;margin-bottom:3px">Tax Year to File</div>
-          <div style="font-size:12px;color:var(--text3);line-height:1.5">All transactions from Jan 1 – Dec 31 of the selected year will be included in your filing package.</div>
-        </div>
-        <select id="irs-year-select" onchange="irsFilingYear=parseInt(this.value)" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-family:'Montserrat',sans-serif;font-size:15px;font-weight:700;color:var(--text);cursor:pointer;flex-shrink:0;min-width:90px"></select>
-      </div>
+      <!-- Tax Year + Document Selection Card -->
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px">
 
-      <!-- Send button -->
-      <button class="btn-primary" style="width:100%;padding:16px;font-size:14px;font-weight:700;background:linear-gradient(135deg,#7c3aed,#5b21b6);border-radius:12px;margin-bottom:8px" onclick="gatedAction(openIRSFilingModal,'pro')">
-        <svg style="display:inline;vertical-align:-3px;margin-right:8px" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,13 22,4"/></svg>
-        Send to IRS via USPS Certified Mail
-      </button>
-      <div id="irs-page-addr-hint" style="font-size:11px;color:var(--text3);text-align:center;margin-bottom:16px">USPS Certified Mail · With tracking number · Delivered to IRS Ogden, UT 84409</div>
+        <!-- Tax Year Row -->
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px">
+          <div>
+            <div style="font-size:13px;font-weight:700;margin-bottom:3px">Tax Year to File</div>
+            <div style="font-size:12px;color:var(--text3);line-height:1.5">Jan 1 – Dec 31 of the selected year</div>
+          </div>
+          <select id="irs-year-select" onchange="irsFilingYear=parseInt(this.value)" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-family:'Montserrat',sans-serif;font-size:15px;font-weight:700;color:var(--text);cursor:pointer;flex-shrink:0;min-width:90px"></select>
+        </div>
+
+        <!-- Divider -->
+        <div style="height:1px;background:var(--border);margin-bottom:18px"></div>
+
+        <!-- Document Selection -->
+        <div style="font-size:13px;font-weight:700;margin-bottom:12px">Select Documents to Send</div>
+        <div id="irs-doc-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+          <!-- populated by renderIRSDocList() -->
+        </div>
+
+        <!-- Send button inside card -->
+        <button class="btn-primary" style="width:100%;padding:14px;font-size:14px;font-weight:700;background:linear-gradient(135deg,#7c3aed,#5b21b6);border-radius:10px;margin-bottom:8px" onclick="gatedAction(openIRSFilingModal,'pro')">
+          <svg style="display:inline;vertical-align:-3px;margin-right:8px" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,13 22,4"/></svg>
+          Send to IRS via USPS Certified Mail
+        </button>
+        <div id="irs-page-addr-hint" style="font-size:11px;color:var(--text3);text-align:center;margin-bottom:4px">USPS Certified Mail · With tracking number · Delivered to IRS Ogden, UT 84409</div>
+      </div>
 
       <!-- Extension button -->
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
@@ -1646,7 +1659,7 @@ src="https://www.facebook.com/tr?id=1799163168200739&ev=PageView&noscript=1"
         <div style="flex:1;height:1px;background:var(--border)"></div>
       </div>
       <button onclick="gatedAction(openExtensionModal,'pro')" style="width:100%;padding:13px;font-size:13px;font-weight:700;background:transparent;border:1px solid rgba(246,173,85,0.35);color:#f6ad55;border-radius:12px;cursor:pointer;margin-bottom:28px;font-family:'Montserrat',sans-serif">
-        ⏳ File Extension — Form 7004 (6 months automatic)
+        <svg style="display:inline;vertical-align:-3px;margin-right:8px" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f6ad55" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> File Extension — Form 7004 (6 months automatic)
       </button>
 
       <!-- History -->
@@ -3675,7 +3688,7 @@ function showPage(name,el){
     const cn=document.getElementById('advisor-report-client-name');
     if(b && cn){ b.style.display=advisorMode?'block':'none'; cn.textContent=llcName||''; }
   }
-  if(name==='irs-filing'){ initIRSYearPicker(); setTimeout(renderIRSHistory, 10); }
+  if(name==='irs-filing'){ initIRSYearPicker(); setTimeout(renderIRSHistory, 10); setTimeout(renderIRSDocList, 10); }
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
@@ -3991,7 +4004,7 @@ async function submitManual(){
   const amount = conv.usdAmount;
   const convNote = conv.note ? (notes ? notes + ' · ' + conv.note : conv.note) : notes;
   const prompt=`Categorize this US LLC transaction. Respond ONLY with JSON:
-{"vendor":"${vendor}","amount":${amount},"currency":"USD","date":"${date}","category":"Software & Tools / Marketing / Office & Supplies / Travel / Meals / Professional Services / Other","type":"${currentType}","deductible":true,"deductible_percent":100,"note":"Brief IRS deductibility explanation"}
+{"vendor":"${vendor}","amount":${amount},"currency":"USD","date":"${date}","category":"Software & Tools / Advertising / Professional Services / Office & Supplies / Travel / Meals / Phone & Internet / Rent & Utilities / Insurance / Education & Training / Bank & Financial Fees / Payroll & Contractors / Equipment / Shipping & Postage / Other / Income","type":"${currentType}","deductible":true,"deductible_percent":${currentType==='income'?0:100},"note":"Brief IRS deductibility explanation","needs_review":false}
 Transaction: ${currentType} of $${amount} — "${vendor}"${convNote?' — '+convNote:''}`;
   try{
     const text=await callClaude([{role:'user',content:prompt}],null,500);
@@ -4266,6 +4279,10 @@ async function uploadQueue(){
 }
 
 async function autoConvertResult(res) {
+  // Flag meals at 50% deductible regardless of what AI returned
+  if (res.category === 'Meals') { res.deductible = true; res.deductible_percent = 50; }
+  // Visual flag for needs_review items
+  if (res.needs_review) { res._needsReview = true; }
   const cur = (res.currency || 'USD').toUpperCase();
   if (cur === 'USD' || !res.amount) return;
   const txDate = res.date || null;
@@ -4308,21 +4325,50 @@ function readB64(f){return new Promise(r=>{const fr=new FileReader();fr.onload=(
 function readTxt(f){return new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(fr.result);fr.readAsText(f);});}
 
 function buildUploadPrompt(){
-  return `Analyze this financial document for a US LLC (LLC name: "${llcName}").
+  const entityType = (typeof activeEntity !== 'undefined' && activeEntity?.type) ? activeEntity.type : 'single';
+  const entityLabel = entityType === 'multi' ? 'Multi-Member LLC (Partnership — Form 1065)' : 'Single-Member LLC (Disregarded Entity — Form 1120/5472)';
+  const recentCtx = (typeof transactions !== 'undefined' ? transactions : []).slice(0,8)
+    .filter(t => t.vendor && t.category)
+    .map(t => `${t.vendor} → ${t.category}`)
+    .join(' | ');
+  return `You are a precise IRS bookkeeping agent for a US LLC named "${llcName}" (${entityLabel}).
 
-CRITICAL — Determine type by reading sender and recipient carefully:
-- Look at FROM / ISSUED BY / VENDOR / SELLER: if this is a company other than "${llcName}" → they sent this document TO the LLC → type = "expense"
-- Look at BILL TO / INVOICE TO / CLIENT / CUSTOMER: if this shows "${llcName}" as the recipient → type = "expense"
-- If "${llcName}" appears as the SENDER / FROM / ISSUED BY → the LLC sent this invoice to a client → type = "income"
-- If "Bill To" / "Invoice To" shows a customer name (not "${llcName}") and "${llcName}" is the issuer → type = "income"
-- Receipts, subscription confirmations, order confirmations from any vendor → type = "expense"
-- Bank statements: positive/credit entries → income, negative/debit entries → expense
-- When in doubt: who is paying whom? If the LLC is PAYING → expense. If the LLC is RECEIVING money → income.
-- Currency: keep the original currency code exactly as shown (EUR, USD, GBP, CHF, etc.)
+STEP 1 — INCOME vs EXPENSE (read carefully):
+- FROM/ISSUED BY/VENDOR/SELLER is another company → expense (they charged the LLC)
+- "${llcName}" appears as SENDER/FROM/ISSUED BY → income (LLC charged a client)
+- Receipts, subscriptions, order confirmations → expense
+- Bank statement credits → income, debits → expense
+- Currency: preserve original code exactly (EUR, USD, GBP, CHF, CAD, etc.)
 
-Respond ONLY with valid JSON, no extra text:
-{"vendor":"name of the other party","amount":0.00,"currency":"original currency code","date":"YYYY-MM-DD","category":"Software & Tools / Marketing / Office & Supplies / Travel / Meals / Professional Services / Other","type":"expense or income","deductible":true,"deductible_percent":100,"note":"Brief IRS deductibility explanation"}`;
+STEP 2 — IRS CATEGORY (pick exactly one):
+"Software & Tools"      — SaaS, subscriptions, apps, hosting, domains         (100% deductible)
+"Advertising"           — ads, SEO, social media, branding, design             (100% deductible)
+"Professional Services" — legal, accounting, consulting, contractors           (100% deductible)
+"Office & Supplies"     — office materials, printer, stationery, furniture     (100% deductible)
+"Travel"                — flights, hotels, car rental for business trips       (100% deductible)
+"Meals"                 — business meals & entertainment                       (50% — IRS §274)
+"Phone & Internet"      — mobile bills, internet, communication tools          (100% deductible)
+"Rent & Utilities"      — office rent, coworking, electricity, utilities       (100% deductible)
+"Insurance"             — business insurance premiums                          (100% deductible)
+"Education & Training"  — courses, books, workshops, conferences               (100% deductible)
+"Bank & Financial Fees" — bank fees, wire fees, Stripe/PayPal/FX fees         (100% deductible)
+"Payroll & Contractors" — wages, 1099 contractor payments                     (100% deductible)
+"Equipment"             — computers, hardware, cameras, business equipment     (100% deductible)
+"Shipping & Postage"    — shipping, courier, USPS, FedEx                      (100% deductible)
+"Other"                 — does not clearly fit any above category             (verify before filing)
+"Income"                — for income entries only (not a deductible expense)
+
+STEP 3 — RULES:
+- Meals: ALWAYS set deductible_percent to 50 (IRS §274 — no exceptions)
+- Mixed personal/business expense: set needs_review to true, estimate business %
+- Ambiguous vendor or unclear purpose: set needs_review to true
+- Personal expense (non-business): set deductible to false, needs_review to true
+${recentCtx ? 'PAST TRANSACTIONS (use for consistent vendor→category mapping):\n' + recentCtx : ''}
+
+Respond ONLY with valid JSON, no markdown, no extra text:
+{"vendor":"name of the other party","amount":0.00,"currency":"USD","date":"YYYY-MM-DD","category":"one of the 16 categories above","type":"expense or income","deductible":true,"deductible_percent":100,"note":"one-sentence IRS deductibility explanation","needs_review":false}`;
 }
+
 
 async function analyzeWithClaude(fn,b64,mt,loaderId,fileUrl){
   const isImg=mt.startsWith('image/');
@@ -4371,12 +4417,13 @@ async function analyzeText(fn,txt,loaderId,fileUrl){
 
 function renderResult(fn,r,loaderId){
   const iI=r.type==='income';
+  const needsReview=r.needs_review||r._needsReview||false;
   const bannerId='success-banner-'+Date.now();
   const cardId='rc-'+Date.now();
   const _bs='background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 8px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:opacity 0.3s';
   const _dlActive=!!r.fileUrl;
   const editBtnHtml=`<div style="display:flex;gap:6px;margin-top:10px"><button id="edit-btn-${cardId}" style="${_bs};color:var(--text2);opacity:0.4;pointer-events:none" title="Edit transaction"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button id="dl-btn-${cardId}" style="${_bs};color:var(--accent);opacity:${_dlActive?'1':'0.4'};pointer-events:${_dlActive?'auto':'none'}" title="Download receipt"${_dlActive?` onclick="window.open('${r.fileUrl}','_blank')"`:''} ><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button><button id="del-btn-${cardId}" style="${_bs};color:#e53e3e;opacity:0.4;pointer-events:none" title="Delete transaction"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg></button></div>`;
-  const card=`<div class="result-card"><div class="result-header"><div><div class="result-file">📄 ${fn}</div><div class="result-title">${r.vendor}</div></div><span class="badge ${r.deductible?'green':'orange'}">${r.deductible?r.deductible_percent+'% deductible':'not deductible'}</span></div><div class="result-grid"><div class="result-field"><div class="result-field-label">Amount</div><div class="result-field-val" style="color:${iI?'var(--accent)':'var(--warn)'}">${iI?'+':'-'}${fmt(r.amount)}</div></div><div class="result-field"><div class="result-field-label">Category</div><div class="result-field-val">${r.category}</div></div><div class="result-field"><div class="result-field-label">Date</div><div class="result-field-val">${r.date}</div></div></div><div class="result-note">${r.note}</div>${editBtnHtml}<div class="success-banner" id="${bannerId}" style="opacity:0;transform:translateY(8px)"><div class="success-icon">✓</div><div><div class="success-title">Successfully added to dashboard</div><div class="success-sub">Saved to your account · <span style="cursor:pointer;text-decoration:underline;color:var(--accent)" onclick="showPage('dashboard',document.querySelectorAll('.nav-item')[0])">View Dashboard →</span></div></div></div></div>`;
+  const card=`<div class="result-card" style="${needsReview?'border-color:rgba(246,173,85,0.4);':''}"><div class="result-header"><div><div class="result-file">📄 ${fn}</div><div class="result-title">${r.vendor}</div></div><span class="badge ${r.deductible?'green':'orange'}">${r.deductible?r.deductible_percent+'% deductible':'not deductible'}</span>${needsReview?'<span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 8px;background:rgba(246,173,85,0.12);color:#f6ad55;border:1px solid rgba(246,173,85,0.3);border-radius:20px;margin-left:6px">⚠ Review</span>':''}</div><div class="result-grid"><div class="result-field"><div class="result-field-label">Amount</div><div class="result-field-val" style="color:${iI?'var(--accent)':'var(--warn)'}">${iI?'+':'-'}${fmt(r.amount)}</div></div><div class="result-field"><div class="result-field-label">Category</div><div class="result-field-val">${r.category}</div></div><div class="result-field"><div class="result-field-label">Date</div><div class="result-field-val">${r.date}</div></div></div><div class="result-note">${r.note}</div>${editBtnHtml}<div class="success-banner" id="${bannerId}" style="opacity:0;transform:translateY(8px)"><div class="success-icon">✓</div><div><div class="success-title">Successfully added to dashboard</div><div class="success-sub">Saved to your account · <span style="cursor:pointer;text-decoration:underline;color:var(--accent)" onclick="showPage('dashboard',document.querySelectorAll('.nav-item')[0])">View Dashboard →</span></div></div></div></div>`;
   const el=document.getElementById(loaderId);
   if(el) el.outerHTML=card;
   setTimeout(()=>{const b=document.getElementById(bannerId);if(b){b.style.transition='all 0.5s ease';b.style.opacity='1';b.style.transform='translateY(0)';}},300);
@@ -4756,7 +4803,7 @@ async function importCSVRows(rows){
 Categories: Software & Tools | Marketing | Office & Supplies | Travel | Meals | Professional Services | Other | Owner Contribution | Owner Distribution | Related-Party Transaction
 Note: Use "Owner Contribution" only when the LLC owner is putting personal money INTO the LLC. Use "Owner Distribution" only when the LLC owner is taking money OUT of the LLC for personal use. Use "Related-Party Transaction" only for transactions between the LLC and another company owned by the same person. These are NOT business expenses/income — they appear on Form 5472 Part IV or Part V only.
 Respond ONLY with a JSON array, one object per transaction:
-[{"vendor":"cleaned name","category":"category","deductible":true,"deductible_percent":100,"note":"short IRS note"}]
+[{"vendor":"cleaned name","category":"Software & Tools / Advertising / Professional Services / Office & Supplies / Travel / Meals / Phone & Internet / Rent & Utilities / Insurance / Education & Training / Bank & Financial Fees / Payroll & Contractors / Equipment / Shipping & Postage / Other / Income","deductible":true,"deductible_percent":100,"note":"short IRS note","needs_review":false}]
 
 Transactions:
 ${batch.map((r,j)=>`${j+1}. ${r.type.toUpperCase()} ${fmt(r.amount)} — ${r.desc}`).join('\n')}`;
@@ -4845,18 +4892,25 @@ function renderDeadlines() {
     return `<span style="display:inline-block;font-size:9px;font-weight:700;padding:2px 6px;background:rgba(0,200,150,0.12);color:#00c896;border:1px solid rgba(0,200,150,0.25);border-radius:20px;margin-right:3px;margin-top:4px">${label}</span>`;
   }
 
+  const p = getTaxProfile();
+  const entityType = (typeof activeEntity !== 'undefined' && activeEntity?.type) ? activeEntity.type : 'single';
   const deadlines = [
-    {
-      label:  'Multi-Member LLC',
+    entityType === 'multi' ? {
+      label:  'Form 1065',
       date:   nextDate(2, 15),  // March 15
       forms:  ['Form 1065', 'Schedule K-1'],
       note:   'Partnership Return'
-    },
-    {
-      label:  'Single-Member LLC',
+    } : {
+      label:  'Form 1120',
       date:   nextDate(3, 15),  // April 15
       forms:  ['Form 1120', 'Form 5472'],
       note:   'Annual Filing'
+    },
+    {
+      label:  'Annual Report',
+      date:   nextDate(5, 1),   // June 1 — Delaware default (most common)
+      forms:  ['State Filing'],
+      note:   'State annual report · Delaware: June 1 · Wyoming: anniversary month'
     },
     {
       label:  'BOI Report',
@@ -6243,6 +6297,163 @@ function saveIRSLetter(entry){
   h.unshift(entry);
   localStorage.setItem('mtf_irs_letters', JSON.stringify(h));
 }
+// ── IRS Document Selection List ─────────────────────────────────────────────
+function renderIRSDocList() {
+  const el = document.getElementById('irs-doc-list');
+  if (!el) return;
+  const cfg = getIRSConfig();
+  const isMulti = cfg.formType === 'multi';
+
+  const docs = isMulti ? [
+    { id: 'doc-1065',   label: 'Form 1065',        sub: 'Partnership Return of Income',                   checked: true,  badge: 'IRS Required', color: '#a78bfa' },
+    { id: 'doc-k1',     label: 'Schedule K-1',      sub: 'Partner's Share of Income, Deductions & Credits', checked: true, badge: 'Per Partner',   color: '#a78bfa' },
+    { id: 'doc-7004m',  label: 'Form 7004',         sub: 'Extension — 6 months automatic (optional)',      checked: false, badge: 'Optional',      color: '#f6ad55' },
+    { id: 'doc-ar-m',   label: 'Annual Report',     sub: 'State filing — Delaware, Wyoming or other state', checked: false, badge: 'State',         color: '#00c896' },
+  ] : [
+    { id: 'doc-1120',   label: 'Form 1120 (Pro Forma)', sub: 'Annual Tax Return — Foreign-Owned SMLLC',   checked: true,  badge: 'IRS Required', color: '#a78bfa' },
+    { id: 'doc-5472',   label: 'Form 5472',             sub: 'Foreign-Owned U.S. Disregarded Entity',     checked: true,  badge: 'IRS Required', color: '#a78bfa' },
+    { id: 'doc-7004s',  label: 'Form 7004',             sub: 'Extension — 6 months automatic (optional)', checked: false, badge: 'Optional',      color: '#f6ad55' },
+    { id: 'doc-ar-s',   label: 'Annual Report',         sub: 'State filing — Delaware, Wyoming or other state', checked: false, badge: 'State',    color: '#00c896' },
+  ];
+
+  el.innerHTML = docs.map(d => `
+    <label style="display:flex;align-items:center;gap:12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color 0.15s"
+           onmouseover="this.style.borderColor='rgba(167,139,250,0.35)'" onmouseout="this.style.borderColor='var(--border)'">
+      <input type="checkbox" id="${d.id}" ${d.checked ? 'checked' : ''} style="width:16px;height:16px;accent-color:#a78bfa;cursor:pointer;flex-shrink:0">
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span style="font-size:13px;font-weight:700;color:var(--text)">${d.label}</span>
+          <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:${d.color}22;color:${d.color};border:1px solid ${d.color}44;white-space:nowrap">${d.badge}</span>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">${d.sub}</div>
+      </div>
+      ${d.id.startsWith('doc-ar') ? `<button type="button" onclick="event.preventDefault();exportAnnualReport()"
+          style="font-size:11px;font-weight:700;padding:5px 10px;border-radius:7px;border:1px solid rgba(0,200,150,0.35);background:transparent;color:#00c896;cursor:pointer;white-space:nowrap;flex-shrink:0">
+          Export PDF</button>` : ''}
+    </label>`).join('');
+}
+
+// ── Annual Report Export ──────────────────────────────────────────────────────
+function exportAnnualReport() {
+  const p = getTaxProfile();
+  const cfg = getIRSConfig();
+  const isMulti = cfg.formType === 'multi';
+  const taxYear = irsFilingYear;
+  const corpName = llcName || p.llcName || 'Your LLC';
+  const today = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+  const entityType = isMulti ? 'Multi-Member LLC (Partnership)' : 'Single-Member LLC (Disregarded Entity)';
+
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:'Inter',sans-serif; background:#fff; color:#111; padding:48px 52px; font-size:13px; }
+    .header { border-bottom:3px solid #00c896; padding-bottom:20px; margin-bottom:32px; }
+    .brand { font-size:11px; font-weight:700; color:#00c896; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:8px; }
+    h1 { font-size:22px; font-weight:800; color:#111; margin-bottom:4px; }
+    .sub { font-size:12px; color:#666; }
+    .section { margin-bottom:28px; }
+    .section-title { font-size:11px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:.8px; margin-bottom:12px; border-bottom:1px solid #eee; padding-bottom:6px; }
+    .info-row { display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid #f0f0f0; }
+    .info-label { font-weight:600; color:#555; }
+    .info-value { color:#111; text-align:right; }
+    .state-card { border:1px solid #eee; border-radius:10px; padding:16px 18px; margin-bottom:12px; }
+    .state-name { font-size:14px; font-weight:800; color:#111; margin-bottom:4px; }
+    .state-detail { font-size:12px; color:#666; line-height:1.7; }
+    .badge { display:inline-block; font-size:10px; font-weight:700; padding:2px 8px; border-radius:20px; margin-left:8px; }
+    .badge-green { background:#e6faf5; color:#00a875; border:1px solid #b3ead8; }
+    .badge-yellow { background:#fff8e6; color:#d97706; border:1px solid #fcd34d; }
+    .checklist { list-style:none; }
+    .checklist li { display:flex; align-items:flex-start; gap:10px; padding:8px 0; border-bottom:1px solid #f5f5f5; font-size:12px; line-height:1.5; color:#444; }
+    .checklist li::before { content:'☐'; font-size:15px; color:#aaa; flex-shrink:0; margin-top:-1px; }
+    .footer { margin-top:40px; padding-top:16px; border-top:1px solid #eee; font-size:10px; color:#aaa; text-align:center; }
+    .highlight { color:#00c896; font-weight:700; }
+  </style></head><body>
+  <div class="header">
+    <div class="brand">MyTaxFly · Annual Report Guide</div>
+    <h1>State Annual Report — ${taxYear}</h1>
+    <div class="sub">${corpName} · ${entityType} · Generated ${today}</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Entity Information</div>
+    <div class="info-row"><span class="info-label">LLC Name</span><span class="info-value">${corpName}</span></div>
+    <div class="info-row"><span class="info-label">Entity Type</span><span class="info-value">${entityType}</span></div>
+    <div class="info-row"><span class="info-label">EIN</span><span class="info-value">${p.ein || '—'}</span></div>
+    <div class="info-row"><span class="info-label">Filing Year</span><span class="info-value">${taxYear}</span></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">State Filing Requirements</div>
+    <div class="state-card">
+      <div class="state-name">Delaware <span class="badge badge-green">Popular for LLCs</span></div>
+      <div class="state-detail">
+        <strong>Annual Franchise Tax Report</strong><br>
+        Deadline: <span class="highlight">June 1, ${taxYear + 1}</span> (for tax year ${taxYear})<br>
+        Filing method: Online at <strong>corp.delaware.gov</strong><br>
+        Minimum franchise tax: <strong>$300</strong> (flat rate for most LLCs)<br>
+        Registered agent required: <strong>Yes</strong>
+      </div>
+    </div>
+    <div class="state-card">
+      <div class="state-name">Wyoming <span class="badge badge-yellow">Low Cost</span></div>
+      <div class="state-detail">
+        <strong>Annual Report (License Tax)</strong><br>
+        Deadline: <span class="highlight">Anniversary month of formation</span><br>
+        Filing method: Online at <strong>wyobiz.wyo.gov</strong><br>
+        Minimum fee: <strong>$60</strong> (or $0.0002 × assets in Wyoming, whichever is greater)<br>
+        Registered agent required: <strong>Yes</strong>
+      </div>
+    </div>
+    <div class="state-card">
+      <div class="state-name">Other States</div>
+      <div class="state-detail">
+        Most states require an annual report or biennial statement.<br>
+        Deadlines and fees vary by state. Check your state's Secretary of State website.<br>
+        Common states: <strong>Florida</strong> (May 1 · $138.75), <strong>New York</strong> (biennial), <strong>California</strong> ($800/yr minimum franchise tax)
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Annual Report Checklist</div>
+    <ul class="checklist">
+      <li>Confirm LLC is in good standing with the state of formation</li>
+      <li>Verify registered agent address is current and correct</li>
+      <li>Confirm principal office address and member information is up to date</li>
+      <li>Pay state franchise tax or annual report fee</li>
+      <li>Submit annual report via state portal or by mail before deadline</li>
+      <li>Save confirmation number and payment receipt for your records</li>
+      ${isMulti ? '<li>Distribute Schedule K-1 to all partners before annual report deadline</li>' : ''}
+      <li>Confirm beneficial ownership information is up to date with FinCEN (BOI Report)</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Important Notes</div>
+    <div class="state-detail" style="line-height:1.8;color:#555">
+      • Annual reports are a <strong>state requirement</strong> separate from IRS federal tax filings.<br>
+      • Failure to file can result in LLC dissolution or loss of good standing.<br>
+      • This is an informational guide only — not legal or tax advice.<br>
+      • Always consult a licensed attorney or CPA for your specific situation.
+    </div>
+  </div>
+
+  <div class="footer">
+    Generated by <strong style="color:#00c896">MyTaxFly</strong> · mytaxfly.com · ${today} · Tax Year ${taxYear}<br>
+    ⚠ Not legal or tax advice. Consult a licensed CPA or attorney before filing.
+  </div>
+  </body></html>`;
+
+  const opts = {
+    margin: [12, 12, 12, 12],
+    image: { type: 'jpeg', quality: 0.97 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'mm', format: [215.9, 279.4], orientation: 'portrait' }
+  };
+  html2pdf().set(opts).from(html).save(\`Annual_Report_Guide_\${corpName.replace(/\s+/g,'_')}_\${taxYear}.pdf\`);
+}
+
 function renderIRSHistory(){
   const el=document.getElementById('irs-letter-history');
   if(!el) return;
