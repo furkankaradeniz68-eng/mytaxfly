@@ -1527,7 +1527,8 @@ src="https://www.facebook.com/tr?id=1799163168200739&ev=PageView&noscript=1"
             <div class="form-group"><div class="f-label">City, State, ZIP</div><input class="f-input" id="tp-city" placeholder="New York, NY 10001"></div>
             <div class="form-group"><div class="f-label">Date of Incorporation</div><input class="f-input" id="tp-inc-date" type="date"></div>
             <div class="form-group"><div class="f-label">Principal Business Activity</div><input class="f-input" id="tp-activity" placeholder="e.g. Software / Consulting"></div>
-            <div class="form-group"><div class="f-label">Country of Incorporation</div><input class="f-input" id="tp-country" placeholder="United States (Delaware)"></div>
+            <div class="form-group"><div class="f-label">State of Formation (US)</div><select class="f-input" id="tp-formation-state" style="cursor:pointer"><option value="">— Select State —</option><option value="AL">Alabama</option><option value="AK">Alaska</option><option value="AZ">Arizona</option><option value="AR">Arkansas</option><option value="CA">California</option><option value="CO">Colorado</option><option value="CT">Connecticut</option><option value="DE">Delaware</option><option value="FL">Florida</option><option value="GA">Georgia</option><option value="HI">Hawaii</option><option value="ID">Idaho</option><option value="IL">Illinois</option><option value="IN">Indiana</option><option value="IA">Iowa</option><option value="KS">Kansas</option><option value="KY">Kentucky</option><option value="LA">Louisiana</option><option value="ME">Maine</option><option value="MD">Maryland</option><option value="MA">Massachusetts</option><option value="MI">Michigan</option><option value="MN">Minnesota</option><option value="MS">Mississippi</option><option value="MO">Missouri</option><option value="MT">Montana</option><option value="NE">Nebraska</option><option value="NV">Nevada</option><option value="NH">New Hampshire</option><option value="NJ">New Jersey</option><option value="NM">New Mexico</option><option value="NY">New York</option><option value="NC">North Carolina</option><option value="ND">North Dakota</option><option value="OH">Ohio</option><option value="OK">Oklahoma</option><option value="OR">Oregon</option><option value="PA">Pennsylvania</option><option value="RI">Rhode Island</option><option value="SC">South Carolina</option><option value="SD">South Dakota</option><option value="TN">Tennessee</option><option value="TX">Texas</option><option value="UT">Utah</option><option value="VT">Vermont</option><option value="VA">Virginia</option><option value="WA">Washington</option><option value="WV">West Virginia</option><option value="WI">Wisconsin</option><option value="WY">Wyoming</option></select></div>
+     <div class="form-group"><div class="f-label">Country of Incorporation</div><input class="f-input" id="tp-country" placeholder="United States"></div>
           </div>
           <div style="font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin:16px 0 10px">Foreign Shareholder (You)</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
@@ -4958,6 +4959,8 @@ function loadTaxProfile() {
   const set = (id, val) => { const el = document.getElementById(id); if (el && val != null) el.value = val; };
   set('tp-ein', p.ein); set('tp-address', p.address); set('tp-city', p.city);
   set('tp-inc-date', p.incDate); set('tp-activity', p.activity); set('tp-country', p.country);
+  const stateEl = document.getElementById('tp-formation-state');
+  if (stateEl && p.formationState) stateEl.value = p.formationState;
   set('tp-sh-name', p.shName); set('tp-sh-address', p.shAddress);
   set('tp-sh-country', p.shCountry); set('tp-sh-ftin', p.shFtin); set('tp-sh-res', p.shRes);
   set('tp-sh-ownership', p.shOwnership != null ? p.shOwnership : 100);
@@ -4979,6 +4982,7 @@ async function saveTaxProfile() {
   const p = {
     ein: g('tp-ein'), address: g('tp-address'), city: g('tp-city'),
     incDate: g('tp-inc-date'), activity: g('tp-activity'), country: g('tp-country'),
+    formationState: document.getElementById('tp-formation-state')?.value || '',
     shName: g('tp-sh-name'), shAddress: g('tp-sh-address'),
     shCountry: g('tp-sh-country'), shFtin: g('tp-sh-ftin'), shRes: g('tp-sh-res'),
     shOwnership: parseFloat(document.getElementById('tp-sh-ownership')?.value || '100') || 100,
@@ -6349,108 +6353,142 @@ function exportAnnualReport() {
   const corpName = llcName || p.llcName || 'Your LLC';
   const today = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
   const entityType = isMulti ? 'Multi-Member LLC (Partnership)' : 'Single-Member LLC (Disregarded Entity)';
+  const st = p.formationState || '';
 
-  const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
-    * { box-sizing:border-box; margin:0; padding:0; }
-    body { font-family:'Inter',sans-serif; background:#fff; color:#111; padding:48px 52px; font-size:13px; }
-    .header { border-bottom:3px solid #00c896; padding-bottom:20px; margin-bottom:32px; }
-    .brand { font-size:11px; font-weight:700; color:#00c896; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:8px; }
-    h1 { font-size:22px; font-weight:800; color:#111; margin-bottom:4px; }
-    .sub { font-size:12px; color:#666; }
-    .section { margin-bottom:28px; }
-    .section-title { font-size:11px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:.8px; margin-bottom:12px; border-bottom:1px solid #eee; padding-bottom:6px; }
-    .info-row { display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid #f0f0f0; }
-    .info-label { font-weight:600; color:#555; }
-    .info-value { color:#111; text-align:right; }
-    .state-card { border:1px solid #eee; border-radius:10px; padding:16px 18px; margin-bottom:12px; }
-    .state-name { font-size:14px; font-weight:800; color:#111; margin-bottom:4px; }
-    .state-detail { font-size:12px; color:#666; line-height:1.7; }
-    .badge { display:inline-block; font-size:10px; font-weight:700; padding:2px 8px; border-radius:20px; margin-left:8px; }
-    .badge-green { background:#e6faf5; color:#00a875; border:1px solid #b3ead8; }
-    .badge-yellow { background:#fff8e6; color:#d97706; border:1px solid #fcd34d; }
-    .checklist { list-style:none; }
-    .checklist li { display:flex; align-items:flex-start; gap:10px; padding:8px 0; border-bottom:1px solid #f5f5f5; font-size:12px; line-height:1.5; color:#444; }
-    .checklist li::before { content:'☐'; font-size:15px; color:#aaa; flex-shrink:0; margin-top:-1px; }
-    .footer { margin-top:40px; padding-top:16px; border-top:1px solid #eee; font-size:10px; color:#aaa; text-align:center; }
-    .highlight { color:#00c896; font-weight:700; }
-  </style></head><body>
-  <div class="header">
-    <div class="brand">MyTaxFly · Annual Report Guide</div>
-    <h1>State Annual Report — ${taxYear}</h1>
-    <div class="sub">${corpName} · ${entityType} · Generated ${today}</div>
-  </div>
+  // State-specific data table
+  const STATE_DATA = {
+    AL: { name:'Alabama',        portal:'sos.alabama.gov',          deadline:'April 15',         fee:'$100',   notes:'Annual Report for LLCs. Filed with Secretary of State.' },
+    AK: { name:'Alaska',         portal:'commerce.alaska.gov',      deadline:'January 2',         fee:'$100',   notes:'Biennial Report — every 2 years.' },
+    AZ: { name:'Arizona',        portal:'azcc.gov',                 deadline:'Anniversary month', fee:'$0',     notes:'No annual report required for LLCs in Arizona.' },
+    AR: { name:'Arkansas',       portal:'sos.arkansas.gov',         deadline:'May 1',             fee:'$150',   notes:'Annual Franchise Tax Report.' },
+    CA: { name:'California',     portal:'bizfileonline.sos.ca.gov', deadline:'Anniversary month', fee:'$20 + $800 min franchise tax', notes:'Statement of Information + $800 minimum franchise tax per year.' },
+    CO: { name:'Colorado',       portal:'sos.state.co.us',          deadline:'Anniversary month', fee:'$10',    notes:'Periodic Report filed online.' },
+    CT: { name:'Connecticut',    portal:'business.ct.gov',          deadline:'Anniversary month', fee:'$80',    notes:'Annual Report filed with SOTS.' },
+    DE: { name:'Delaware',       portal:'corp.delaware.gov',        deadline:'June 1',            fee:'$300',   notes:'Annual Franchise Tax — flat $300 for most LLCs.' },
+    FL: { name:'Florida',        portal:'dos.myflorida.com',        deadline:'May 1',             fee:'$138.75',notes:'Annual Report. Late fee of $400 if filed after May 1.' },
+    GA: { name:'Georgia',        portal:'sos.ga.gov',               deadline:'April 1',           fee:'$50',    notes:'Annual Registration filed with Secretary of State.' },
+    HI: { name:'Hawaii',         portal:'businessregistration.dca.hawaii.gov', deadline:'Anniversary quarter', fee:'$15', notes:'Annual Report.' },
+    ID: { name:'Idaho',          portal:'sos.idaho.gov',            deadline:'Anniversary month', fee:'$0',     notes:'Annual Report — no fee for LLCs.' },
+    IL: { name:'Illinois',       portal:'ilsos.gov',                deadline:'Anniversary month', fee:'$75',    notes:'Annual Report filed with Secretary of State.' },
+    IN: { name:'Indiana',        portal:'inbiz.in.gov',             deadline:'Anniversary month', fee:'$50',    notes:'Business Entity Report — biennial (every 2 years).' },
+    IA: { name:'Iowa',           portal:'sos.iowa.gov',             deadline:'April 1 (biennial)',fee:'$30',    notes:'Biennial Report.' },
+    KS: { name:'Kansas',         portal:'sos.ks.gov',               deadline:'Anniversary month', fee:'$50',    notes:'Annual Report.' },
+    KY: { name:'Kentucky',       portal:'sos.ky.gov',               deadline:'June 30',           fee:'$15',    notes:'Annual Report.' },
+    LA: { name:'Louisiana',      portal:'geauxbiz.com',             deadline:'Anniversary month', fee:'$30',    notes:'Annual Report.' },
+    ME: { name:'Maine',          portal:'maine.gov/sos',            deadline:'June 1',            fee:'$85',    notes:'Annual Report.' },
+    MD: { name:'Maryland',       portal:'dat.maryland.gov',         deadline:'April 15',          fee:'$300',   notes:'Annual Report + Personal Property Return.' },
+    MA: { name:'Massachusetts',  portal:'corp.sec.state.ma.us',     deadline:'Anniversary month', fee:'$500',   notes:'Annual Report. High fee for LLCs.' },
+    MI: { name:'Michigan',       portal:'michigan.gov/lara',        deadline:'February 15',       fee:'$25',    notes:'Annual Statement.' },
+    MN: { name:'Minnesota',      portal:'sos.state.mn.us',          deadline:'December 31',       fee:'$0',     notes:'Annual Renewal — no fee.' },
+    MS: { name:'Mississippi',    portal:'sos.ms.gov',               deadline:'April 15',          fee:'$0',     notes:'Annual Report — no fee.' },
+    MO: { name:'Missouri',       portal:'sos.mo.gov',               deadline:'No annual report',  fee:'$0',     notes:'Missouri LLCs have no annual report requirement.' },
+    MT: { name:'Montana',        portal:'sos.mt.gov',               deadline:'April 15',          fee:'$20',    notes:'Annual Report.' },
+    NE: { name:'Nebraska',       portal:'sos.nebraska.gov',         deadline:'March 1 (biennial)',fee:'$30',    notes:'Biennial Occupation Tax Report.' },
+    NV: { name:'Nevada',         portal:'nvsilverflume.gov',        deadline:'Anniversary month', fee:'$350+',  notes:'Annual List + State Business License ($200). High fees.' },
+    NH: { name:'New Hampshire',  portal:'sos.nh.gov',               deadline:'April 1',           fee:'$100',   notes:'Annual Report.' },
+    NJ: { name:'New Jersey',     portal:'njportal.com/dor',         deadline:'Anniversary month', fee:'$75',    notes:'Annual Report.' },
+    NM: { name:'New Mexico',     portal:'portal.sos.state.nm.us',   deadline:'No annual report',  fee:'$0',     notes:'New Mexico LLCs have no annual report requirement.' },
+    NY: { name:'New York',       portal:'dos.ny.gov',               deadline:'Anniversary month (biennial)', fee:'$9', notes:'Biennial Statement every 2 years.' },
+    NC: { name:'North Carolina', portal:'sosnc.gov',                deadline:'April 15',          fee:'$200',   notes:'Annual Report.' },
+    ND: { name:'North Dakota',   portal:'sos.nd.gov',               deadline:'November 15',       fee:'$50',    notes:'Annual Report.' },
+    OH: { name:'Ohio',           portal:'sos.state.oh.us',          deadline:'No annual report',  fee:'$0',     notes:'Ohio LLCs have no annual report requirement.' },
+    OK: { name:'Oklahoma',       portal:'sos.ok.gov',               deadline:'Anniversary month', fee:'$25',    notes:'Annual Certificate.' },
+    OR: { name:'Oregon',         portal:'sos.oregon.gov',           deadline:'Anniversary month', fee:'$100',   notes:'Annual Report.' },
+    PA: { name:'Pennsylvania',   portal:'file.dos.pa.gov',          deadline:'No annual report',  fee:'$0',     notes:'Pennsylvania LLCs have no annual report requirement.' },
+    RI: { name:'Rhode Island',   portal:'sos.ri.gov',               deadline:'November 1',        fee:'$50',    notes:'Annual Report.' },
+    SC: { name:'South Carolina', portal:'sos.sc.gov',               deadline:'No annual report',  fee:'$0',     notes:'South Carolina LLCs have no annual report requirement.' },
+    SD: { name:'South Dakota',   portal:'sdsos.gov',                deadline:'No annual report',  fee:'$0',     notes:'South Dakota LLCs have no annual report requirement.' },
+    TN: { name:'Tennessee',      portal:'tnsos.gov',                deadline:'April 1',           fee:'$300 min',notes:'Annual Report. Fee = $50 per member, min $300, max $3,000.' },
+    TX: { name:'Texas',          portal:'sos.state.tx.us',          deadline:'May 15',            fee:'Franchise tax based on revenue', notes:'Public Information Report + Franchise Tax (no tax if revenue < $2.47M threshold).' },
+    UT: { name:'Utah',           portal:'utah.gov/business',        deadline:'Anniversary month', fee:'$18',    notes:'Annual Renewal.' },
+    VT: { name:'Vermont',        portal:'sos.vermont.gov',          deadline:'March 15',          fee:'$35',    notes:'Annual Report.' },
+    VA: { name:'Virginia',       portal:'scc.virginia.gov',         deadline:'Last day of anniversary month', fee:'$50', notes:'Annual Registration Fee.' },
+    WA: { name:'Washington',     portal:'ccfs.sos.wa.gov',          deadline:'Anniversary month', fee:'$60',    notes:'Annual Report.' },
+    WV: { name:'West Virginia',  portal:'sos.wv.gov',               deadline:'July 1',            fee:'$25',    notes:'Annual Report.' },
+    WI: { name:'Wisconsin',      portal:'wisconsin.gov/business',   deadline:'Anniversary quarter',fee:'$25',   notes:'Annual Report.' },
+    WY: { name:'Wyoming',        portal:'wyobiz.wyo.gov',           deadline:'Anniversary month', fee:'$60 min',notes:'Annual Report. Fee = $0.0002 x assets in WY, min $60.' },
+  };
 
-  <div class="section">
-    <div class="section-title">Entity Information</div>
-    <div class="info-row"><span class="info-label">LLC Name</span><span class="info-value">${corpName}</span></div>
-    <div class="info-row"><span class="info-label">Entity Type</span><span class="info-value">${entityType}</span></div>
-    <div class="info-row"><span class="info-label">EIN</span><span class="info-value">${p.ein || '—'}</span></div>
-    <div class="info-row"><span class="info-label">Filing Year</span><span class="info-value">${taxYear}</span></div>
-  </div>
-
-  <div class="section">
-    <div class="section-title">State Filing Requirements</div>
-    <div class="state-card">
-      <div class="state-name">Delaware <span class="badge badge-green">Popular for LLCs</span></div>
+  const sd = STATE_DATA[st];
+  const stateName = sd ? sd.name : (st || 'Unknown State');
+  const stateSection = sd ? `
+    <div class="state-card primary">
+      <div class="state-name">${sd.name} <span class="badge badge-green">Your State</span></div>
       <div class="state-detail">
-        <strong>Annual Franchise Tax Report</strong><br>
-        Deadline: <span class="highlight">June 1, ${taxYear + 1}</span> (for tax year ${taxYear})<br>
-        Filing method: Online at <strong>corp.delaware.gov</strong><br>
-        Minimum franchise tax: <strong>$300</strong> (flat rate for most LLCs)<br>
-        Registered agent required: <strong>Yes</strong>
+        <strong>Filing Portal:</strong> <span class="highlight">${sd.portal}</span><br>
+        <strong>Deadline:</strong> <span class="highlight">${sd.deadline}</span><br>
+        <strong>Fee:</strong> <strong>${sd.fee}</strong><br>
+        <strong>Notes:</strong> ${sd.notes}
       </div>
-    </div>
-    <div class="state-card">
-      <div class="state-name">Wyoming <span class="badge badge-yellow">Low Cost</span></div>
-      <div class="state-detail">
-        <strong>Annual Report (License Tax)</strong><br>
-        Deadline: <span class="highlight">Anniversary month of formation</span><br>
-        Filing method: Online at <strong>wyobiz.wyo.gov</strong><br>
-        Minimum fee: <strong>$60</strong> (or $0.0002 × assets in Wyoming, whichever is greater)<br>
-        Registered agent required: <strong>Yes</strong>
-      </div>
-    </div>
-    <div class="state-card">
-      <div class="state-name">Other States</div>
-      <div class="state-detail">
-        Most states require an annual report or biennial statement.<br>
-        Deadlines and fees vary by state. Check your state's Secretary of State website.<br>
-        Common states: <strong>Florida</strong> (May 1 · $138.75), <strong>New York</strong> (biennial), <strong>California</strong> ($800/yr minimum franchise tax)
-      </div>
-    </div>
-  </div>
+    </div>` : `
+    <div class="state-card" style="border-color:rgba(246,173,85,0.4)">
+      <div style="font-size:13px;font-weight:700;color:#f6ad55;margin-bottom:6px">⚠ State of Formation Not Set</div>
+      <div class="state-detail">Please update your LLC profile and select your state of formation to get state-specific filing information.</div>
+    </div>`;
 
-  <div class="section">
-    <div class="section-title">Annual Report Checklist</div>
-    <ul class="checklist">
-      <li>Confirm LLC is in good standing with the state of formation</li>
-      <li>Verify registered agent address is current and correct</li>
-      <li>Confirm principal office address and member information is up to date</li>
-      <li>Pay state franchise tax or annual report fee</li>
-      <li>Submit annual report via state portal or by mail before deadline</li>
-      <li>Save confirmation number and payment receipt for your records</li>
-      ${isMulti ? '<li>Distribute Schedule K-1 to all partners before annual report deadline</li>' : ''}
-      <li>Confirm beneficial ownership information is up to date with FinCEN (BOI Report)</li>
-    </ul>
-  </div>
-
-  <div class="section">
-    <div class="section-title">Important Notes</div>
-    <div class="state-detail" style="line-height:1.8;color:#555">
-      • Annual reports are a <strong>state requirement</strong> separate from IRS federal tax filings.<br>
-      • Failure to file can result in LLC dissolution or loss of good standing.<br>
-      • This is an informational guide only — not legal or tax advice.<br>
-      • Always consult a licensed attorney or CPA for your specific situation.
-    </div>
-  </div>
-
-  <div class="footer">
-    Generated by <strong style="color:#00c896">MyTaxFly</strong> · mytaxfly.com · ${today} · Tax Year ${taxYear}<br>
-    ⚠ Not legal or tax advice. Consult a licensed CPA or attorney before filing.
-  </div>
-  </body></html>`;
+  const html = '<!DOCTYPE html><html><head><meta charset="utf-8">'
+    + '<style>'
+    + '@import url(\'https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap\');'
+    + '* { box-sizing:border-box; margin:0; padding:0; }'
+    + 'body { font-family:\'Inter\',sans-serif; background:#fff; color:#111; padding:48px 52px; font-size:13px; }'
+    + '.header { border-bottom:3px solid #00c896; padding-bottom:20px; margin-bottom:32px; }'
+    + '.brand { font-size:11px; font-weight:700; color:#00c896; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:8px; }'
+    + 'h1 { font-size:22px; font-weight:800; color:#111; margin-bottom:4px; }'
+    + '.sub { font-size:12px; color:#666; }'
+    + '.section { margin-bottom:28px; }'
+    + '.section-title { font-size:11px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:.8px; margin-bottom:12px; border-bottom:1px solid #eee; padding-bottom:6px; }'
+    + '.info-row { display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid #f0f0f0; }'
+    + '.info-label { font-weight:600; color:#555; }'
+    + '.info-value { color:#111; text-align:right; }'
+    + '.state-card { border:1px solid #eee; border-radius:10px; padding:16px 18px; margin-bottom:12px; }'
+    + '.state-card.primary { border-color:rgba(0,200,150,0.4); background:rgba(0,200,150,0.03); }'
+    + '.state-name { font-size:14px; font-weight:800; color:#111; margin-bottom:8px; }'
+    + '.state-detail { font-size:12px; color:#555; line-height:1.9; }'
+    + '.badge { display:inline-block; font-size:10px; font-weight:700; padding:2px 8px; border-radius:20px; margin-left:8px; }'
+    + '.badge-green { background:#e6faf5; color:#00a875; border:1px solid #b3ead8; }'
+    + '.checklist { list-style:none; }'
+    + '.checklist li { display:flex; align-items:flex-start; gap:10px; padding:8px 0; border-bottom:1px solid #f5f5f5; font-size:12px; line-height:1.5; color:#444; }'
+    + '.checklist li::before { content:"☐"; font-size:15px; color:#aaa; flex-shrink:0; margin-top:-1px; }'
+    + '.footer { margin-top:40px; padding-top:16px; border-top:1px solid #eee; font-size:10px; color:#aaa; text-align:center; }'
+    + '.highlight { color:#00c896; font-weight:700; }'
+    + '</style></head><body>'
+    + '<div class="header">'
+    + '<div class="brand">MyTaxFly · Annual Report Guide</div>'
+    + '<h1>State Annual Report — ' + stateName + ' · ' + taxYear + '</h1>'
+    + '<div class="sub">' + corpName + ' · ' + entityType + ' · Generated ' + today + '</div>'
+    + '</div>'
+    + '<div class="section"><div class="section-title">Entity Information</div>'
+    + '<div class="info-row"><span class="info-label">LLC Name</span><span class="info-value">' + corpName + '</span></div>'
+    + '<div class="info-row"><span class="info-label">Entity Type</span><span class="info-value">' + entityType + '</span></div>'
+    + '<div class="info-row"><span class="info-label">EIN</span><span class="info-value">' + (p.ein || '—') + '</span></div>'
+    + '<div class="info-row"><span class="info-label">State of Formation</span><span class="info-value">' + stateName + '</span></div>'
+    + '<div class="info-row"><span class="info-label">Filing Year</span><span class="info-value">' + taxYear + '</span></div>'
+    + '</div>'
+    + '<div class="section"><div class="section-title">State Filing Requirement</div>'
+    + stateSection
+    + '</div>'
+    + '<div class="section"><div class="section-title">Annual Report Checklist</div>'
+    + '<ul class="checklist">'
+    + '<li>Confirm LLC is in good standing with ' + stateName + '</li>'
+    + '<li>Verify registered agent name and address is current</li>'
+    + '<li>Confirm principal office address and member info is up to date</li>'
+    + (sd ? '<li>File annual report at <strong>' + sd.portal + '</strong> before <strong>' + sd.deadline + '</strong></li>' : '')
+    + (sd ? '<li>Pay state filing fee: <strong>' + sd.fee + '</strong></li>' : '')
+    + '<li>Save confirmation number and payment receipt</li>'
+    + (isMulti ? '<li>Distribute Schedule K-1 to all partners</li>' : '')
+    + '<li>Verify FinCEN BOI Report is up to date (if applicable)</li>'
+    + '</ul>'
+    + '</div>'
+    + '<div class="section"><div class="section-title">Important Notes</div>'
+    + '<div class="state-detail" style="line-height:1.8">'
+    + '• Annual reports are a <strong>state requirement</strong> separate from IRS federal tax filings.<br>'
+    + '• Failure to file can result in LLC dissolution or loss of good standing.<br>'
+    + '• This is an informational guide only — not legal or tax advice.<br>'
+    + '• Always consult a licensed attorney or CPA for your specific situation.'
+    + '</div></div>'
+    + '<div class="footer">Generated by <strong style="color:#00c896">MyTaxFly</strong> · mytaxfly.com · ' + today + ' · Tax Year ' + taxYear + '<br>'
+    + '⚠ Not legal or tax advice. Consult a licensed CPA or attorney before filing.</div>'
+    + '</body></html>';
 
   const opts = {
     margin: [12, 12, 12, 12],
@@ -6458,7 +6496,7 @@ function exportAnnualReport() {
     html2canvas: { scale: 2, useCORS: true },
     jsPDF: { unit: 'mm', format: [215.9, 279.4], orientation: 'portrait' }
   };
-  html2pdf().set(opts).from(html).save('Annual_Report_Guide_' + corpName.replace(/\s+/g,'_') + '_' + taxYear + '.pdf');
+  html2pdf().set(opts).from(html).save('Annual_Report_Guide_' + corpName.replace(/\s+/g,'_') + '_' + stateName.replace(/\s+/g,'_') + '_' + taxYear + '.pdf');
 }
 
 function renderIRSHistory(){
@@ -7290,7 +7328,7 @@ function saveAccountModal() {
   // Mirror to Tax Profile form fields (if open)
   const map = {
     ein:'tp-ein', address:'tp-address', city:'tp-city',
-    incDate:'tp-inc-date', activity:'tp-activity', country:'tp-country',
+    incDate:'tp-inc-date', activity:'tp-activity', country:'tp-country', formationState:'tp-formation-state',
     shName:'tp-sh-name', shAddress:'tp-sh-address', shCountry:'tp-sh-country',
     shFtin:'tp-sh-ftin', shRes:'tp-sh-res', shOwnership:'tp-sh-ownership'
   };
