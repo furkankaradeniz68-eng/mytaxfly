@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
+    "formidable": "^3.5.1",
     "stripe": "^14.21.0"
   }
 }
