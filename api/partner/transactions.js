@@ -22,19 +22,21 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'GET') {
-    const { user_id, from, to, type, category, limit = 100, offset = 0 } = req.query;
+    const { user_id, from, to, type, category, source, search, limit = 100, offset = 0 } = req.query;
     if (!user_id) return res.status(400).json({ error: 'Missing user_id.' });
     if (!await verifyUser(user_id)) return res.status(403).json({ error: 'User does not belong to this partner.' });
 
     let query = sb.from('transactions')
-      .select('id, date, vendor, amount, currency, type, category, deductible, deductible_percent, note, source, created_at')
+      .select('id, date, vendor, amount, currency, type, category, deductible, deductible_percent, note, source, external_id, filename, file_url, created_at')
       .eq('user_id', user_id).order('date', { ascending: false })
       .range(Number(offset), Number(offset) + Number(limit) - 1);
 
-    if (from) query = query.gte('date', from);
-    if (to)   query = query.lte('date', to);
-    if (type) query = query.eq('type', type);
+    if (from)     query = query.gte('date', from);
+    if (to)       query = query.lte('date', to);
+    if (type)     query = query.eq('type', type);
     if (category) query = query.eq('category', category);
+    if (source)   query = query.eq('source', source);         // upload | manual | stripe_fc | partner_api
+    if (search)   query = query.ilike('vendor', `%${search}%`); // Vendor-Suche
 
     const { data, error } = await query;
     if (error) return res.status(500).json({ error: error.message });
