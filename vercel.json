@@ -1,13 +1,13 @@
 {
   "cleanUrls": true,
   "functions": {
-    "api/stripe-webhook.js":              { "memory": 256, "maxDuration": 10 },
-    "api/send-to-advisor.js":             { "maxDuration": 30 },
-    "api/send-to-irs.js":                 { "memory": 256, "maxDuration": 30 },
-    "api/partner/preview-filing.js":      { "memory": 512, "maxDuration": 30 },
-    "api/partner/submit-filing.js":       { "memory": 512, "maxDuration": 60 },
-    "api/partner/filing-status.js":       { "maxDuration": 10 },
-    "api/partner/transactions.js":        { "maxDuration": 10 }
+    "api/stripe-webhook.js":         { "memory": 256, "maxDuration": 10 },
+    "api/send-to-advisor.js":        { "maxDuration": 30 },
+    "api/send-to-irs.js":            { "memory": 256, "maxDuration": 30 },
+    "api/partner/preview-filing.js": { "memory": 512, "maxDuration": 30 },
+    "api/partner/submit-filing.js":  { "memory": 512, "maxDuration": 30 },
+    "api/partner/filing-status.js":  { "maxDuration": 10 },
+    "api/partner/transactions.js":   { "maxDuration": 10 }
   },
   "rewrites": [
     { "source": "/", "destination": "/index.html" },
