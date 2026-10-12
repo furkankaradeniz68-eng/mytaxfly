@@ -30,7 +30,7 @@ async function generate5472Bundle(company, owner, transactions, taxYear, preview
   const { PDFDocument, rgb, StandardFonts } = await import('pdf-lib');
 
   const formsDir = path.join(process.cwd(), 'forms');
-  const f5472Bytes = readFileSync(path.join(formsDir, 'f5472.pdf'));
+  const f5472Bytes = readFileSync(path.join(formsDir, 'f5472-2023.pdf'));
 
   const doc5472 = await PDFDocument.load(f5472Bytes, { ignoreEncryption: true });
   const pages = doc5472.getPages();
