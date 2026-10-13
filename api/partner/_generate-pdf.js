@@ -4,24 +4,98 @@ import path from 'path';
 /**
  * Shared PDF generation for both preview-filing and submit-filing.
  * @param {object} opts
- * @param {'5472_1120'|'1065'} opts.form_type
+ * @param {'5472_1120'|'1065'|'7004'} opts.form_type
  * @param {object}   opts.company
  * @param {object}   [opts.foreign_owner]
  * @param {object[]} [opts.transactions]
  * @param {object[]} [opts.partners]
  * @param {object}   [opts.financials]
  * @param {number}   opts.tax_year
- * @param {boolean}  [opts.preview=false]  — adds "UNSIGNED PREVIEW" watermark when true
+ * @param {string}   [opts.extend_form]     — for 7004: form being extended, e.g. "1065", "1120"
+ * @param {number}   [opts.tentative_tax]   — for 7004 Part II line 4
+ * @param {number}   [opts.tax_payments]    — for 7004 Part II line 5
+ * @param {boolean}  [opts.preview=false]   — adds "UNSIGNED PREVIEW" watermark when true
  * @returns {Promise<Uint8Array>}
  */
 export async function generatePdf({
   form_type, company, foreign_owner, transactions = [],
   partners = [], financials = {}, tax_year, preview = false,
+  extend_form, tentative_tax = 0, tax_payments = 0,
 }) {
   if (form_type === '5472_1120') {
     return generate5472Bundle(company, foreign_owner, transactions, tax_year, preview);
   }
+  if (form_type === '7004') {
+    return generate7004(company, extend_form || '1065', tax_year, tentative_tax, tax_payments, preview);
+  }
   return generate1065(company, partners, financials, tax_year, preview);
+}
+
+// ─── Form 7004 — Automatic Extension ────────────────────────────────────────
+
+// 2-digit form codes as listed in Form 7004 Part I instructions
+const FORM7004_CODES = {
+  '1065':    '09',
+  '1066':    '11',
+  '1120':    '12',
+  '1120-C':  '34',
+  '1120-F':  '15',
+  '1120-L':  '25',
+  '1120-PC': '21',
+  '1120-S':  '06',
+  '1120-SF': '36',
+  '1041-A':  '03',
+};
+
+async function generate7004(company, extendForm, taxYear, tentativeTax, taxPayments, preview) {
+  const { PDFDocument, rgb, StandardFonts } = await import('pdf-lib');
+
+  const formsDir = path.join(process.cwd(), 'forms');
+  const f7004Bytes = readFileSync(path.join(formsDir, 'f7004.pdf'));
+
+  const doc = await PDFDocument.load(f7004Bytes, { ignoreEncryption: true });
+  const pages = doc.getPages();
+  const p = pages[0];
+
+  const font = await doc.embedFont(StandardFonts.Helvetica);
+  const bold = await doc.embedFont(StandardFonts.HelveticaBold);
+
+  const t = (text, x, y, size = 10, f = font) =>
+    p.drawText(String(text ?? ''), { x, y, size, font: f, color: rgb(0, 0, 0) });
+
+  const addr = company.address ?? {};
+
+  // ── Taxpayer identification ───────────────────────────────────────────────
+  t(company.name, 13, 649, 10, bold);
+  t(company.ein,  448, 649, 10);
+  t(addr.street || '', 13, 624, 10);
+  t(`${addr.city || ''}, ${addr.state || ''} ${addr.zip || ''}`.trim(), 13, 599, 10);
+
+  // ── Tax period ────────────────────────────────────────────────────────────
+  t(`01/01/${taxYear}`, 13,  572, 9);   // beginning
+  t(`12/31/${taxYear}`, 192, 572, 9);   // ending
+
+  // ── Part I — form being extended ──────────────────────────────────────────
+  const formCode = FORM7004_CODES[extendForm] || FORM7004_CODES['1065'];
+  t(formCode, 73, 530, 10);   // 2-digit code in the code box
+
+  // ── Part II — tentative tax ────────────────────────────────────────────────
+  const fmtUSD = n => Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2 });
+  const balanceDue = Math.max(0, Number(tentativeTax) - Number(taxPayments));
+
+  if (tentativeTax)  t(fmtUSD(tentativeTax),  450, 451, 9);  // line 4
+  if (taxPayments)   t(fmtUSD(taxPayments),    450, 426, 9);  // line 5
+  if (balanceDue > 0) t(fmtUSD(balanceDue),    450, 401, 9);  // line 6
+
+  if (preview) {
+    p.drawText('UNSIGNED PREVIEW', {
+      x: 80, y: 300, size: 60, font: bold,
+      color: rgb(0.87, 0.87, 0.87), opacity: 0.22,
+      rotate: { type: 'degrees', angle: 45 },
+    });
+  }
+
+  return doc.save();
 }
 
 // ─── Form 5472 + Pro Forma 1120 bundle ──────────────────────────────────────
