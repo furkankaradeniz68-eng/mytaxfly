@@ -23,11 +23,12 @@ export default async function handler(req, res) {
     external_id, form_type, tax_year,
     company, foreign_owner, transactions = [],
     partners = [], financials = {},
+    extend_form, tentative_tax = 0, tax_payments = 0,
   } = req.body || {};
 
   if (!external_id) return res.status(400).json({ error: 'Missing external_id.' });
-  if (!form_type || !['5472_1120', '1065'].includes(form_type))
-    return res.status(400).json({ error: 'form_type must be "5472_1120" or "1065".' });
+  if (!form_type || !['5472_1120', '1065', '7004'].includes(form_type))
+    return res.status(400).json({ error: 'form_type must be "5472_1120", "1065", or "7004".' });
   if (!tax_year || typeof tax_year !== 'number')
     return res.status(400).json({ error: 'Missing tax_year (number).' });
   if (!company?.name || !company?.ein)
@@ -38,11 +39,13 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing foreign_owner.name or foreign_owner.country.' });
   if (form_type === '1065' && !partners?.length)
     return res.status(400).json({ error: 'Missing partners array for form_type 1065.' });
+  if (form_type === '7004' && !extend_form)
+    return res.status(400).json({ error: 'Missing extend_form (e.g. "1065", "1120", "1120-F").' });
 
   let pdfBytes;
   try {
     const { generatePdf } = await import('./_generate-pdf.js');
-    pdfBytes = await generatePdf({ form_type, company, foreign_owner, transactions, partners, financials, tax_year, preview: true });
+    pdfBytes = await generatePdf({ form_type, company, foreign_owner, transactions, partners, financials, tax_year, preview: true, extend_form, tentative_tax, tax_payments });
   } catch (err) {
     console.error('PDF generation error:', err);
     return res.status(500).json({ error: 'PDF generation failed: ' + err.message });
