@@ -2042,7 +2042,7 @@ let _appInitialized = false;
     }
   }
 })();
-const ADMIN_EMAILS = ['furkan.karadeniz68@googlemail.com', 'anil@aynauniverse.com', 'info@llc-starten.de', 'solutionthirteenllc@gmail.com'];
+const ADMIN_EMAILS = ['furkan.karadeniz68@googlemail.com', 'anil@aynauniverse.com', 'info@llc-starten.de', 'solutionthirteenllc@gmail.com', 'sales@taxxit-consulting.com'];
 
 // ── STATE ─────────────────────────────────────────────────
 let userName='', llcName='', userEmail='', transactions=[], chatHistory=[];
@@ -5104,7 +5104,7 @@ async function exportForm1120() {
   const corpName = llcName || p.llcName || '';
   try {
     const sigData = await _loadSigData();
-    const blob = await buildIRSAcroBlob(p, filtered, taxYear, corpName, '5472_1120', null, sigData);
+    const blob = await buildIRSAcroBlob(p, filtered, taxYear, corpName, '1120', null, sigData);
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -5122,11 +5122,11 @@ async function exportForm5472() {
   const corpName = llcName || p.llcName || '';
   try {
     const sigData = await _loadSigData();
-    const blob = await buildIRSAcroBlob(p, filtered, taxYear, corpName, '5472_1120', null, sigData);
+    const blob = await buildIRSAcroBlob(p, filtered, taxYear, corpName, '5472', null, sigData);
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Form5472_1120_${corpName.replace(/[^a-zA-Z0-9]/g,'_')}_${taxYear}.pdf`;
+    a.download = `Form5472_${corpName.replace(/[^a-zA-Z0-9]/g,'_')}_${taxYear}.pdf`;
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 5000);
   } catch(e) { alert('Export failed: ' + e.message); }
@@ -5824,8 +5824,12 @@ async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extend
     await build7004();
   } else if (formType === '1065') {
     await build1065();
+  } else if (formType === '1120') {
+    await build1120();
+  } else if (formType === '5472') {
+    await build5472();
   } else {
-    // Default: 5472 + 1120 (Foreign-Owned SMLLC)
+    // Default: 5472 + 1120 (Foreign-Owned SMLLC filing package)
     await build1120();
     await build5472();
   }
