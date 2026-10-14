@@ -5419,10 +5419,10 @@ async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extend
     t(pg, formNum, ML+28, H-24, 13, fontB, WHITE);
     const nw = fontB.widthOfTextAtSize(formNum, 13);
     t(pg, title, ML+32+nw, H-23, 8, font, rgb(0.75,0.75,0.75));
-    tR(pg, `Tax Year ${taxYear}  ·  Page ${pageNum} of ${totalPages}`, W-MR, H-23, 7.5, font, rgb(0.6,0.6,0.6));
+    tR(pg, `Tax Year ${taxYear}  |  Page ${pageNum} of ${totalPages}`, W-MR, H-23, 7.5, font, rgb(0.6,0.6,0.6));
     hline(pg, H-34, 0, W, 0.5, DGRAY);
     // Tiny IRS-style notice
-    t(pg, 'Department of the Treasury — Internal Revenue Service', ML, H-44, 6.5, font, GRAY6);
+    t(pg, 'Department of the Treasury - Internal Revenue Service', ML, H-44, 6.5, font, GRAY6);
   }
 
   // Section header row (dark bar with white label)
@@ -5456,7 +5456,7 @@ async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extend
     t(pg, 'Total Assets',                     rx, startY-34, 6.5, font, GRAY6);
     t(pg, dollar(inc),                        rx, startY-46, 8.5, font, BLACK);
     t(pg, 'Tax period',                       rx, startY-59, 6.5, font, GRAY6);
-    t(pg, `01/01/${taxYear} – 12/31/${taxYear}`, rx, startY-71, 8, font, BLACK);
+    t(pg, `01/01/${taxYear} - 12/31/${taxYear}`, rx, startY-71, 8, font, BLACK);
 
     return startY - BH;
   }
@@ -5515,7 +5515,7 @@ async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extend
     const pg = pdfDoc.addPage([W, H]);
     pageHeader(pg, '1120', 'U.S. Corporation Income Tax Return (Pro Forma)', 1, 2);
 
-    t(pg, `Foreign-Owned Disregarded Entity (DE) — Reg. §1.6012-2(g)(2)  ·  Tax year Jan 01, ${taxYear} – Dec 31, ${taxYear}`, ML, H-47, 7, font, GRAY6);
+    t(pg, `Foreign-Owned Disregarded Entity (DE) - Reg. sec.1.6012-2(g)(2) - Tax year Jan 01, ${taxYear} - Dec 31, ${taxYear}`, ML, H-47, 7, font, GRAY6);
 
     let y = H - 58;
     y = companyBlock(pg, y);
@@ -5523,7 +5523,7 @@ async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extend
     // DE checkbox note
     y -= 4;
     box(pg, ML, y-13, IW, 13, rgb(0.97,0.97,0.97), null);
-    t(pg, '☒  Foreign-owned U.S. disregarded entity (Reg. §1.6012-2(g)(2))', ML+6, y-10, 7.5, font, BLACK);
+    t(pg, '[X]  Foreign-owned U.S. disregarded entity (Reg. sec.1.6012-2(g)(2))', ML+6, y-10, 7.5, font, BLACK);
     y -= 13; y -= 4;
 
     // INCOME
@@ -5589,9 +5589,9 @@ async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extend
     y2 -= 20;
     box(pg2, ML, y2-32, IW, 32, rgb(1,0.97,0.91), null);
     box(pg2, ML, y2-32, IW, 32, null, rgb(0.85,0.65,0.2));
-    t(pg2, '⚠  DISCLAIMER', ML+6, y2-11, 7.5, fontB, rgb(0.5,0.3,0));
+    t(pg2, '(!)  DISCLAIMER', ML+6, y2-11, 7.5, fontB, rgb(0.5,0.3,0));
     t(pg2, 'This is a pro forma informational return for a foreign-owned U.S. disregarded entity. The entity has no separate U.S.', ML+6, y2-21, 6.5, font, rgb(0.45,0.28,0));
-    t(pg2, 'federal income tax liability. Form 5472 is filed as an attachment per Reg. §1.6038A-1. Consult a licensed CPA before filing.', ML+6, y2-31, 6.5, font, rgb(0.45,0.28,0));
+    t(pg2, 'federal income tax liability. Form 5472 is filed as an attachment per Reg. sec.1.6038A-1. Consult a licensed CPA before filing.', ML+6, y2-31, 6.5, font, rgb(0.45,0.28,0));
   }
 
   // ══════════════════════════════════════════════════════════
@@ -5640,7 +5640,7 @@ async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extend
     y = gridTop - GH*4 - 26;
     box(pg, ML, y-22, IW, 22, rgb(0.97,0.97,0.97), null);
     box(pg, ML, y-22, IW, 22, null, rgb(0.55,0.55,0.55));
-    t(pg, '3  ☒  This is a foreign-owned domestic disregarded entity (DE) treated as a corporation for purposes of section 6038A.', ML+4, y-15, 7.5, font, BLACK);
+    t(pg, '3  [X]  This is a foreign-owned domestic disregarded entity (DE) treated as a corporation for purposes of section 6038A.', ML+4, y-15, 7.5, font, BLACK);
     y -= 22; y -= 10;
 
     // PART II
@@ -5676,7 +5676,7 @@ async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extend
     box(pg, ML, y-22, IW, 22, LGRAY, null);
     box(pg, ML, y-22, IW, 22, null, rgb(0.55,0.55,0.55));
     t(pg, '8a  Name and address of related party (same as 25% foreign shareholder for single-member LLC)', ML+4, y-8, 6.5, font, GRAY6);
-    t(pg, (owner.name||'(same as Part II)') + '  ·  Check: ☒ Foreign person  ☐ U.S. person', ML+4, y-19, 7.5, font, BLACK);
+    t(pg, (owner.name||'(same as Part II)') + '  --  Check: [X] Foreign person  [ ] U.S. person', ML+4, y-19, 7.5, font, BLACK);
     y -= 22; y -= 10;
 
     // PART IV (starts on same page)
@@ -5724,7 +5724,7 @@ async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extend
   async function build1065() {
     const pg = pdfDoc.addPage([W, H]);
     pageHeader(pg, '1065', 'U.S. Return of Partnership Income', 1, 1);
-    t(pg, `For calendar year ${taxYear} — beginning 01/01/${taxYear} and ending 12/31/${taxYear}`, ML, H-47, 7, font, GRAY6);
+    t(pg, `For calendar year ${taxYear} - beginning 01/01/${taxYear} and ending 12/31/${taxYear}`, ML, H-47, 7, font, GRAY6);
 
     let y = H - 58;
     y = companyBlock(pg, y);
@@ -5767,7 +5767,7 @@ async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extend
 
     const pg = pdfDoc.addPage([W, H]);
     pageHeader(pg, '7004', `Application for Automatic Extension of Time To File — ${formName}`, 1, 1);
-    t(pg, `Tax year: January 1, ${taxYear} – December 31, ${taxYear}`, ML, H-47, 7, font, GRAY6);
+    t(pg, `Tax year: January 1, ${taxYear} - December 31, ${taxYear}`, ML, H-47, 7, font, GRAY6);
 
     let y = H - 58;
     y = companyBlock(pg, y);
@@ -5782,10 +5782,10 @@ async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extend
     y -= 28; y -= 8;
 
     y = sectionBar(pg, y, 'PART II — ALL FILERS MUST COMPLETE THIS PART');
-    y = lineRow(pg, y, '3',  'Is the organization a corporation that is the common parent of a consolidated group?', '☐ Yes  ☒ No');
+    y = lineRow(pg, y, '3',  'Is the organization a corporation that is the common parent of a consolidated group?', '[ ] Yes  [X] No');
     y = lineRow(pg, y, '4',  'If "Yes," attach a schedule listing name, address, and EIN for each member', '');
-    y = lineRow(pg, y, '5a', 'If the organization qualifies under Reg. §1.6081-5, check here >', '☐');
-    y = lineRow(pg, y, '5b', 'If "Yes," is the organization\'s tax year a 52-53-week tax year?', '☐ Yes  ☐ No');
+    y = lineRow(pg, y, '5a', 'If the organization qualifies under Reg. sec.1.6081-5, check here >', '[ ]');
+    y = lineRow(pg, y, '5b', 'If "Yes," is the organization\'s tax year a 52-53-week tax year?', '[ ] Yes  [ ] No');
     y = lineRow(pg, y, '6',  'Tentative total tax', '0');
     y = lineRow(pg, y, '7',  'Total payments and credits', '0');
     y = lineRow(pg, y, '8',  'Balance due — subtract line 7 from line 6. Deposit this amount using EFTPS.', '0', true);
