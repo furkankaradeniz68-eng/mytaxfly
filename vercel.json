@@ -7,7 +7,9 @@
     "api/partner/preview-filing.js":      { "memory": 512, "maxDuration": 30 },
     "api/partner/submit-filing.js":       { "memory": 512, "maxDuration": 60 },
     "api/partner/filing-status.js":       { "maxDuration": 10 },
-    "api/partner/transactions.js":        { "maxDuration": 10 }
+    "api/partner/transactions.js":        { "maxDuration": 10 },
+    "api/stripe-fc-session.js":           { "maxDuration": 15 },
+    "api/stripe-fc-sync.js":              { "maxDuration": 30 }
   },
   "rewrites": [
     { "source": "/", "destination": "/index.html" },
