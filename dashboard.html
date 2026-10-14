@@ -1577,38 +1577,41 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
         <div style="display:flex;flex-direction:column;gap:8px" id="irs-form-type-list">
 
           <!-- Single-Member LLC -->
-          <div class="irs-type-card irs-type-selected" id="irs-type-5472" onclick="selectIRSFormType('5472_1120')" style="background:var(--bg2);border:1.5px solid var(--accent);border-radius:12px;padding:14px 16px;cursor:pointer;transition:all 0.18s">
-            <div style="display:flex;align-items:center;gap:12px">
-              <div style="width:36px;height:36px;border-radius:10px;background:rgba(0,200,150,0.12);border:1px solid rgba(0,200,150,0.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px">🏢</div>
+          <div class="irs-type-card irs-type-selected" id="irs-type-5472" onclick="selectIRSFormType('5472_1120')" style="background:var(--bg2);border:1.5px solid var(--accent);border-radius:12px;padding:14px 18px;cursor:pointer;transition:all 0.18s">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
               <div style="flex:1;min-width:0">
-                <div style="font-size:13px;font-weight:700;color:var(--text)">Single-Member LLC <span style="font-weight:500;color:var(--text3)">(Foreign-Owned)</span></div>
-                <div style="font-size:11px;color:var(--text3);margin-top:2px">Pro Forma 1120 + Form 5472 · IRS Ogden, UT 84409</div>
+                <div style="font-size:13px;font-weight:700;color:var(--text)">Pro Forma 1120 + Form 5472 <span style="font-weight:500;color:var(--text3)">(Single-Member LLC, Foreign-Owned)</span></div>
+                <div style="font-size:11px;color:var(--text3);margin-top:3px">IRS Ogden, UT 84409</div>
               </div>
-              <div id="irs-check-5472" style="color:var(--accent);font-size:16px">✓</div>
+              <div id="irs-check-5472" style="width:18px;height:18px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><polyline points="1.5,6 5,9.5 10.5,2.5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
             </div>
           </div>
 
           <!-- Multi-Member LLC -->
-          <div class="irs-type-card" id="irs-type-1065" onclick="selectIRSFormType('1065')" style="background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;cursor:pointer;transition:all 0.18s">
-            <div style="display:flex;align-items:center;gap:12px">
-              <div style="width:36px;height:36px;border-radius:10px;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px">👥</div>
+          <div class="irs-type-card" id="irs-type-1065" onclick="selectIRSFormType('1065')" style="background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;padding:14px 18px;cursor:pointer;transition:all 0.18s">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
               <div style="flex:1;min-width:0">
-                <div style="font-size:13px;font-weight:700;color:var(--text)">Multi-Member LLC <span style="font-weight:500;color:var(--text3)">(Partnership)</span></div>
-                <div style="font-size:11px;color:var(--text3);margin-top:2px">Form 1065 · IRS Hartford, CT 06176</div>
+                <div style="font-size:13px;font-weight:700;color:var(--text)">Form 1065 <span style="font-weight:500;color:var(--text3)">(Multi-Member LLC, Partnership)</span></div>
+                <div style="font-size:11px;color:var(--text3);margin-top:3px">IRS Hartford, CT 06176</div>
               </div>
-              <div id="irs-check-1065" style="color:var(--accent);font-size:16px;display:none">✓</div>
+              <div id="irs-check-1065" style="width:18px;height:18px;border-radius:50%;background:var(--accent);display:none;align-items:center;justify-content:center;flex-shrink:0">
+                <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><polyline points="1.5,6 5,9.5 10.5,2.5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
             </div>
           </div>
 
           <!-- Extension -->
-          <div class="irs-type-card" id="irs-type-7004" onclick="selectIRSFormType('7004')" style="background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;cursor:pointer;transition:all 0.18s">
-            <div style="display:flex;align-items:center;gap:12px">
-              <div style="width:36px;height:36px;border-radius:10px;background:rgba(246,173,85,0.1);border:1px solid rgba(246,173,85,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px">⏱</div>
+          <div class="irs-type-card" id="irs-type-7004" onclick="selectIRSFormType('7004')" style="background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;padding:14px 18px;cursor:pointer;transition:all 0.18s">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
               <div style="flex:1;min-width:0">
-                <div style="font-size:13px;font-weight:700;color:var(--text)">Extension <span style="font-weight:500;color:var(--text3)">(6 Months)</span></div>
-                <div style="font-size:11px;color:var(--text3);margin-top:2px">Form 7004 · IRS Ogden, UT 84201</div>
+                <div style="font-size:13px;font-weight:700;color:var(--text)">Form 7004 <span style="font-weight:500;color:var(--text3)">(Extension, 6 Months)</span></div>
+                <div style="font-size:11px;color:var(--text3);margin-top:3px">IRS Ogden, UT 84201</div>
               </div>
-              <div id="irs-check-7004" style="color:var(--accent);font-size:16px;display:none">✓</div>
+              <div id="irs-check-7004" style="width:18px;height:18px;border-radius:50%;background:var(--accent);display:none;align-items:center;justify-content:center;flex-shrink:0">
+                <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><polyline points="1.5,6 5,9.5 10.5,2.5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
             </div>
             <!-- Extension sub-selection -->
             <div id="irs-extend-row" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
@@ -1635,12 +1638,18 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
         <select id="irs-year-select" onchange="irsFilingYear=parseInt(this.value)" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-family:'Montserrat',sans-serif;font-size:15px;font-weight:700;color:var(--text);cursor:pointer;flex-shrink:0;min-width:90px"></select>
       </div>
 
-      <!-- Send button -->
-      <button class="btn-primary" style="width:100%;padding:16px;font-size:14px;font-weight:700;background:linear-gradient(135deg,#7c3aed,#5b21b6);border-radius:12px;margin-bottom:8px" onclick="gatedAction(openIRSFilingModal,'pro')">
-        <svg style="display:inline;vertical-align:-3px;margin-right:8px" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,13 22,4"/></svg>
-        Send to IRS via USPS Certified Mail
-      </button>
-      <div id="irs-send-label" style="font-size:11px;color:var(--text3);text-align:center;margin-bottom:28px">USPS Certified Mail · With tracking number · Delivered to IRS Ogden, UT 84409</div>
+      <!-- Step buttons: Preview then Send -->
+      <div style="display:flex;gap:10px;margin-bottom:8px">
+        <button id="irs-preview-btn" class="btn-primary" style="flex:1;padding:14px;font-size:14px;font-weight:700;background:var(--bg3);border:1.5px solid var(--border);color:var(--text);border-radius:12px" onclick="gatedAction(previewIRSPdf,'pro')">
+          <svg style="display:inline;vertical-align:-3px;margin-right:8px" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          Preview PDF
+        </button>
+        <button id="irs-submit-page-btn" class="btn-primary" style="flex:1;padding:14px;font-size:14px;font-weight:700;background:linear-gradient(135deg,#7c3aed,#5b21b6);border-radius:12px;opacity:0.45;cursor:not-allowed" disabled onclick="gatedAction(openIRSFilingModal,'pro')">
+          <svg style="display:inline;vertical-align:-3px;margin-right:8px" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,13 22,4"/></svg>
+          Send to IRS
+        </button>
+      </div>
+      <div id="irs-send-label" style="font-size:11px;color:var(--text3);text-align:center;margin-bottom:28px">Preview your filing first, then confirm &amp; send via USPS Certified Mail</div>
 
       <!-- History -->
       <div class="card">
@@ -2517,11 +2526,19 @@ async function loadAdvisorClients(advisorId) {
   grid.innerHTML = '<div class="advisor-empty">Loading clients...</div>';
 
   try {
-    // Get clients assigned to this advisor
-    const { data: acRows, error: acErr } = await sb
+    // Get clients assigned to this advisor (irs_filed is optional — column may not exist yet)
+    let { data: acRows, error: acErr } = await sb
       .from('advisor_clients')
       .select('client_id, notes, status, irs_filed')
       .eq('advisor_id', advisorId);
+
+    // Graceful fallback if irs_filed column doesn't exist yet
+    if (acErr) {
+      ({ data: acRows, error: acErr } = await sb
+        .from('advisor_clients')
+        .select('client_id, notes, status')
+        .eq('advisor_id', advisorId));
+    }
 
     if (acErr || !acRows || acRows.length === 0) {
       grid.innerHTML = '<div class="advisor-empty">No clients assigned yet.<br><span style="font-size:12px;margin-top:8px;display:block">Contact MyTaxFly to add clients to your account.</span></div>';
@@ -5298,6 +5315,40 @@ async function sendToAdvisor() {
   }
 }
 
+async function previewIRSPdf() {
+  const p = getTaxProfile();
+  if (!p.ein) { alert('Please complete your LLC profile first (EIN is required).'); return; }
+  const btn = document.getElementById('irs-preview-btn');
+  const submitBtn = document.getElementById('irs-submit-page-btn');
+  const lbl = document.getElementById('irs-send-label');
+  const origText = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<svg style="display:inline;vertical-align:-3px;margin-right:8px;animation:spin 1s linear infinite" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>Generating…';
+  try {
+    const _irsFrom = new Date(irsFilingYear, 0, 1);
+    const _irsTo   = new Date(irsFilingYear, 11, 31, 23, 59, 59);
+    const filtered = transactions.filter(t => { const d=new Date(t.date); return d>=_irsFrom && d<=_irsTo; });
+    const opts = {
+      margin: [12.7, 12.7, 12.7, 12.7],
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      pagebreak: { mode: ['css', 'legacy'] },
+      jsPDF: { unit: 'mm', format: [215.9, 279.4], orientation: 'portrait' }
+    };
+    const blob = await buildFilingPackageBlob(p, filtered, irsFilingYear, llcName || p.llcName || '', null, opts);
+    const url  = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+    // Unlock send button after preview
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.style.opacity = '1'; submitBtn.style.cursor = 'pointer'; }
+    if (lbl) lbl.innerHTML = '✓ Preview opened — review carefully, then click <strong>Send to IRS</strong>';
+  } catch(e) {
+    alert('Preview failed: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = origText;
+  }
+}
+
 function selectIRSFormType(type) {
   irsFormType = type;
   const types = ['5472_1120','1065','7004'];
@@ -5308,7 +5359,7 @@ function selectIRSFormType(type) {
     if (!card) return;
     if (t === type) {
       card.style.borderColor = 'var(--accent)';
-      if (check) check.style.display = '';
+      if (check) check.style.display = 'flex';
     } else {
       card.style.borderColor = 'var(--border)';
       if (check) check.style.display = 'none';
@@ -5348,9 +5399,9 @@ async function openIRSFilingModal() {
 
   // Update dynamic form-type fields
   const IRS_INFO = {
-    '5472_1120': { badge: '🏢 Single-Member LLC (Foreign-Owned)', forms: 'Pro Forma 1120 + Form 5472', addr: 'P.O. Box 409101 · Ogden, UT 84409' },
-    '1065':      { badge: '👥 Multi-Member LLC (Partnership)',     forms: 'Form 1065',                  addr: 'P.O. Box 37032 · Hartford, CT 06176' },
-    '7004':      { badge: '⏱ Extension (6 Months)',               forms: `Form 7004 (extends Form ${irsExtendForm})`, addr: 'P.O. Box 7000 · Ogden, UT 84201' },
+    '5472_1120': { badge: 'Single-Member LLC (Foreign-Owned)', forms: 'Pro Forma 1120 + Form 5472', addr: 'P.O. Box 409101 · Ogden, UT 84409' },
+    '1065':      { badge: 'Multi-Member LLC (Partnership)',     forms: 'Form 1065',                  addr: 'P.O. Box 37032 · Hartford, CT 06176' },
+    '7004':      { badge: 'Extension (6 Months)',               forms: `Form 7004 (extends Form ${irsExtendForm})`, addr: 'P.O. Box 7000 · Ogden, UT 84201' },
   };
   const info = IRS_INFO[irsFormType] || IRS_INFO['5472_1120'];
   const badge = document.getElementById('irs-modal-type-badge');
