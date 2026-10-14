@@ -1,13 +1,13 @@
 {
   "cleanUrls": true,
   "functions": {
-    "api/stripe-webhook.js":         { "memory": 256, "maxDuration": 10 },
-    "api/send-to-advisor.js":        { "maxDuration": 30 },
-    "api/send-to-irs.js":            { "memory": 256, "maxDuration": 30 },
-    "api/partner/preview-filing.js": { "memory": 512, "maxDuration": 30 },
-    "api/partner/submit-filing.js":  { "memory": 512, "maxDuration": 30 },
-    "api/partner/filing-status.js":  { "maxDuration": 10 },
-    "api/partner/transactions.js":   { "maxDuration": 10 }
+    "api/stripe-webhook.js":              { "memory": 256, "maxDuration": 10 },
+    "api/send-to-advisor.js":             { "maxDuration": 30 },
+    "api/send-to-irs.js":                 { "memory": 256, "maxDuration": 30 },
+    "api/partner/preview-filing.js":      { "memory": 512, "maxDuration": 30 },
+    "api/partner/submit-filing.js":       { "memory": 512, "maxDuration": 60 },
+    "api/partner/filing-status.js":       { "maxDuration": 10 },
+    "api/partner/transactions.js":        { "maxDuration": 10 }
   },
   "rewrites": [
     { "source": "/", "destination": "/index.html" },
@@ -49,7 +49,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.anthropic.com https://open.er-api.com https://cdn.jsdelivr.net https://js.stripe.com; frame-src https://js.stripe.com; object-src 'none';"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.anthropic.com https://open.er-api.com https://cdn.jsdelivr.net https://js.stripe.com; frame-src https://js.stripe.com blob:; object-src 'none';"
         }
       ]
     }
