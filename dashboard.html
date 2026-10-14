@@ -6238,6 +6238,10 @@ function saveEntities() {
   sb.auth.updateUser({ data: { entities } }).catch(e => console.warn('Entities cloud save failed:', e.message));
 }
 
+function entityDotColor(e) {
+  return e.type === 'multi' ? '#ec4899' : '#00c896';
+}
+
 function renderEntitySwitcher() {
   const nameEl = document.getElementById('entity-active-name');
   const active = entities.find(e => e.id === activeEntityId) || entities[0];
@@ -6247,8 +6251,9 @@ function renderEntitySwitcher() {
   if (!list) return;
   list.innerHTML = entities.map(e => `
     <div class="entity-option ${e.id === activeEntityId ? 'active-e' : ''}" onclick="switchEntity('${e.id}')">
-      <span class="entity-dot" style="background:${e.id===activeEntityId?'var(--accent)':'var(--border)'}"></span>
-      ${e.name}
+      <span class="entity-dot" style="background:${entityDotColor(e)}"></span>
+      <span style="flex:1">${e.name}</span>
+      <span style="font-size:10px;color:var(--text3);margin-right:4px">${e.type==='multi'?'Multi':'Single'}</span>
       ${e.id === activeEntityId ? '<span class="echeck">✓</span>' : ''}
     </div>`).join('');
 }
@@ -6284,17 +6289,31 @@ function renderEntityModalList() {
   if (!list) return;
   const isBiz = currentPlan === 'business';
 
-  list.innerHTML = entities.map((e) => `
-    <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--bg3);border-radius:8px;margin-bottom:8px" id="entity-row-${e.id}">
-      <span class="entity-dot" style="background:${e.id===activeEntityId?'var(--accent)':'var(--border)'}"></span>
-      <span id="entity-label-${e.id}" style="flex:1;font-size:13px;font-weight:600;color:var(--text)">${e.name}</span>
-      <input id="entity-input-${e.id}" class="f-input" value="${e.name}" style="flex:1;display:none;font-size:13px;padding:6px 10px">
-      <button id="entity-edit-btn-${e.id}" onclick="startRename('${e.id}')" title="Rename" style="background:none;border:none;color:var(--text3);cursor:pointer;padding:4px;line-height:1;display:flex">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d='M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7'/><path d='M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z'/></svg>
-      </button>
-      <button id="entity-save-btn-${e.id}" onclick="saveRename('${e.id}')" style="display:none;background:var(--accent);border:none;color:#000;font-size:11px;font-weight:700;padding:5px 10px;border-radius:6px;cursor:pointer">Save</button>
-      ${entities.length > 1 ? `<button onclick="removeEntity('${e.id}')" title="Remove" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;line-height:1;padding:0 2px">&times;</button>` : ''}
-    </div>`).join('');
+  list.innerHTML = entities.map((e) => {
+    const dotColor = entityDotColor(e);
+    const isActive = e.id === activeEntityId;
+    const typeBadge = e.type === 'multi'
+      ? `<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;background:rgba(236,72,153,0.12);color:#ec4899">Multi-Member</span>`
+      : `<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;background:rgba(0,200,150,0.12);color:#00c896">Single Member</span>`;
+    const partnerInfo = (e.type === 'multi' && e.partners?.length)
+      ? `<div style="margin-top:6px;padding-left:22px">${e.partners.map(p=>`<span style="font-size:11px;color:var(--text3);margin-right:10px">· ${p.name} ${p.ownership}%</span>`).join('')}</div>`
+      : '';
+    return `
+    <div style="padding:10px 12px;background:var(--bg3);border-radius:8px;margin-bottom:8px;border:1px solid ${isActive?dotColor:'var(--border)'}" id="entity-row-${e.id}">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="entity-dot" style="background:${dotColor};flex-shrink:0"></span>
+        <span id="entity-label-${e.id}" style="flex:1;font-size:13px;font-weight:600;color:var(--text)">${e.name}</span>
+        <input id="entity-input-${e.id}" class="f-input" value="${e.name}" style="flex:1;display:none;font-size:13px;padding:6px 10px">
+        ${typeBadge}
+        <button id="entity-edit-btn-${e.id}" onclick="startRename('${e.id}')" title="Rename" style="background:none;border:none;color:var(--text3);cursor:pointer;padding:4px;line-height:1;display:flex">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d='M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7'/><path d='M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z'/></svg>
+        </button>
+        <button id="entity-save-btn-${e.id}" onclick="saveRename('${e.id}')" style="display:none;background:var(--accent);border:none;color:#000;font-size:11px;font-weight:700;padding:5px 10px;border-radius:6px;cursor:pointer">Save</button>
+        ${entities.length > 1 ? `<button onclick="removeEntity('${e.id}')" title="Remove" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;line-height:1;padding:0 2px">&times;</button>` : ''}
+      </div>
+      ${partnerInfo}
+    </div>`;
+  }).join('');
 
   // show/hide add vs upgrade section
   const addSec = document.getElementById('entity-add-section');
@@ -6331,15 +6350,56 @@ function saveRename(id) {
   renderEntityModalList();
 }
 
+let _newEntityType = 'single';
+let _newPartners = [];
+
+function selectNewEntityType(type) {
+  _newEntityType = type;
+  const btnS = document.getElementById('ent-type-single');
+  const btnM = document.getElementById('ent-type-multi');
+  const pSec = document.getElementById('entity-partner-section');
+  if (btnS) { btnS.style.background = type==='single'?'var(--accent)':'var(--bg2)'; btnS.style.color = type==='single'?'#000':'var(--text2)'; }
+  if (btnM) { btnM.style.background = type==='multi'?'#ec4899':'var(--bg2)'; btnM.style.color = type==='multi'?'#fff':'var(--text2)'; }
+  if (pSec) pSec.style.display = type==='multi'?'block':'none';
+  if (type==='multi' && _newPartners.length===0) { _newPartners=[{name:'',ownership:''}]; renderNewPartners(); }
+}
+
+function renderNewPartners() {
+  const list = document.getElementById('entity-new-partner-list');
+  if (!list) return;
+  list.innerHTML = _newPartners.map((p,i) => `
+    <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
+      <input class="f-input" placeholder="Partner name" value="${p.name}" oninput="_newPartners[${i}].name=this.value" style="flex:2;font-size:12px;padding:7px 10px">
+      <input class="f-input" placeholder="%" type="number" min="0" max="100" value="${p.ownership}" oninput="_newPartners[${i}].ownership=this.value" style="width:60px;font-size:12px;padding:7px 8px;text-align:center">
+      <span style="font-size:11px;color:var(--text3)">%</span>
+      ${_newPartners.length>1?`<button onclick="_newPartners.splice(${i},1);renderNewPartners()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;line-height:1;flex-shrink:0">&times;</button>`:''}
+    </div>`).join('');
+}
+
+function addNewPartner() {
+  _newPartners.push({name:'',ownership:''});
+  renderNewPartners();
+}
+
 function addEntity() {
   if (entities.length >= 5) return;
   const inp = document.getElementById('entity-new-name');
   const name = inp?.value?.trim();
   if (!name) return;
+  if (_newEntityType === 'multi') {
+    const filled = _newPartners.filter(p => p.name.trim());
+    if (!filled.length) { alert('Please add at least one partner name.'); return; }
+    const total = filled.reduce((s,p)=>s+(parseFloat(p.ownership)||0),0);
+    if (total > 100) { alert('Total ownership exceeds 100%. Please adjust.'); return; }
+  }
   const id = 'e_' + Date.now();
-  entities.push({ id, name });
+  const partners = _newEntityType==='multi' ? _newPartners.filter(p=>p.name.trim()).map(p=>({name:p.name.trim(),ownership:parseFloat(p.ownership)||0})) : [];
+  entities.push({ id, name, type: _newEntityType, partners });
   saveEntities();
   inp.value = '';
+  _newEntityType = 'single';
+  _newPartners = [];
+  selectNewEntityType('single');
   renderEntitySwitcher();
   renderEntityModalList();
 }
@@ -7891,10 +7951,26 @@ document.addEventListener('click', e => {
     <!-- Business: Add form -->
     <div id="entity-add-section" style="border-top:1px solid var(--border);padding-top:16px;margin-top:8px">
       <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Add LLC / Entity</div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <input class="f-input" id="entity-new-name" placeholder="e.g. My Holdings LLC" style="flex:1;min-width:0;width:0">
-        <button onclick="addEntity()" style="padding:10px 18px;white-space:nowrap;flex-shrink:0;background:var(--accent);color:#000;font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;border:none;border-radius:10px;cursor:pointer">Add</button>
+      <input class="f-input" id="entity-new-name" placeholder="e.g. My Holdings LLC" style="width:100%;box-sizing:border-box;margin-bottom:10px">
+      <!-- Type selector -->
+      <div style="display:flex;gap:6px;margin-bottom:12px">
+        <button id="ent-type-single" onclick="selectNewEntityType('single')" style="flex:1;padding:9px 10px;border-radius:10px;border:1.5px solid var(--border);background:var(--accent);color:#000;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
+          <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#00c896;flex-shrink:0"></span> Single Member
+        </button>
+        <button id="ent-type-multi" onclick="selectNewEntityType('multi')" style="flex:1;padding:9px 10px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg2);color:var(--text2);font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
+          <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#ec4899;flex-shrink:0"></span> Multi-Member
+        </button>
       </div>
+      <!-- Partners section (shown for multi) -->
+      <div id="entity-partner-section" style="display:none;background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:12px">
+        <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Partners &amp; Ownership</div>
+        <div id="entity-new-partner-list"></div>
+        <button onclick="addNewPartner()" style="display:flex;align-items:center;gap:5px;background:none;border:1px dashed var(--border);border-radius:8px;color:var(--text3);font-size:12px;font-weight:600;padding:6px 12px;cursor:pointer;width:100%;justify-content:center;font-family:'Montserrat',sans-serif">
+          + Add Partner
+        </button>
+        <div style="font-size:10px;color:var(--text3);margin-top:8px;text-align:center">Ownership percentages must add up to 100%</div>
+      </div>
+      <button onclick="addEntity()" style="width:100%;padding:11px;background:var(--accent);color:#000;font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;border:none;border-radius:10px;cursor:pointer">Add LLC</button>
       <div id="entity-limit-note" style="display:none;font-size:11px;color:var(--warn);margin-top:8px">Maximum 5 entities reached.</div>
     </div>
     <!-- Basic/Pro: Locked upgrade CTA -->
