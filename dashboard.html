@@ -5366,7 +5366,7 @@ async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extend
   const otherDed = Math.max(0, exp - advAmt);
 
   function irs(n)    { return Math.round(Math.abs(n)).toLocaleString('en-US'); }
-  function dollar(n) { return '$ ' + irs(n); }
+  function dollar(n) { return '$ ' + irs(n); }
 
   // ── Document & fonts ─────────────────────────────────────
   const pdfDoc = await PDFDocument.create();
