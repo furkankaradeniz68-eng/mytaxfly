@@ -5930,7 +5930,6 @@ async function openIRSFilingModal() {
   if (successView) successView.style.display = 'none';
   const status = document.getElementById('irs-send-status');
   if (status) { status.style.display = 'none'; status.innerHTML = ''; }
-  const sendBtn = document.getElementById('irs-send-btn');
   if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = 'Send via USPS →'; }
 
   document.getElementById('irs-filing-modal').style.display = 'flex';
