@@ -29,13 +29,14 @@ export default async function handler(req, res) {
     company, foreign_owner, transactions = [],
     partners = [], financials = {},
     signer_name, signer_title, ip_address,
-    extend_form, tentative_tax = 0, tax_payments = 0,
+    extend_form = '1120', signature_png_base64 = null,
   } = req.body || {};
 
   // ── Validation ────────────────────────────────────────────────────────────
+  const VALID_FORM_TYPES = ['5472_1120', '1065', '1120', '5472', '7004'];
   if (!external_id) return res.status(400).json({ error: 'Missing external_id.' });
-  if (!form_type || !['5472_1120', '1065', '7004'].includes(form_type))
-    return res.status(400).json({ error: 'form_type must be "5472_1120", "1065", or "7004".' });
+  if (!form_type || !VALID_FORM_TYPES.includes(form_type))
+    return res.status(400).json({ error: `form_type must be one of: ${VALID_FORM_TYPES.join(', ')}.` });
   if (!tax_year || typeof tax_year !== 'number')
     return res.status(400).json({ error: 'Missing tax_year (number).' });
   if (!company?.name || !company?.ein)
@@ -46,8 +47,6 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing foreign_owner.name or foreign_owner.country.' });
   if (form_type === '1065' && !partners?.length)
     return res.status(400).json({ error: 'Missing partners array for form_type 1065.' });
-  if (form_type === '7004' && !extend_form)
-    return res.status(400).json({ error: 'Missing extend_form (e.g. "1065", "1120", "1120-F").' });
   if (!signer_name) return res.status(400).json({ error: 'Missing signer_name.' });
   if (!signer_title) return res.status(400).json({ error: 'Missing signer_title.' });
 
@@ -74,7 +73,7 @@ export default async function handler(req, res) {
   let pdfBytes;
   try {
     const { generatePdf } = await import('./_generate-pdf.js');
-    pdfBytes = await generatePdf({ form_type, company, foreign_owner, transactions, partners, financials, tax_year, extend_form, tentative_tax, tax_payments });
+    pdfBytes = await generatePdf({ form_type, company, foreign_owner, transactions, partners, financials, tax_year, extend_form, signature_png_base64 });
   } catch (err) {
     console.error('PDF generation error:', err);
     return res.status(500).json({ error: 'PDF generation failed: ' + err.message });
@@ -137,8 +136,10 @@ export default async function handler(req, res) {
   // IRS mailing addresses (USPS Certified Mail via Lob)
   const IRS_ADDRESS = {
     '5472_1120': { name: 'Internal Revenue Service', address_line1: 'P.O. Box 409101', address_city: 'Ogden',    address_state: 'UT', address_zip: '84409' },
+    '1120':      { name: 'Internal Revenue Service', address_line1: 'P.O. Box 409101', address_city: 'Ogden',    address_state: 'UT', address_zip: '84409' },
+    '5472':      { name: 'Internal Revenue Service', address_line1: 'P.O. Box 409101', address_city: 'Ogden',    address_state: 'UT', address_zip: '84409' },
     '1065':      { name: 'Internal Revenue Service', address_line1: 'P.O. Box 37032',  address_city: 'Hartford', address_state: 'CT', address_zip: '06176' },
-    '7004':      { name: 'Internal Revenue Service', address_line1: 'P.O. Box 7000',   address_city: 'Ogden',    address_state: 'UT', address_zip: '84201' },
+    '7004':      { name: 'Internal Revenue Service', address_line1: 'P.O. Box 409101', address_city: 'Ogden',    address_state: 'UT', address_zip: '84409' },
   };
 
   let lobResult  = null;
