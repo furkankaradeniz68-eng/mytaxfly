@@ -5349,255 +5349,479 @@ async function previewIRSPdf() {
 async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extendForm, sigData) {
   const { PDFDocument, rgb, StandardFonts } = PDFLib;
 
-  const addr = p.address || {};
-  const cityStateZip = [addr.city, addr.state, addr.zip].filter(Boolean).join(', ');
-  const yr2 = String(taxYear).slice(-2);
-  const todayStr = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+  // ── Setup ─────────────────────────────────────────────────
+  const addr        = p.address || {};
+  const street      = addr.street || '';
+  const cityStateZip= [addr.city, addr.state, addr.zip].filter(Boolean).join(', ');
+  const ein         = p.ein || '';
+  const todayStr    = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
 
-  // Helper: fetch a form PDF as bytes
-  async function fetchForm(name) {
-    const res = await fetch('/forms/' + name);
-    if (!res.ok) throw new Error('Could not load form: ' + name);
-    return new Uint8Array(await res.arrayBuffer());
-  }
-
-  // Draw text into a pdf-lib page. In pdf-lib, y=0 is page bottom.
-  // Our rect data is from PyMuPDF (y=0 at top, page_h=792).
-  // Conversion: pdflib_y = 792 - mupdf_rect_bottom + 2
-  function drawField(page, font, text, mupdfY1, mupdfX0, size = 9) {
-    if (!text) return;
-    const y = 792 - mupdfY1 + 2;
-    page.drawText(String(text), { x: mupdfX0 + 2, y, size, font, color: rgb(0, 0, 0) });
-  }
-
-  // Embed signature image (base64 PNG data URL) into a page at given position
-  async function drawSignature(doc, page, dataUrl, x, y, maxW = 120, maxH = 30) {
-    if (!dataUrl) return;
-    try {
-      const base64 = dataUrl.split(',')[1];
-      const imgBytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
-      const img = await doc.embedPng(imgBytes);
-      const { width, height } = img.scale(1);
-      const scale = Math.min(maxW / width, maxH / height, 1);
-      page.drawImage(img, { x, y, width: width * scale, height: height * scale });
-    } catch(e) { /* signature embed failed silently */ }
-  }
-
-  // Financial figures from transactions
-  const inc  = filtered.filter(t => t.type === 'income').reduce((s,t) => s + (parseFloat(t.amount)||0), 0);
-  const exp  = filtered.filter(t => t.type === 'expense').reduce((s,t) => s + (parseFloat(t.amount)||0), 0);
+  // Financial data
+  const inc    = filtered.filter(t => t.type === 'income') .reduce((s,t) => s+(parseFloat(t.amount)||0), 0);
+  const exp    = filtered.filter(t => t.type === 'expense').reduce((s,t) => s+(parseFloat(t.amount)||0), 0);
   const profit = inc - exp;
-  // Expense sub-categories
-  const cats = {};
-  filtered.filter(t => t.type === 'expense').forEach(t => { cats[t.category] = (cats[t.category]||0) + (parseFloat(t.amount)||0); });
-  const advAmt = Object.entries(cats).filter(([k]) => /advertis|marketing/i.test(k)).reduce((s,[,v]) => s+v, 0);
-  const otherDed = exp - advAmt;
+  const cats   = {};
+  filtered.filter(t => t.type === 'expense').forEach(t => { cats[t.category||'Other'] = (cats[t.category||'Other']||0)+(parseFloat(t.amount)||0); });
+  const advAmt   = Object.entries(cats).filter(([k]) => /advertis|marketing/i.test(k)).reduce((s,[,v]) => s+v, 0);
+  const otherDed = Math.max(0, exp - advAmt);
 
-  // Format as whole-dollar, comma-separated (no $ sign — IRS style)
-  function irs(n) { return Math.round(Math.abs(n)).toLocaleString('en-US'); }
+  function irs(n)    { return Math.round(Math.abs(n)).toLocaleString('en-US'); }
+  function dollar(n) { return '$ ' + irs(n); }
 
-  // Right-column x for dollar amounts on all forms
-  const AMT_X = 470;
+  // ── Document & fonts ─────────────────────────────────────
+  const pdfDoc = await PDFDocument.create();
+  const font   = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const fontB  = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
+  const W = 612, H = 792, ML = 48, MR = 48, IW = W - ML - MR;
+  const BLACK = rgb(0,0,0), WHITE = rgb(1,1,1);
+  const GRAY3 = rgb(0.3,0.3,0.3), GRAY6 = rgb(0.6,0.6,0.6);
+  const LGRAY = rgb(0.93,0.93,0.93), DGRAY = rgb(0.13,0.13,0.13);
+
+  // ── Drawing helpers ───────────────────────────────────────
+  const hline = (pg, y, x0=ML, x1=W-MR, w=0.4, c=rgb(0.7,0.7,0.7)) =>
+    pg.drawLine({start:{x:x0,y},end:{x:x1,y},thickness:w,color:c});
+  const vline = (pg, x, y0, y1, w=0.4, c=rgb(0.7,0.7,0.7)) =>
+    pg.drawLine({start:{x,y:y0},end:{x,y:y1},thickness:w,color:c});
+  const box = (pg, x, y, w, h, fill, stroke) => {
+    if (fill)   pg.drawRectangle({x,y,width:w,height:h,color:fill});
+    if (stroke) pg.drawRectangle({x,y,width:w,height:h,borderColor:stroke,borderWidth:0.5});
+  };
+  const t = (pg, s, x, y, sz=8.5, f=font, c=BLACK) => {
+    if (s == null || s === '') return;
+    pg.drawText(String(s), {x, y, size:sz, font:f, color:c});
+  };
+  const tR = (pg, s, rx, y, sz=8.5, f=font, c=BLACK) => {
+    if (s == null || s === '') return;
+    const str = String(s);
+    pg.drawText(str, {x: rx - f.widthOfTextAtSize(str, sz), y, size:sz, font:f, color:c});
+  };
+
+  // Embed signature into page
+  async function drawSig(page, x, y, maxW=150, maxH=32) {
+    if (!sigData) return;
+    try {
+      const b64   = sigData.split(',')[1];
+      const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+      const img   = await pdfDoc.embedPng(bytes);
+      const {width, height} = img.scale(1);
+      const scale = Math.min(maxW/width, maxH/height, 1);
+      page.drawImage(img, {x, y, width:width*scale, height:height*scale});
+    } catch(e) { /* silent */ }
+  }
+
+  // ── Reusable layout blocks ────────────────────────────────
+
+  // Page header bar
+  function pageHeader(pg, formNum, title, pageNum, totalPages) {
+    box(pg, 0, H-34, W, 34, DGRAY, null);
+    t(pg, 'Form', ML, H-23, 9, font, rgb(0.65,0.65,0.65));
+    t(pg, formNum, ML+28, H-24, 13, fontB, WHITE);
+    const nw = fontB.widthOfTextAtSize(formNum, 13);
+    t(pg, title, ML+32+nw, H-23, 8, font, rgb(0.75,0.75,0.75));
+    tR(pg, `Tax Year ${taxYear}  ·  Page ${pageNum} of ${totalPages}`, W-MR, H-23, 7.5, font, rgb(0.6,0.6,0.6));
+    hline(pg, H-34, 0, W, 0.5, DGRAY);
+    // Tiny IRS-style notice
+    t(pg, 'Department of the Treasury — Internal Revenue Service', ML, H-44, 6.5, font, GRAY6);
+  }
+
+  // Section header row (dark bar with white label)
+  function sectionBar(pg, y, label, sub='') {
+    box(pg, ML, y-13, IW, 13, rgb(0.18,0.18,0.18), null);
+    t(pg, label, ML+4, y-10, 7.5, fontB, WHITE);
+    if (sub) tR(pg, sub, W-MR-4, y-10, 7, font, rgb(0.7,0.7,0.7));
+    return y - 13;
+  }
+
+  // Company info block (2-column)
+  function companyBlock(pg, startY) {
+    const BH = 76;
+    box(pg, ML, startY-BH, IW, BH, LGRAY, null);
+    box(pg, ML, startY-BH, IW, BH, null, rgb(0.55,0.55,0.55));
+    const DX = ML + IW*0.62;
+    vline(pg, DX, startY-BH, startY, 0.5, rgb(0.55,0.55,0.55));
+
+    // Left
+    t(pg, 'Name of Corporation / LLC', ML+4, startY-9,  6.5, font, GRAY6);
+    t(pg, corpName||'(not set)',        ML+4, startY-21, 9,   fontB, BLACK);
+    t(pg, 'Street address',             ML+4, startY-34, 6.5, font, GRAY6);
+    t(pg, street||'(not set)',          ML+4, startY-46, 8.5, font, BLACK);
+    t(pg, 'City, State, ZIP',           ML+4, startY-59, 6.5, font, GRAY6);
+    t(pg, cityStateZip||'(not set)',    ML+4, startY-71, 8.5, font, BLACK);
+
+    // Right
+    const rx = DX + 6;
+    t(pg, 'Employer Identification Number',   rx, startY-9,  6.5, font, GRAY6);
+    t(pg, ein||'(not set)',                   rx, startY-21, 9,   fontB, BLACK);
+    t(pg, 'Total Assets',                     rx, startY-34, 6.5, font, GRAY6);
+    t(pg, dollar(inc),                        rx, startY-46, 8.5, font, BLACK);
+    t(pg, 'Tax period',                       rx, startY-59, 6.5, font, GRAY6);
+    t(pg, `01/01/${taxYear} – 12/31/${taxYear}`, rx, startY-71, 8, font, BLACK);
+
+    return startY - BH;
+  }
+
+  // Numbered line row (returns new y)
+  function lineRow(pg, y, num, label, val, bold=false, indent=0) {
+    hline(pg, y, ML, W-MR);
+    const f = bold ? fontB : font;
+    if (num) t(pg, num, ML+3, y-11, 7.5, fontB, GRAY3);
+    t(pg, label, ML+22+indent, y-11, 8, f, BLACK);
+    if (val !== null && val !== undefined && val !== '') tR(pg, val, W-MR-4, y-11, 8.5, fontB, BLACK);
+    return y - 15;
+  }
+
+  // Signature block (returns new y)
+  async function sigBlock(pg, y) {
+    const BH = 82;
+    y -= 8;
+    box(pg, ML, y-BH, IW, BH, null, BLACK);
+    box(pg, ML, y-14, IW, 14, LGRAY, null);
+    t(pg, 'SIGN HERE', ML+4, y-11, 7.5, fontB, GRAY3);
+    t(pg, 'Under penalties of perjury, I declare that I have examined this return and to the best of my knowledge and belief, it is true, correct, and complete.', ML+70, y-11, 6.5, font, GRAY3);
+    y -= 14;
+
+    // Row 1: Signature | Date | Title
+    t(pg, 'Signature of officer', ML+4, y-8, 6.5, font, GRAY6);
+    hline(pg, y-22, ML+4, ML+195, 0.7, BLACK);
+    await drawSig(pg, ML+6, y-23, 188, 19);
+
+    t(pg, 'Date', ML+205, y-8, 6.5, font, GRAY6);
+    hline(pg, y-22, ML+205, ML+330, 0.7, BLACK);
+    t(pg, todayStr, ML+208, y-21, 8.5, font, BLACK);
+
+    t(pg, 'Title', ML+340, y-8, 6.5, font, GRAY6);
+    hline(pg, y-22, ML+340, W-MR-4, 0.7, BLACK);
+    t(pg, p.title||'Owner / Managing Member', ML+343, y-21, 8.5, font, BLACK);
+    y -= 30;
+
+    // Row 2: Printed name | Phone
+    t(pg, 'Print / Type name', ML+4, y-8, 6.5, font, GRAY6);
+    hline(pg, y-22, ML+4, ML+260, 0.7, BLACK);
+    t(pg, p.ownerName||corpName||'', ML+7, y-21, 8.5, font, BLACK);
+
+    t(pg, 'Phone number', ML+270, y-8, 6.5, font, GRAY6);
+    hline(pg, y-22, ML+270, W-MR-4, 0.7, BLACK);
+    y -= 30;
+
+    return y;
+  }
+
+  // ══════════════════════════════════════════════════════════
+  //  FORM 1120  (Pro Forma — U.S. Corporation Income Tax Return)
+  // ══════════════════════════════════════════════════════════
+  async function build1120() {
+    // ── Page 1 ──
+    const pg = pdfDoc.addPage([W, H]);
+    pageHeader(pg, '1120', 'U.S. Corporation Income Tax Return (Pro Forma)', 1, 2);
+
+    t(pg, `Foreign-Owned Disregarded Entity (DE) — Reg. §1.6012-2(g)(2)  ·  Tax year Jan 01, ${taxYear} – Dec 31, ${taxYear}`, ML, H-47, 7, font, GRAY6);
+
+    let y = H - 58;
+    y = companyBlock(pg, y);
+
+    // DE checkbox note
+    y -= 4;
+    box(pg, ML, y-13, IW, 13, rgb(0.97,0.97,0.97), null);
+    t(pg, '☒  Foreign-owned U.S. disregarded entity (Reg. §1.6012-2(g)(2))', ML+6, y-10, 7.5, font, BLACK);
+    y -= 13; y -= 4;
+
+    // INCOME
+    y = sectionBar(pg, y, 'INCOME');
+    y = lineRow(pg, y, '1a', 'Gross receipts or sales', irs(inc));
+    y = lineRow(pg, y, '1b', 'Returns and allowances', '0', false, 8);
+    y = lineRow(pg, y, '1c', 'Balance (line 1a minus line 1b)', irs(inc), true);
+    y = lineRow(pg, y, '2',  'Cost of goods sold', '0', false, 8);
+    y = lineRow(pg, y, '3',  'Gross profit (line 1c minus line 2)', irs(inc), true);
+    y = lineRow(pg, y, '4',  'Dividends and inclusions', '0');
+    y = lineRow(pg, y, '5',  'Interest', '0');
+    y = lineRow(pg, y, '6',  'Gross rents', '0');
+    y = lineRow(pg, y, '7',  'Gross royalties', '0');
+    y = lineRow(pg, y, '8',  'Capital gain net income', '0');
+    y = lineRow(pg, y, '9',  'Net gain or (loss) — Form 4797', '0');
+    y = lineRow(pg, y, '10', 'Other income', '0');
+    y = lineRow(pg, y, '11', 'Total income — add lines 3 through 10', irs(inc), true);
+    y -= 4;
+
+    // DEDUCTIONS
+    y = sectionBar(pg, y, 'DEDUCTIONS');
+    if (advAmt > 0) y = lineRow(pg, y, '22', 'Advertising', irs(advAmt));
+    const topCats = Object.entries(cats).sort(([,a],[,b]) => b-a).slice(0, 4);
+    topCats.forEach(([cn, ca]) => {
+      if (ca > 0 && !/advertis|marketing/i.test(cn))
+        y = lineRow(pg, y, '', cn, irs(ca), false, 8);
+    });
+    y = lineRow(pg, y, '26', 'Other deductions (attach statement)', irs(otherDed));
+    y = lineRow(pg, y, '27', 'Total deductions — add lines 12 through 26', irs(exp), true);
+    y -= 4;
+
+    // TAX COMPUTATION
+    y = sectionBar(pg, y, 'TAX COMPUTATION');
+    y = lineRow(pg, y, '28', 'Taxable income before NOL deduction', irs(profit));
+    y = lineRow(pg, y, '29', 'Net operating loss deduction', '0', false, 8);
+    y = lineRow(pg, y, '30', 'Taxable income (line 28 minus line 29)', irs(profit), true);
+    y = lineRow(pg, y, '31', 'Total tax — DE is a disregarded entity; no separate U.S. tax liability', '0', true);
+    y -= 4;
+
+    await sigBlock(pg, y);
+
+    // ── Page 2: Expense detail ──
+    const pg2 = pdfDoc.addPage([W, H]);
+    pageHeader(pg2, '1120', 'U.S. Corporation Income Tax Return (Pro Forma) — Supplemental', 2, 2);
+    let y2 = H - 58;
+
+    t(pg2, 'Transaction & Category Summary', ML, y2, 10, fontB, BLACK); y2 -= 20;
+
+    y2 = sectionBar(pg2, y2, 'FINANCIAL SUMMARY');
+    y2 = lineRow(pg2, y2, '', `Total income transactions (${filtered.filter(tx=>tx.type==='income').length})`, irs(inc));
+    y2 = lineRow(pg2, y2, '', `Total expense transactions (${filtered.filter(tx=>tx.type==='expense').length})`, irs(exp));
+    y2 = lineRow(pg2, y2, '', 'Net profit / (loss)', irs(profit), true);
+    y2 -= 8;
+
+    if (Object.keys(cats).length) {
+      y2 = sectionBar(pg2, y2, 'EXPENSE CATEGORIES (Deduction Detail)');
+      Object.entries(cats).sort(([,a],[,b]) => b-a).forEach(([cn, ca]) => {
+        if (ca > 0) y2 = lineRow(pg2, y2, '', cn, irs(ca));
+      });
+      y2 = lineRow(pg2, y2, '', 'TOTAL DEDUCTIONS', irs(exp), true);
+    }
+
+    y2 -= 20;
+    box(pg2, ML, y2-32, IW, 32, rgb(1,0.97,0.91), null);
+    box(pg2, ML, y2-32, IW, 32, null, rgb(0.85,0.65,0.2));
+    t(pg2, '⚠  DISCLAIMER', ML+6, y2-11, 7.5, fontB, rgb(0.5,0.3,0));
+    t(pg2, 'This is a pro forma informational return for a foreign-owned U.S. disregarded entity. The entity has no separate U.S.', ML+6, y2-21, 6.5, font, rgb(0.45,0.28,0));
+    t(pg2, 'federal income tax liability. Form 5472 is filed as an attachment per Reg. §1.6038A-1. Consult a licensed CPA before filing.', ML+6, y2-31, 6.5, font, rgb(0.45,0.28,0));
+  }
+
+  // ══════════════════════════════════════════════════════════
+  //  FORM 5472
+  // ══════════════════════════════════════════════════════════
+  async function build5472() {
+    const owner = p.foreignOwner || p.foreign_owner || {};
+
+    // ── Page 1: Parts I – III ──
+    const pg = pdfDoc.addPage([W, H]);
+    pageHeader(pg, '5472', 'Information Return of a 25% Foreign-Owned U.S. Corporation (Rev. December 2023)', 1, 2);
+    t(pg, `For tax year of the reporting corporation beginning 01/01/${taxYear} and ending 12/31/${taxYear}`, ML, H-47, 7, font, GRAY6);
+
+    let y = H - 58;
+
+    // PART I
+    y = sectionBar(pg, y, 'PART I — REPORTING CORPORATION');
+    y -= 4;
+
+    // 3-row info grid
+    const GH = 26, DX = ML + IW*0.62;
+    const gridTop = y;
+    box(pg, ML, gridTop - GH*4 - 26, IW, GH*4+26, LGRAY, null);
+    box(pg, ML, gridTop - GH*4 - 26, IW, GH*4+26, null, rgb(0.55,0.55,0.55));
+    vline(pg, DX, gridTop-GH*4-26, gridTop);
+
+    const cell = (row, col, label, val, boldVal=false) => {
+      const cy = gridTop - row*GH;
+      const cx = col === 0 ? ML : DX;
+      const cw = col === 0 ? DX - ML : W-MR - DX;
+      if (row > 0) hline(pg, cy, cx, cx+cw, 0.5, rgb(0.55,0.55,0.55));
+      t(pg, label, cx+4, cy-8,  6.5, font, GRAY6);
+      t(pg, val,   cx+4, cy-20, 8.5, boldVal ? fontB : font, BLACK);
+    };
+
+    cell(1, 0, '1a  Name of reporting corporation',              corpName||'', true);
+    cell(1, 1, '1b  Employer identification number (EIN)',       ein||'', true);
+    cell(2, 0, '    Number, street, and room or suite no.',      street||'');
+    cell(2, 1, '1c  Total assets',                               dollar(inc));
+    cell(3, 0, '    City or town, state, and ZIP code',          cityStateZip||'');
+    cell(3, 1, '1d  Principal business activity',                'Professional Services');
+    cell(4, 0, '1f  Total gross payments made or received on this Form 5472', dollar(inc+exp));
+    cell(4, 1, '1g  Total number of Forms 5472 filed for the tax year', '1');
+
+    // DE checkbox row
+    y = gridTop - GH*4 - 26;
+    box(pg, ML, y-22, IW, 22, rgb(0.97,0.97,0.97), null);
+    box(pg, ML, y-22, IW, 22, null, rgb(0.55,0.55,0.55));
+    t(pg, '3  ☒  This is a foreign-owned domestic disregarded entity (DE) treated as a corporation for purposes of section 6038A.', ML+4, y-15, 7.5, font, BLACK);
+    y -= 22; y -= 10;
+
+    // PART II
+    y = sectionBar(pg, y, 'PART II — 25% FOREIGN SHAREHOLDER');
+    y -= 4;
+
+    const P2H = 26;
+    box(pg, ML, y - P2H*3, IW, P2H*3, LGRAY, null);
+    box(pg, ML, y - P2H*3, IW, P2H*3, null, rgb(0.55,0.55,0.55));
+
+    t(pg, '4a  Name and address of direct 25% foreign shareholder', ML+4, y-8, 6.5, font, GRAY6);
+    t(pg, owner.name||'(see attachment)', ML+4, y-20, 8.5, font, BLACK);
+    hline(pg, y-P2H, ML, W-MR, 0.5, rgb(0.55,0.55,0.55));
+
+    const thirdW = IW/3;
+    vline(pg, ML+thirdW,   y-P2H*3, y-P2H);
+    vline(pg, ML+thirdW*2, y-P2H*3, y-P2H);
+    t(pg, '4b(1)  U.S. identifying number, if any', ML+4, y-P2H-8, 6.5, font, GRAY6);
+    t(pg, owner.us_tin||'N/A',                       ML+4, y-P2H-20, 8.5, font, BLACK);
+    t(pg, '4b(2)  Reference ID number',              ML+thirdW+4, y-P2H-8, 6.5, font, GRAY6);
+    t(pg, owner.ref_id||'',                          ML+thirdW+4, y-P2H-20, 8.5, font, BLACK);
+    t(pg, '4b(3)  FTIN, if any',                    ML+thirdW*2+4, y-P2H-8, 6.5, font, GRAY6);
+    t(pg, owner.ftin||'',                            ML+thirdW*2+4, y-P2H-20, 8.5, font, BLACK);
+    hline(pg, y-P2H*2, ML, W-MR, 0.5, rgb(0.55,0.55,0.55));
+
+    t(pg, '4c  Country under whose laws the shareholder files as a resident', ML+4, y-P2H*2-8, 6.5, font, GRAY6);
+    t(pg, owner.country||'',                         ML+4, y-P2H*2-20, 8.5, font, BLACK);
+    y -= P2H*3; y -= 10;
+
+    // PART III
+    y = sectionBar(pg, y, 'PART III — RELATED PARTY INFORMATION');
+    y -= 4;
+    box(pg, ML, y-22, IW, 22, LGRAY, null);
+    box(pg, ML, y-22, IW, 22, null, rgb(0.55,0.55,0.55));
+    t(pg, '8a  Name and address of related party (same as 25% foreign shareholder for single-member LLC)', ML+4, y-8, 6.5, font, GRAY6);
+    t(pg, (owner.name||'(same as Part II)') + '  ·  Check: ☒ Foreign person  ☐ U.S. person', ML+4, y-19, 7.5, font, BLACK);
+    y -= 22; y -= 10;
+
+    // PART IV (starts on same page)
+    y = sectionBar(pg, y, 'PART IV — MONETARY TRANSACTIONS BETWEEN REPORTING CORPORATION AND FOREIGN RELATED PARTY');
+    t(pg, 'Caution: Part IV must be completed if the "foreign person" box is checked in Part III.', ML+4, y-10, 6.5, font, GRAY3);
+    y -= 14;
+
+    // Amounts RECEIVED
+    y = sectionBar(pg, y, '  AMOUNTS RECEIVED BY REPORTING CORPORATION', 'Lines 9 – 22');
+    y = lineRow(pg, y, '15', 'Consideration received for technical, managerial, engineering, construction, scientific, or like services', inc > 0 ? irs(inc) : '0');
+    y = lineRow(pg, y, '16', 'Commissions received', '0');
+    y = lineRow(pg, y, '17', 'Amounts borrowed — beginning balance / ending balance', '0');
+    y = lineRow(pg, y, '18', 'Interest received', '0');
+    y = lineRow(pg, y, '22', 'Total — combine amounts on lines 9 through 21', irs(inc), true);
+    y -= 4;
+
+    // ── Page 2: Amounts PAID + summary ──
+    const pg2 = pdfDoc.addPage([W, H]);
+    pageHeader(pg2, '5472', 'Information Return of a 25% Foreign-Owned U.S. Corporation — Part IV (continued)', 2, 2);
+    let y2 = H - 58;
+
+    y2 = sectionBar(pg2, y2, '  AMOUNTS PAID OR ACCRUED BY REPORTING CORPORATION', 'Lines 23 – 36');
+    y2 = lineRow(pg2, y2, '23', 'Purchases of stock in trade (inventory)', '0');
+    y2 = lineRow(pg2, y2, '24', 'Purchases of tangible property other than stock in trade', '0');
+    y2 = lineRow(pg2, y2, '25', 'Platform contribution transaction payments paid', '0');
+    y2 = lineRow(pg2, y2, '27a', 'Rents paid (other than intangible property rights)', '0');
+    y2 = lineRow(pg2, y2, '35', 'Other amounts paid or accrued (see instructions)', exp > 0 ? irs(exp) : '0');
+    y2 = lineRow(pg2, y2, '36', 'Total — combine amounts on lines 23 through 35', irs(exp), true);
+    y2 -= 14;
+
+    // Net summary box
+    box(pg2, ML, y2-50, IW, 50, LGRAY, null);
+    box(pg2, ML, y2-50, IW, 50, null, BLACK);
+    t(pg2, 'MONETARY TRANSACTION SUMMARY', ML+4, y2-11, 7.5, fontB, GRAY3);
+    hline(pg2, y2-14, ML, W-MR, 0.5, rgb(0.6,0.6,0.6));
+    t(pg2, `Total gross payments received (Line 22):`, ML+8, y2-27, 8, font, BLACK);
+    tR(pg2, dollar(inc), W-MR-8, y2-27, 8.5, fontB, BLACK);
+    t(pg2, `Total gross payments paid or accrued (Line 36):`, ML+8, y2-40, 8, font, BLACK);
+    tR(pg2, dollar(exp), W-MR-8, y2-40, 8.5, fontB, BLACK);
+  }
+
+  // ══════════════════════════════════════════════════════════
+  //  FORM 1065  (Partnership Return — Multi-Member LLC)
+  // ══════════════════════════════════════════════════════════
+  async function build1065() {
+    const pg = pdfDoc.addPage([W, H]);
+    pageHeader(pg, '1065', 'U.S. Return of Partnership Income', 1, 1);
+    t(pg, `For calendar year ${taxYear} — beginning 01/01/${taxYear} and ending 12/31/${taxYear}`, ML, H-47, 7, font, GRAY6);
+
+    let y = H - 58;
+    y = companyBlock(pg, y);
+    y -= 8;
+
+    y = sectionBar(pg, y, 'INCOME');
+    y = lineRow(pg, y, '1a', 'Gross receipts or sales', irs(inc));
+    y = lineRow(pg, y, '1b', 'Returns and allowances', '0', false, 8);
+    y = lineRow(pg, y, '1c', 'Balance (line 1a minus line 1b)', irs(inc), true);
+    y = lineRow(pg, y, '2',  'Cost of goods sold', '0', false, 8);
+    y = lineRow(pg, y, '3',  'Gross profit (line 1c minus line 2)', irs(inc), true);
+    y = lineRow(pg, y, '4',  'Ordinary income (loss) from other partnerships', '0');
+    y = lineRow(pg, y, '5',  'Net farm profit (loss)', '0');
+    y = lineRow(pg, y, '6',  'Net gain (loss) — Form 4797', '0');
+    y = lineRow(pg, y, '7',  'Other income (loss)', '0');
+    y = lineRow(pg, y, '8',  'Total income (loss) — add lines 3 through 7', irs(inc), true);
+    y -= 6;
+
+    y = sectionBar(pg, y, 'DEDUCTIONS');
+    if (advAmt > 0) y = lineRow(pg, y, '20', 'Advertising', irs(advAmt));
+    Object.entries(cats).sort(([,a],[,b]) => b-a).slice(0,4).forEach(([cn, ca]) => {
+      if (ca > 0 && !/advertis|marketing/i.test(cn))
+        y = lineRow(pg, y, '', cn, irs(ca), false, 8);
+    });
+    y = lineRow(pg, y, '20', 'Other deductions (attach statement)', irs(otherDed));
+    y = lineRow(pg, y, '21', 'Total deductions — add lines 9 through 20', irs(exp), true);
+    y = lineRow(pg, y, '22', 'Ordinary business income (loss) — line 8 minus line 21', irs(profit), true);
+    y -= 6;
+
+    await sigBlock(pg, y);
+  }
+
+  // ══════════════════════════════════════════════════════════
+  //  FORM 7004  (Automatic Extension of Time to File)
+  // ══════════════════════════════════════════════════════════
+  async function build7004() {
+    const codeMap  = {'1065':'09','1120':'12','1120-S':'17','1120-F':'26','1041':'04'};
+    const code     = codeMap[extendForm] || '12';
+    const formName = {'09':'Form 1065','12':'Form 1120','17':'Form 1120-S','26':'Form 1120-F','04':'Form 1041'}[code] || 'Form 1120';
+
+    const pg = pdfDoc.addPage([W, H]);
+    pageHeader(pg, '7004', `Application for Automatic Extension of Time To File — ${formName}`, 1, 1);
+    t(pg, `Tax year: January 1, ${taxYear} – December 31, ${taxYear}`, ML, H-47, 7, font, GRAY6);
+
+    let y = H - 58;
+    y = companyBlock(pg, y);
+    y -= 8;
+
+    y = sectionBar(pg, y, 'PART I — AUTOMATIC 6-MONTH EXTENSION OF TIME');
+    box(pg, ML, y-28, IW, 28, LGRAY, null);
+    box(pg, ML, y-28, IW, 28, null, rgb(0.55,0.55,0.55));
+    t(pg, '1a  Enter the form code for the return for which you are requesting an extension:', ML+4, y-10, 7, font, GRAY6);
+    t(pg, code,  ML+350, y-22, 14, fontB, BLACK);
+    t(pg, `(${formName})`, ML+370, y-22, 8, font, GRAY3);
+    y -= 28; y -= 8;
+
+    y = sectionBar(pg, y, 'PART II — ALL FILERS MUST COMPLETE THIS PART');
+    y = lineRow(pg, y, '3',  'Is the organization a corporation that is the common parent of a consolidated group?', '☐ Yes  ☒ No');
+    y = lineRow(pg, y, '4',  'If "Yes," attach a schedule listing name, address, and EIN for each member', '');
+    y = lineRow(pg, y, '5a', 'If the organization qualifies under Reg. §1.6081-5, check here >', '☐');
+    y = lineRow(pg, y, '5b', 'If "Yes," is the organization\'s tax year a 52-53-week tax year?', '☐ Yes  ☐ No');
+    y = lineRow(pg, y, '6',  'Tentative total tax', '0');
+    y = lineRow(pg, y, '7',  'Total payments and credits', '0');
+    y = lineRow(pg, y, '8',  'Balance due — subtract line 7 from line 6. Deposit this amount using EFTPS.', '0', true);
+    y -= 8;
+
+    // Signature (7004 requires authorized person signature)
+    y = sectionBar(pg, y, 'SIGNATURE');
+    y -= 8;
+    box(pg, ML, y-70, IW, 70, LGRAY, null);
+    box(pg, ML, y-70, IW, 70, null, BLACK);
+    t(pg, 'Signature of authorized individual', ML+4, y-9, 6.5, font, GRAY6);
+    hline(pg, y-26, ML+4, ML+200, 0.7, BLACK);
+    await drawSig(pg, ML+6, y-27, 192, 20);
+    t(pg, 'Date', ML+210, y-9, 6.5, font, GRAY6);
+    t(pg, todayStr, ML+213, y-25, 8.5, font, BLACK);
+    hline(pg, y-26, ML+210, W-MR-4, 0.7, BLACK);
+    t(pg, 'Title', ML+4, y-36, 6.5, font, GRAY6);
+    t(pg, p.title||'Owner / Managing Member', ML+4, y-49, 8.5, font, BLACK);
+    hline(pg, y-52, ML+4, ML+260, 0.7, BLACK);
+    t(pg, 'Print / Type name', ML+270, y-36, 6.5, font, GRAY6);
+    t(pg, p.ownerName||corpName||'', ML+270, y-49, 8.5, font, BLACK);
+    hline(pg, y-52, ML+270, W-MR-4, 0.7, BLACK);
+  }
+
+  // ── Route ─────────────────────────────────────────────────
   if (formType === '7004') {
-    const bytes = await fetchForm('f7004.pdf');
-    const doc = await PDFDocument.load(bytes, { ignoreEncryption: true });
-    const font = await doc.embedFont(StandardFonts.Helvetica);
-    const p0 = doc.getPages()[0];
-
-    const codeMap = {'1065':'09','1120':'12','1120-S':'17','1120-F':'26','1041':'04'};
-    const code = (codeMap[extendForm] || '12').padStart(2,'0');
-
-    // Header — name / EIN / address
-    drawField(p0, font, corpName,              93, 90);          // name  (y=84–93 label)
-    drawField(p0, font, p.ein,                 93, 450);         // EIN
-    drawField(p0, font, addr.street || '',    117, 90);          // street
-    drawField(p0, font, addr.city || '',      141, 90);          // city
-    drawField(p0, font, addr.state || '',     141, 280);         // state
-    drawField(p0, font, addr.country || 'US', 141, 388);         // country
-    drawField(p0, font, addr.zip || '',       141, 496);         // zip
-
-    // Part I — form code boxes (two digits, each in its own small box ≈ 15pt wide)
-    drawField(p0, font, code[0], 203, 547, 8);
-    drawField(p0, font, code[1], 203, 562, 8);
-
-    // Part II — tax year
-    drawField(p0, font, yr2, 527, 222, 8);                       // "20__" year box
-
-    // Lines 6/7/8 — tentative tax / payments / balance
-    // Labels: y=565-575 (line 6), y=589-599 (line 7), y=613-623 (line 8)
-    drawField(p0, font, '0', 575, AMT_X);                        // Line 6 tentative tax
-    drawField(p0, font, '0', 599, AMT_X);                        // Line 7 payments
-    drawField(p0, font, '0', 623, AMT_X);                        // Line 8 balance due
-
-    const finalBytes = await doc.save();
-    return new Blob([finalBytes], { type: 'application/pdf' });
+    await build7004();
+  } else if (formType === '1065') {
+    await build1065();
+  } else {
+    // Default: 5472 + 1120 (Foreign-Owned SMLLC)
+    await build1120();
+    await build5472();
   }
 
-  if (formType === '1065') {
-    const bytes = await fetchForm('f1065.pdf');
-    const doc = await PDFDocument.load(bytes, { ignoreEncryption: true });
-    const font = await doc.embedFont(StandardFonts.Helvetica);
-    const bold = await doc.embedFont(StandardFonts.HelveticaBold);
-    const p0 = doc.getPages()[0];
-
-    // Header dates — labels: "beginning" at y=56-65, "ending" at y=56-65
-    drawField(p0, font, `01/01/${taxYear}`, 65, 274, 8);         // begin
-    drawField(p0, font, `12/31/${taxYear}`, 65, 389, 8);         // end
-    drawField(p0, font, yr2,                65, 468, 8);          // year box
-
-    // Company block
-    drawField(p0, bold, corpName,            92, 126);            // name  (y=84-92)
-    drawField(p0, font, addr.street || '',  116, 126);            // street
-    drawField(p0, font, addr.city || '',    140, 126);            // city
-    drawField(p0, font, addr.state || '',   140, 228);            // state
-    drawField(p0, font, addr.zip || '',     140, 429);            // zip
-    drawField(p0, font, p.ein,              101, 494);            // EIN (y=84-93 + 8 = 101)
-
-    // ── Income section ──
-    // Line 1a Gross receipts    label y=235-245
-    drawField(p0, font, irs(inc),     245, AMT_X);
-    // Line 1c Balance (= 1a)    label y=235-245 right sub-col
-    drawField(p0, font, irs(inc),     245, 395);
-    // Line 3 Gross profit        label y=259-269
-    drawField(p0, font, irs(inc),     269, AMT_X);
-    // Line 8 Total income        label y=319-329
-    drawField(p0, font, irs(inc),     329, AMT_X);
-
-    // ── Deductions section ──
-    // Line 20 Other deductions   label y=487-497
-    drawField(p0, font, irs(exp),     497, AMT_X);
-    // Line 22 Total deductions   label y=499-509
-    drawField(p0, font, irs(exp),     509, AMT_X);
-    // Line 23 Ordinary income (loss)  label y=511-521
-    drawField(p0, font, irs(profit),  521, AMT_X);
-
-    // ── Sign Here (page 1, y=697-705) ──
-    // Draw signature image above the "Signature of partner" line
-    await drawSignature(doc, p0, sigData, 96, 87, 140, 28);
-    drawField(p0, font, todayStr,           705, 369, 8);         // Date
-    drawField(p0, font, 'Managing Member',  705, 96,  8);         // Title (printed)
-
-    const finalBytes = await doc.save();
-    return new Blob([finalBytes], { type: 'application/pdf' });
-  }
-
-  // ── Default: 5472_1120 (Foreign-Owned Single-Member LLC) ──
-  const [bytes1120, bytes5472] = await Promise.all([
-    fetchForm('f1120-2025.pdf'),
-    fetchForm('f5472-2023.pdf'),
-  ]);
-
-  // ══════════════ FORM 1120 ══════════════
-  const doc1120 = await PDFDocument.load(bytes1120, { ignoreEncryption: true });
-  const font1120 = await doc1120.embedFont(StandardFonts.Helvetica);
-  const bold1120 = await doc1120.embedFont(StandardFonts.HelveticaBold);
-  const p1 = doc1120.getPages()[0];
-
-  // Tax year header (top-right date boxes)
-  drawField(p1, font1120, `01/01/${taxYear}`, 60, 256, 8);       // begin
-  drawField(p1, font1120, `12/31/${taxYear}`, 60, 396, 8);       // end
-  drawField(p1, font1120, yr2,                60, 468, 8);        // year box
-
-  // Company block
-  drawField(p1, bold1120, corpName,           81, 126);           // name  (label y=73-81)
-  drawField(p1, font1120, addr.street || '', 105, 126);           // street
-  drawField(p1, font1120, addr.state || '',  105, 401);           // state
-  drawField(p1, font1120, addr.city || '',   129, 126);           // city
-  drawField(p1, font1120, addr.zip || '',    129, 379);           // zip
-  drawField(p1, font1120, p.ein,              81, 461);           // EIN
-  drawField(p1, font1120, irs(inc),           81, 401);           // Total assets ≈ income
-
-  // "Foreign-Owned U.S. DE" notation per IRS instructions
-  p1.drawText('Foreign-Owned U.S. DE', {
-    x: 126, y: 792 - 68, size: 8, font: bold1120, color: rgb(0, 0, 0)
-  });
-
-  // ── Income section (right column, label y → amount y_bottom) ──
-  // Line 1a Gross receipts    label y=158-167
-  drawField(p1, font1120, irs(inc),       167, AMT_X);
-  // Line 1c Balance           label y=182-191
-  drawField(p1, font1120, irs(inc),       191, AMT_X);
-  // Line 3 Gross profit       label y=206-215
-  drawField(p1, font1120, irs(inc),       215, AMT_X);
-  // Line 11 Total income      label y=301-311
-  drawField(p1, font1120, irs(inc),       311, AMT_X);
-
-  // ── Deductions section ──
-  // Line 22 Advertising       label y=434-443  (if any)
-  if (advAmt > 0) drawField(p1, font1120, irs(advAmt),   443, AMT_X);
-  // Line 26 Other deductions  label y=482-491
-  drawField(p1, font1120, irs(otherDed > 0 ? otherDed : exp), 491, AMT_X);
-  // Line 27 Total deductions  label y=494-503
-  drawField(p1, font1120, irs(exp),       503, AMT_X);
-  // Line 28 Taxable income    label y=506-515
-  drawField(p1, font1120, irs(profit),    515, AMT_X);
-  // Line 30 Taxable income    label y=554-563
-  drawField(p1, font1120, irs(profit),    563, AMT_X);
-  // Line 31 Total tax = 0 (DE is disregarded — no corporate tax)
-  drawField(p1, font1120, '0',            575, AMT_X);
-
-  // ── Sign Here (page 1, label y=703-711) ──
-  await drawSignature(doc1120, p1, sigData, 74, 83, 140, 28);
-  drawField(p1, font1120, todayStr,        711, 268, 8);          // Date
-  drawField(p1, font1120, 'Managing Member', 711, 326, 8);        // Title
-
-  // ══════════════ FORM 5472 ══════════════
-  const doc5472 = await PDFDocument.load(bytes5472, { ignoreEncryption: true });
-  const font5472 = await doc5472.embedFont(StandardFonts.Helvetica);
-  const bold5472 = await doc5472.embedFont(StandardFonts.HelveticaBold);
-  const [q1, q2] = doc5472.getPages();
-
-  // ── Page 1: Header / Part I ──
-  // Tax period (top banner): label y=86-94
-  drawField(q1, font5472, '01',            94, 285, 8);           // begin month
-  drawField(q1, font5472, String(taxYear), 94, 343, 8);           // begin year
-  drawField(q1, font5472, '12',            94, 407, 8);           // end month
-  drawField(q1, font5472, String(taxYear), 94, 466, 8);           // end year
-
-  // Part I — Reporting Corporation
-  drawField(q1, bold5472, corpName,                130, 56);      // 1a name  (y=121-130)
-  drawField(q1, font5472, addr.street || '',       154, 56);      // 1b street
-  drawField(q1, font5472, cityStateZip,            178, 56);      // 1c city/state/zip
-  drawField(q1, font5472, p.ein,                   130, 443);     // 1b EIN
-  drawField(q1, font5472, irs(inc),                154, 443);     // Total assets ≈ income
-  drawField(q1, font5472, '1',                     214, 256);     // Total # of Forms 5472
-
-  // Principal business activity (line 1e, y=193-202)
-  drawField(q1, font5472, 'Professional Services', 202, 56, 8);
-  // Total gross payments (line 1f, y=205-214)
-  drawField(q1, font5472, irs(inc + exp),          214, 56, 8);
-
-  // Part II — 25% Foreign Shareholder
-  const owner = p.foreignOwner || p.foreign_owner || {};
-  if (owner.name) {
-    const ownerAddr = [owner.name, owner.address].filter(Boolean).join(', ');
-    drawField(q1, font5472, ownerAddr,             406, 56, 8);   // 4a name/addr (y=397-406)
-    drawField(q1, font5472, owner.us_tin || 'N/A', 430, 63, 8);  // 4b(1) US TIN
-    drawField(q1, font5472, owner.ref_id || '',    430, 207, 8);  // 4b(2) Ref ID
-    drawField(q1, font5472, owner.ftin || '',      430, 380, 8);  // 4b(3) FTIN
-  }
-
-  // ── Page 2: Part IV — Monetary Transactions ──
-  if (q2) {
-    // Line 15 Consideration received for services (label y=302-311)
-    if (inc > 0) drawField(q2, font5472, irs(inc), 311, AMT_X);
-    // Line 22 Total received (label y=385-395)
-    drawField(q2, font5472, irs(inc),              395, AMT_X);
-    // Line 35 Other amounts paid (label y=554-563)
-    if (exp > 0) drawField(q2, font5472, irs(exp), 563, AMT_X);
-    // Line 36 Total paid (label y=565-575)
-    drawField(q2, font5472, irs(exp),              575, AMT_X);
-  }
-
-  // Merge: 6 pages of 1120 + 3 pages of 5472
-  const merged = await PDFDocument.create();
-  const pages1120 = await merged.copyPages(doc1120, doc1120.getPageIndices());
-  pages1120.forEach(pg => merged.addPage(pg));
-  const pages5472 = await merged.copyPages(doc5472, doc5472.getPageIndices());
-  pages5472.forEach(pg => merged.addPage(pg));
-
-  const finalBytes = await merged.save();
+  const finalBytes = await pdfDoc.save();
   return new Blob([finalBytes], { type: 'application/pdf' });
 }
 
