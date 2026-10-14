@@ -5920,9 +5920,15 @@ async function openIRSFilingModal() {
     if (sendBtn)    { sendBtn.disabled = true; sendBtn.textContent = 'Signature required'; }
   }
 
-  // Reset status
+  // Reset to send view (in case it was previously in success state)
+  const sendView    = document.getElementById('irs-send-view');
+  const successView = document.getElementById('irs-success-view');
+  if (sendView)    sendView.style.display    = 'block';
+  if (successView) successView.style.display = 'none';
   const status = document.getElementById('irs-send-status');
   if (status) { status.style.display = 'none'; status.innerHTML = ''; }
+  const sendBtn = document.getElementById('irs-send-btn');
+  if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = 'Send via USPS →'; }
 
   document.getElementById('irs-filing-modal').style.display = 'flex';
 }
@@ -5973,12 +5979,13 @@ async function sendToIRS() {
     const data = await res.json();
     if (!res.ok || !data.ok) throw new Error(data.error || 'Lob API error');
 
-    status.style.display = 'block';
-    status.style.color   = '#00c896';
-    status.innerHTML     = `✓ Letter submitted! Tracking: <strong>${data.tracking || data.id}</strong><br><small style="color:var(--text3)">Estimated delivery 5–7 business days · USPS Certified Mail</small>`;
-    btn.textContent = '✓ Sent!';
     saveIRSLetter({ id: data.id, tracking: data.tracking, expected_delivery: data.expected_delivery, status: data.status||'submitted', taxYear, sentAt: new Date().toISOString() });
     renderIRSHistory();
+    // Switch to success confirmation view
+    const trackingId = data.tracking || data.id || '';
+    document.getElementById('irs-success-tracking').textContent = trackingId;
+    document.getElementById('irs-send-view').style.display = 'none';
+    document.getElementById('irs-success-view').style.display = 'block';
   } catch(e) {
     status.style.display = 'block';
     status.style.color   = '#e53e3e';
@@ -8353,48 +8360,70 @@ document.addEventListener('click', e => {
 <!-- IRS Filing Modal -->
 <div id="irs-filing-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:10001;align-items:center;justify-content:center;backdrop-filter:blur(4px)" onclick="if(event.target===this)document.getElementById('irs-filing-modal').style.display='none'">
   <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:32px;width:480px;max-width:92vw;max-height:90vh;overflow-y:auto">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-      <div style="font-size:16px;font-weight:800;color:var(--text)">File with IRS via Certified Mail</div>
-      <button onclick="document.getElementById('irs-filing-modal').style.display='none'" style="background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;line-height:1">&times;</button>
-    </div>
-    <div style="font-size:13px;color:var(--text3);margin-bottom:20px">Your signed Filing Package will be printed and sent via USPS Certified Mail to the IRS. You receive a tracking number.</div>
 
-    <!-- Form type badge in modal -->
-    <div id="irs-modal-type-badge" style="display:inline-flex;align-items:center;gap:6px;background:rgba(0,200,150,0.1);border:1px solid rgba(0,200,150,0.2);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;color:var(--accent);margin-bottom:16px"></div>
+    <!-- ── Main send view ── -->
+    <div id="irs-send-view">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <div style="font-size:16px;font-weight:800;color:var(--text)">File with IRS via Certified Mail</div>
+        <button onclick="document.getElementById('irs-filing-modal').style.display='none'" style="background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;line-height:1">&times;</button>
+      </div>
+      <div style="font-size:13px;color:var(--text3);margin-bottom:20px">Your signed Filing Package will be printed and sent via USPS Certified Mail to the IRS. You receive a tracking number.</div>
 
-    <!-- Recipient -->
-    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px">
-      <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Recipient (IRS)</div>
-      <div style="font-size:13px;font-weight:600;color:var(--text)">Internal Revenue Service</div>
-      <div id="irs-modal-address" style="font-size:12px;color:var(--text2)">P.O. Box 409101 · Ogden, UT 84409</div>
+      <!-- Form type badge in modal -->
+      <div id="irs-modal-type-badge" style="display:inline-flex;align-items:center;gap:6px;background:rgba(0,200,150,0.1);border:1px solid rgba(0,200,150,0.2);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;color:var(--accent);margin-bottom:16px"></div>
+
+      <!-- Recipient -->
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px">
+        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Recipient (IRS)</div>
+        <div style="font-size:13px;font-weight:600;color:var(--text)">Internal Revenue Service</div>
+        <div id="irs-modal-address" style="font-size:12px;color:var(--text2)">P.O. Box 409101 · Ogden, UT 84409</div>
+      </div>
+
+      <!-- Sender (from tax profile) -->
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px">
+        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Sender (Your LLC)</div>
+        <div id="irs-modal-from" style="font-size:12px;color:var(--text2);line-height:1.6"></div>
+      </div>
+
+      <!-- Signature preview -->
+      <div id="irs-sig-section" style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px">
+        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Signature</div>
+        <div id="irs-sig-ok" style="display:none"><img id="irs-sig-img" style="height:44px;border-radius:6px;padding:4px 8px;background:#fff;border:1px solid #ddd"></div>
+        <div id="irs-sig-missing" style="display:none;font-size:12px;color:#e53e3e">&#9888; No signature saved yet. <span style="color:#00c896;cursor:pointer;text-decoration:underline" onclick="document.getElementById('irs-filing-modal').style.display='none';openAccountModal()">Add in Account Settings &#8594;</span></div>
+      </div>
+
+      <!-- Contents -->
+      <div style="background:var(--bg3);border:1px solid rgba(124,58,237,0.25);border-radius:10px;padding:12px 14px;margin-bottom:14px">
+        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Filing Details</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:3px">&#128197; Tax Year: <strong id="irs-modal-taxyear" style="color:#a78bfa">—</strong> &nbsp;(Jan 1 – Dec 31)</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:3px">&#128196; Forms: <strong id="irs-modal-forms" style="color:var(--text)">Pro Forma 1120 + Form 5472</strong></div>
+        <div style="font-size:12px;color:var(--text2)">&#128236; Estimated delivery: <strong style="color:var(--text)">5–7 business days</strong> · USPS Certified Mail</div>
+      </div>
+
+      <div style="display:flex;gap:10px">
+        <button onclick="document.getElementById('irs-filing-modal').style.display='none'" style="flex:1;padding:12px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-size:13px;font-family:'Montserrat',sans-serif">Cancel</button>
+        <button id="irs-send-btn" onclick="sendToIRS()" style="flex:2;padding:12px;border-radius:10px;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;border:none;cursor:pointer;font-size:13px;font-weight:700;font-family:'Montserrat',sans-serif">Send via USPS &#8594;</button>
+      </div>
+      <div id="irs-send-status" style="margin-top:14px;font-size:13px;display:none;text-align:center"></div>
     </div>
 
-    <!-- Sender (from tax profile) -->
-    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px">
-      <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Sender (Your LLC)</div>
-      <div id="irs-modal-from" style="font-size:12px;color:var(--text2);line-height:1.6"></div>
+    <!-- ── Success confirmation view (shown after send) ── -->
+    <div id="irs-success-view" style="display:none;text-align:center;padding:12px 0">
+      <div style="width:72px;height:72px;border-radius:50%;background:rgba(0,200,150,0.12);border:2px solid #00c896;display:flex;align-items:center;justify-content:center;margin:0 auto 20px">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div style="font-size:20px;font-weight:800;color:var(--text);margin-bottom:6px">Successfully Filed!</div>
+      <div style="font-size:13px;color:var(--text3);margin-bottom:24px">Your filing was submitted via USPS Certified Mail to the IRS.</div>
+
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:20px;text-align:left">
+        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Tracking Number</div>
+        <div id="irs-success-tracking" style="font-size:14px;font-weight:700;color:var(--accent);font-family:monospace;word-break:break-all"></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px">Estimated delivery: 5–7 business days · USPS Certified Mail</div>
+      </div>
+
+      <button onclick="document.getElementById('irs-filing-modal').style.display='none'" style="width:100%;padding:13px;border-radius:10px;background:linear-gradient(135deg,#00c896,#00a87a);color:#fff;border:none;cursor:pointer;font-size:14px;font-weight:700;font-family:'Montserrat',sans-serif">Close</button>
     </div>
 
-    <!-- Signature preview -->
-    <div id="irs-sig-section" style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px">
-      <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Signature</div>
-      <div id="irs-sig-ok" style="display:none"><img id="irs-sig-img" style="height:44px;border-radius:6px;padding:4px 8px;background:#fff;border:1px solid #ddd"></div>
-      <div id="irs-sig-missing" style="display:none;font-size:12px;color:#e53e3e">⚠ No signature saved yet. <span style="color:#00c896;cursor:pointer;text-decoration:underline" onclick="document.getElementById('irs-filing-modal').style.display='none';openAccountModal()">Add in Account Settings →</span></div>
-    </div>
-
-    <!-- Contents -->
-    <div style="background:var(--bg3);border:1px solid rgba(124,58,237,0.25);border-radius:10px;padding:12px 14px;margin-bottom:14px">
-      <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Filing Details</div>
-      <div style="font-size:12px;color:var(--text2);margin-bottom:3px">📅 Tax Year: <strong id="irs-modal-taxyear" style="color:#a78bfa">—</strong> &nbsp;(Jan 1 – Dec 31)</div>
-      <div style="font-size:12px;color:var(--text2);margin-bottom:3px">📄 Forms: <strong id="irs-modal-forms" style="color:var(--text)">Pro Forma 1120 + Form 5472</strong></div>
-      <div style="font-size:12px;color:var(--text2)">📬 Estimated delivery: <strong style="color:var(--text)">5–7 business days</strong> · USPS Certified Mail</div>
-    </div>
-
-    <div style="display:flex;gap:10px">
-      <button onclick="document.getElementById('irs-filing-modal').style.display='none'" style="flex:1;padding:12px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-size:13px;font-family:'Montserrat',sans-serif">Cancel</button>
-      <button id="irs-send-btn" onclick="sendToIRS()" style="flex:2;padding:12px;border-radius:10px;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;border:none;cursor:pointer;font-size:13px;font-weight:700;font-family:'Montserrat',sans-serif">Send via USPS →</button>
-    </div>
-    <div id="irs-send-status" style="margin-top:14px;font-size:13px;display:none;text-align:center"></div>
   </div>
 </div>
 
