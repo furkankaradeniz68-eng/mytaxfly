@@ -3430,7 +3430,8 @@ async function launchApp(user){
   try {
     // ── Role check — restore portal on reload, or route when advisor tab used ──
     const savedPortal = sessionStorage.getItem('mtf_portal_mode');
-    const advisorTabActive = document.getElementById('tab-advisor')?.classList.contains('active');
+    const advisorTabVisible = document.getElementById('tab-advisor')?.style.display !== 'none';
+    const advisorTabActive = advisorTabVisible && document.getElementById('tab-advisor')?.classList.contains('active');
     if (savedPortal || advisorTabActive) {
       const role = await fetchUserRole();
       if (role === 'admin') {
@@ -3441,6 +3442,8 @@ async function launchApp(user){
         await launchAdvisorView(user);
         return;
       }
+      // Not an advisor/admin — clear portal session and continue to client app
+      sessionStorage.removeItem('mtf_portal_mode');
     }
 
     const meta=user.user_metadata||{};
@@ -6353,10 +6356,11 @@ function applyTenantConfig(cfg) {
     const signinTab = document.getElementById('t-signin-tab');
     if (signinTab) signinTab.textContent = 'Client Log In';
   }
-  // Advisor login tab
+  // Advisor login tab — always hidden on mytaxfly.com main domain
   const advisorTab = document.getElementById('tab-advisor');
   const forceAdvisor = new URLSearchParams(location.search).has('advisor');
-  const showAdvisor = cfg.show_advisor_login || forceAdvisor;
+  const isMytaxfly = (cfg.tenant_id === 'mytaxfly') || (location.hostname.replace(/^www\./,'') === 'mytaxfly.com');
+  const showAdvisor = !isMytaxfly && (cfg.show_advisor_login || forceAdvisor);
   if (advisorTab) advisorTab.style.display = showAdvisor ? '' : 'none';
   // Feature flags
   if (cfg.show_ai_advisor === false) {
