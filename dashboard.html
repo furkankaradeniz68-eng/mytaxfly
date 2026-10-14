@@ -1282,17 +1282,6 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
         </div>
         <span class="period-count" id="period-count"></span>
       </div>
-      <div style="background:rgba(0,200,150,0.06);border:1px solid rgba(0,200,150,0.18);border-radius:10px;padding:6px 16px;display:flex;align-items:center;gap:20px;margin-bottom:16px">
-        <div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--accent);white-space:nowrap;flex-shrink:0"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span id="t-deadlines">IRS Deadlines</span></div>
-        <div style="width:1px;height:28px;background:rgba(0,200,150,0.2);flex-shrink:0"></div>
-        <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap">
-          <div style="display:flex;flex-direction:column;gap:1px"><div style="font-size:9px;color:var(--accent);text-transform:uppercase;letter-spacing:0.6px;font-weight:700">Form 1065 (Multi-Member)</div><div style="font-size:12px;font-weight:700;color:var(--text)">March 15, 2027</div><div style="font-size:10px;color:var(--accent)">Partnership Return</div></div>
-          <div style="width:1px;height:28px;background:rgba(0,200,150,0.15);flex-shrink:0"></div>
-          <div style="display:flex;flex-direction:column;gap:1px"><div style="font-size:9px;color:var(--accent);text-transform:uppercase;letter-spacing:0.6px;font-weight:700"><span id="t-annual">Annual Report</span></div><div style="font-size:12px;font-weight:700;color:var(--text)">April 15, 2027</div><div style="font-size:10px;color:var(--accent)">In 189 days</div></div>
-          <div style="width:1px;height:28px;background:rgba(0,200,150,0.15);flex-shrink:0"></div>
-          <div style="display:flex;flex-direction:column;gap:1px"><div style="font-size:9px;color:var(--accent);text-transform:uppercase;letter-spacing:0.6px;font-weight:700"><span id="t-boi">BOI Report</span></div><div style="font-size:12px;font-weight:700;color:var(--accent)"><span id="t-filed">Filed ✓</span></div><div style="font-size:10px;color:var(--accent)"><span id="t-completed">Completed</span></div></div>
-        </div>
-      </div>
       <div class="stats-grid">
         <div class="stat-card"><div class="stat-label" id="t-stat-revenue">Revenue</div><div class="stat-value green" id="stat-income">$0</div><div class="stat-change">This month</div></div>
         <div class="stat-card"><div class="stat-label" id="t-stat-expense">Expenses</div><div class="stat-value red" id="stat-expense">$0</div><div class="stat-change">This month</div></div>
@@ -1302,6 +1291,15 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
       <div class="two-col">
         <div class="card"><div class="card-title" id="t-recent-tx">Recent Transactions</div><div id="tx-list"><div class="empty-state" style="padding:30px 0"><div class="empty-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div><div class="empty-title">No transactions yet</div><div class="empty-sub">Add your first transaction</div></div></div></div>
         <div class="card"><div class="card-title" id="t-by-cat">Expenses by Category</div><div id="cat-list"><div class="empty-state" style="padding:30px 0"><div class="empty-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><div class="empty-title">No data yet</div><div class="empty-sub">Appears after first entry</div></div></div></div>
+      </div>
+      <div class="card">
+        <div class="card-title" id="t-deadlines" style="display:flex;align-items:center;gap:8px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f6ad55" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d='M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z'/><line x1='12' y1='9' x2='12' y2='13'/><line x1='12' y1='17' x2='12.01' y2='17'/></svg>Upcoming IRS Deadlines</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:4px">
+          <div style="background:var(--bg3);border-radius:8px;padding:14px"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:4px"><span id="t-q-taxes">Quarterly Taxes</span></div><div style="font-size:15px;font-weight:700">June 15, 2026</div><div style="font-size:11px;color:var(--warn);margin-top:2px">In 24 days</div></div>
+          <div style="background:var(--bg3);border-radius:8px;padding:14px"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:4px"><span id="t-annual">Annual Report</span></div><div style="font-size:15px;font-weight:700">April 15, 2027</div><div style="font-size:11px;color:var(--accent);margin-top:2px">In 328 days</div></div>
+          <div style="background:var(--bg3);border-radius:8px;padding:14px"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:4px"><span id="t-boi">BOI Report</span></div><div style="font-size:15px;font-weight:700"><span id="t-filed">Filed ✓</span></div><div style="font-size:11px;color:var(--accent);margin-top:2px"><span id="t-completed">Completed</span></div></div>
+        </div>
+        <div class="disclaimer-bar"><span id="t-disclaimer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f6ad55" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d='M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z'/><line x1='12' y1='9' x2='12' y2='13'/><line x1='12' y1='17' x2='12.01' y2='17'/></svg> MyTaxFly is not a licensed tax advisor. Always consult a qualified CPA.</span></div>
       </div>
     </div>
 
@@ -1573,6 +1571,61 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
         </ul>
       </div>
 
+      <!-- Form Type Selector -->
+      <div style="margin-bottom:20px">
+        <div style="font-size:13px;font-weight:700;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.6px;font-size:10px">What would you like to file?</div>
+        <div style="display:flex;flex-direction:column;gap:8px" id="irs-form-type-list">
+
+          <!-- Single-Member LLC -->
+          <div class="irs-type-card irs-type-selected" id="irs-type-5472" onclick="selectIRSFormType('5472_1120')" style="background:var(--bg2);border:1.5px solid var(--accent);border-radius:12px;padding:14px 16px;cursor:pointer;transition:all 0.18s">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="width:36px;height:36px;border-radius:10px;background:rgba(0,200,150,0.12);border:1px solid rgba(0,200,150,0.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px">🏢</div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:13px;font-weight:700;color:var(--text)">Single-Member LLC <span style="font-weight:500;color:var(--text3)">(Foreign-Owned)</span></div>
+                <div style="font-size:11px;color:var(--text3);margin-top:2px">Pro Forma 1120 + Form 5472 · IRS Ogden, UT 84409</div>
+              </div>
+              <div id="irs-check-5472" style="color:var(--accent);font-size:16px">✓</div>
+            </div>
+          </div>
+
+          <!-- Multi-Member LLC -->
+          <div class="irs-type-card" id="irs-type-1065" onclick="selectIRSFormType('1065')" style="background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;cursor:pointer;transition:all 0.18s">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="width:36px;height:36px;border-radius:10px;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px">👥</div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:13px;font-weight:700;color:var(--text)">Multi-Member LLC <span style="font-weight:500;color:var(--text3)">(Partnership)</span></div>
+                <div style="font-size:11px;color:var(--text3);margin-top:2px">Form 1065 · IRS Hartford, CT 06176</div>
+              </div>
+              <div id="irs-check-1065" style="color:var(--accent);font-size:16px;display:none">✓</div>
+            </div>
+          </div>
+
+          <!-- Extension -->
+          <div class="irs-type-card" id="irs-type-7004" onclick="selectIRSFormType('7004')" style="background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;cursor:pointer;transition:all 0.18s">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="width:36px;height:36px;border-radius:10px;background:rgba(246,173,85,0.1);border:1px solid rgba(246,173,85,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px">⏱</div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:13px;font-weight:700;color:var(--text)">Extension <span style="font-weight:500;color:var(--text3)">(6 Months)</span></div>
+                <div style="font-size:11px;color:var(--text3);margin-top:2px">Form 7004 · IRS Ogden, UT 84201</div>
+              </div>
+              <div id="irs-check-7004" style="color:var(--accent);font-size:16px;display:none">✓</div>
+            </div>
+            <!-- Extension sub-selection -->
+            <div id="irs-extend-row" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+              <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Which form are you extending?</div>
+              <select id="irs-extend-select" onclick="event.stopPropagation()" onchange="irsExtendForm=this.value" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:'Montserrat',sans-serif;font-size:13px;color:var(--text);cursor:pointer">
+                <option value="1065">Form 1065 (Partnership)</option>
+                <option value="1120">Form 1120 (C-Corp)</option>
+                <option value="1120-S">Form 1120-S (S-Corp)</option>
+                <option value="1120-F">Form 1120-F (Foreign Corp)</option>
+                <option value="1041">Form 1041 (Trust/Estate)</option>
+              </select>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
       <!-- Tax Year Selector -->
       <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:16px">
         <div>
@@ -1587,7 +1640,7 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
         <svg style="display:inline;vertical-align:-3px;margin-right:8px" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,13 22,4"/></svg>
         Send to IRS via USPS Certified Mail
       </button>
-      <div style="font-size:11px;color:var(--text3);text-align:center;margin-bottom:28px">USPS Certified Mail · With tracking number · Delivered to IRS Ogden, UT 84409</div>
+      <div id="irs-send-label" style="font-size:11px;color:var(--text3);text-align:center;margin-bottom:28px">USPS Certified Mail · With tracking number · Delivered to IRS Ogden, UT 84409</div>
 
       <!-- History -->
       <div class="card">
@@ -2004,6 +2057,9 @@ const _ry=new Date().getFullYear();
 let reportPeriodFrom=new Date(_ry,0,1), reportPeriodTo=new Date(_ry,11,31);
 // IRS filing year — always a complete calendar year, defaults to prior year
 let irsFilingYear = _ry - 1;
+// IRS form type selection: '5472_1120' | '1065' | '7004'
+let irsFormType = '5472_1120';
+let irsExtendForm = '1065'; // for 7004 extension
 
 // ── PERIOD FILTER ─────────────────────────────────────────
 function getPeriodRange(val){
@@ -2464,7 +2520,7 @@ async function loadAdvisorClients(advisorId) {
     // Get clients assigned to this advisor
     const { data: acRows, error: acErr } = await sb
       .from('advisor_clients')
-      .select('client_id, notes, status')
+      .select('client_id, notes, status, irs_filed')
       .eq('advisor_id', advisorId);
 
     if (acErr || !acRows || acRows.length === 0) {
@@ -2474,9 +2530,10 @@ async function loadAdvisorClients(advisorId) {
     }
 
     const clientIds = acRows.map(r => r.client_id);
-    const statusMap = {};
-    const notesMap  = {};
-    acRows.forEach(r => { statusMap[r.client_id] = r.status; notesMap[r.client_id] = r.notes; });
+    const statusMap  = {};
+    const notesMap   = {};
+    const irsFiledMap = {};
+    acRows.forEach(r => { statusMap[r.client_id] = r.status; notesMap[r.client_id] = r.notes; irsFiledMap[r.client_id] = r.irs_filed || false; });
 
     // Get profiles for all clients
     const { data: profiles } = await sb
@@ -2518,15 +2575,19 @@ async function loadAdvisorClients(advisorId) {
     }
 
     grid.innerHTML = profiles.map(p => {
-      const stats   = statsPerClient[p.id] || { revenue: 0, expenses: 0, lastDate: null, txCount: 0 };
-      const status  = statusMap[p.id] || 'active';
-      const note    = (notesMap[p.id] || '').replace(/"/g,'&quot;');
-      const initial = (p.name || p.email || '?')[0].toUpperCase();
-      const lastAct = stats.lastDate ? new Date(stats.lastDate).toLocaleDateString('en-US', {month:'short', day:'numeric'}) : 'No data';
-      const profit  = stats.revenue - stats.expenses;
-      const txCount = stats.txCount || 0;
-      const safeId  = p.id.replace(/-/g,'');
+      const stats    = statsPerClient[p.id] || { revenue: 0, expenses: 0, lastDate: null, txCount: 0 };
+      const status   = statusMap[p.id] || 'active';
+      const note     = (notesMap[p.id] || '').replace(/"/g,'&quot;');
+      const irsFiled = irsFiledMap[p.id] || false;
+      const initial  = (p.name || p.email || '?')[0].toUpperCase();
+      const lastAct  = stats.lastDate ? new Date(stats.lastDate).toLocaleDateString('en-US', {month:'short', day:'numeric'}) : 'No data';
+      const profit   = stats.revenue - stats.expenses;
+      const txCount  = stats.txCount || 0;
+      const safeId   = p.id.replace(/-/g,'');
       const safeName = (p.name||p.email).replace(/'/g,"\\'");
+      const irsFiledBadge = irsFiled
+        ? `<span title="IRS filing marked as submitted" onclick="event.stopPropagation();toggleIRSFiled('${p.id}','${safeId}',false)" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;background:rgba(0,200,150,0.12);border:1px solid rgba(0,200,150,0.3);color:#00c896;border-radius:20px;padding:3px 9px;font-size:10px;font-weight:700;white-space:nowrap" id="irs-badge-${safeId}">IRS ✓ Filed</span>`
+        : `<span title="Mark IRS filing as submitted" onclick="event.stopPropagation();toggleIRSFiled('${p.id}','${safeId}',true)" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;background:rgba(255,200,50,0.08);border:1px solid rgba(255,200,50,0.2);color:#f6ad55;border-radius:20px;padding:3px 9px;font-size:10px;font-weight:700;white-space:nowrap" id="irs-badge-${safeId}">IRS Pending</span>`;
 
       return `
         <div class="advisor-client-card" style="flex-direction:column;align-items:stretch;cursor:default">
@@ -2534,7 +2595,10 @@ async function loadAdvisorClients(advisorId) {
             <div class="advisor-client-left">
               <div class="advisor-client-avatar">${initial}</div>
               <div style="min-width:0;flex:1">
-                <div class="advisor-client-name">${p.name || p.email.split('@')[0]}</div>
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                  <div class="advisor-client-name">${p.name || p.email.split('@')[0]}</div>
+                  ${irsFiledBadge}
+                </div>
                 <div class="advisor-client-email">${p.email}</div>
               </div>
             </div>
@@ -3022,6 +3086,23 @@ async function saveClientNote(clientId, noteText, savedElId) {
     if (el) { el.style.opacity = '1'; setTimeout(() => el.style.opacity = '0', 1800); }
   } catch(e) {
     console.error('saveClientNote error:', e);
+  }
+}
+async function toggleIRSFiled(clientId, safeId, filed) {
+  const badge = document.getElementById('irs-badge-' + safeId);
+  if (filed) {
+    if (badge) badge.outerHTML = `<span title="IRS filing marked as submitted" onclick="event.stopPropagation();toggleIRSFiled('${clientId}','${safeId}',false)" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;background:rgba(0,200,150,0.12);border:1px solid rgba(0,200,150,0.3);color:#00c896;border-radius:20px;padding:3px 9px;font-size:10px;font-weight:700;white-space:nowrap" id="irs-badge-${safeId}">IRS ✓ Filed</span>`;
+  } else {
+    if (badge) badge.outerHTML = `<span title="Mark IRS filing as submitted" onclick="event.stopPropagation();toggleIRSFiled('${clientId}','${safeId}',true)" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;background:rgba(255,200,50,0.08);border:1px solid rgba(255,200,50,0.2);color:#f6ad55;border-radius:20px;padding:3px 9px;font-size:10px;font-weight:700;white-space:nowrap" id="irs-badge-${safeId}">IRS Pending</span>`;
+  }
+  try {
+    const { data: { user } } = await sb.auth.getUser();
+    await sb.from('advisor_clients')
+      .update({ irs_filed: filed })
+      .eq('advisor_id', user.id)
+      .eq('client_id', clientId);
+  } catch(e) {
+    console.error('toggleIRSFiled error:', e);
   }
 }
 // ── END STATUS + NOTES ────────────────────────────────────────────────────────
@@ -4371,7 +4452,7 @@ ${advisorBanner}
   <div style="font-size:42px;font-weight:800;color:${profit>=0?'#00c896':'#e53e3e'}">${profit>=0?'+':''}${fmt(profit)}</div>
 </div>
 <div class="disclaimer">⚠️ For informational purposes only. This is not tax advice. Always consult a qualified CPA before filing your taxes.</div>
-<div class="footer">Tax Year ${new Date().getFullYear() - 1} · For informational purposes only</div>
+<div class="footer">Generated by MyTaxFly · mytaxfly.com · ${date}</div>
 
 
 </body></html>`;
@@ -4395,7 +4476,7 @@ ${advisorBanner}
   </div>
 </div>
 <div class="disclaimer">⚠️ For informational purposes only. This is not tax advice. Always consult a qualified CPA before filing your taxes.</div>
-<div class="footer">Tax Year ${new Date().getFullYear() - 1} · For informational purposes only</div>
+<div class="footer">Generated by MyTaxFly · mytaxfly.com · ${date}</div>
 </body></html>`;
   }
 
@@ -4653,6 +4734,7 @@ td{padding:6px 10px;border-bottom:1px solid #eee;font-size:11px}.amount{text-ali
 
   const formHTML = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>IRS Tax Package — ${llcName} — ${taxYear}</title><style>${css}</style></head><body>
 <div style="text-align:center;margin-bottom:24px">
+  <div style="font-size:22px;font-weight:800;color:#00c896">MyTaxFly</div>
   <div style="font-size:14px;font-weight:700;margin-top:4px">IRS Tax Filing Package — Tax Year ${taxYear}</div>
   <div style="font-size:11px;color:#777">Generated: ${today} · Review with your CPA before filing</div>
 </div>
@@ -4742,9 +4824,9 @@ ${filtered.map(t => `<tr><td>${t.date}</td><td>${t.vendor}</td><td>${t.type}</td
 </div>
 
 <div class="disclaimer">
-  <strong>⚠️ Important:</strong> This is a pre-filled working draft to assist in preparing your IRS filings. It is NOT a substitute for professional tax advice. You MUST review this with a qualified CPA or tax professional before filing with the IRS. The actual Form 5472 and Pro Forma Form 1120 must be filed by the tax deadline (typically April 15). Forms 5472 must be attached to your Pro Forma 1120 and mailed to: Internal Revenue Service, P.O. Box 409101, Ogden, UT 84409.
+  <strong>⚠️ Important:</strong> This document is a pre-filled working draft generated by <span class="brand">MyTaxFly</span> to assist in preparing your IRS filings. It is NOT a substitute for professional tax advice. You MUST review this with a qualified CPA or tax professional before filing with the IRS. MyTaxFly is not a licensed tax advisor. The actual Form 5472 and Pro Forma Form 1120 must be filed by the tax deadline (typically April 15). Forms 5472 must be attached to your Pro Forma 1120 and mailed to: Internal Revenue Service, P.O. Box 409101, Ogden, UT 84409.
 </div>
-<div class="footer">Tax Year ${taxYear} · For informational purposes only</div>
+<div class="footer">Generated by <span class="brand">MyTaxFly</span> · mytaxfly.com · ${today} · Tax Year ${taxYear}</div>
 </body></html>`;
 
   // Use Blob URL to avoid popup blockers
@@ -4752,7 +4834,7 @@ ${filtered.map(t => `<tr><td>${t.date}</td><td>${t.vendor}</td><td>${t.type}</td
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `IRS_Filing_Package_${llcName.replace(/[^a-zA-Z0-9]/g,'_')}_${taxYear}.html`;
+  a.download = `MyTaxFly_Tax_Package_${llcName.replace(/[^a-zA-Z0-9]/g,'_')}_${taxYear}.html`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -4786,6 +4868,8 @@ function buildForm1120HTML(p, filtered, taxYear, sigData, breakBefore=false) {
 
   return `<div style="font-family:Arial,sans-serif;max-width:780px;color:#1a1a1a;font-size:12px;padding:32px 36px;background:#fff${breakBefore?';page-break-before:always':''}">
   <div style="text-align:center;margin-bottom:24px">
+    <div style="font-size:20px;font-weight:900;color:#00c896">MyTaxFly</div>
+    <div style="display:inline-block;background:#00c896;color:#fff;font-size:9px;font-weight:700;padding:2px 10px;border-radius:20px;letter-spacing:.5px;margin:4px 0">PRE-FILLED WORKING DRAFT</div>
     <div style="font-size:14px;font-weight:800;margin-top:4px">Pro Forma Form 1120 — U.S. Corporation Income Tax Return</div>
     <div style="font-size:10px;color:#888;margin-top:2px">Tax Year ${taxYear} · Foreign-Owned Single-Member LLC (Disregarded Entity) · Review with your CPA before filing</div>
   </div>
@@ -4858,9 +4942,9 @@ function buildForm1120HTML(p, filtered, taxYear, sigData, breakBefore=false) {
   </div>
 
   <div style="margin-top:14px;padding:10px 14px;background:#fff8f0;border:1px solid #f6ad55;border-radius:6px;font-size:10px;color:#744210;line-height:1.5;page-break-inside:avoid">
-    <strong>⚠ Important:</strong> This is a pre-filled working draft. It is NOT a filed tax return. Review all figures with a qualified CPA before filing. This pro forma Form 1120 must be paper-filed with Form 5472 attached to: IRS, P.O. Box 409101, Ogden, UT 84409.
+    <strong>⚠ Important:</strong> This is a pre-filled working draft generated by <strong>MyTaxFly</strong>. It is NOT a filed tax return. Review all figures with a qualified CPA before filing. This pro forma Form 1120 must be paper-filed with Form 5472 attached to: IRS, P.O. Box 409101, Ogden, UT 84409.
   </div>
-  <div style="margin-top:12px;text-align:center;font-size:10px;color:#bbb;border-top:1px solid #eee;padding-top:10px">Tax Year ${taxYear} · For informational purposes only</div>
+  <div style="margin-top:12px;text-align:center;font-size:10px;color:#bbb;border-top:1px solid #eee;padding-top:10px">Generated by <strong style="color:#00c896">MyTaxFly</strong> · mytaxfly.com · Tax Year ${taxYear}</div>
 </div>`;
 }
 
@@ -4887,6 +4971,8 @@ function buildForm5472HTML(p, filtered, taxYear, sigData, breakBefore=false) {
 
   return `<div style="font-family:Arial,sans-serif;max-width:780px;color:#1a1a1a;font-size:12px;padding:32px 36px;background:#fff${breakBefore?';page-break-before:always':''}">
   <div style="text-align:center;margin-bottom:24px;page-break-inside:avoid">
+    <div style="font-size:20px;font-weight:900;color:#00c896">MyTaxFly</div>
+    <div style="display:inline-block;background:#00c896;color:#fff;font-size:9px;font-weight:700;padding:2px 10px;border-radius:20px;letter-spacing:.5px;margin:4px 0">PRE-FILLED WORKING DRAFT</div>
     <div style="font-size:14px;font-weight:800;margin-top:4px">Form 5472 — Information Return (25% Foreign-Owned U.S. Corporation)</div>
     <div style="font-size:10px;color:#888;margin-top:2px">Tax Year ${taxYear} · Rev. December 2023 · Sections 6038A and 6038C · Review with your CPA before filing</div>
   </div>
@@ -4980,9 +5066,9 @@ function buildForm5472HTML(p, filtered, taxYear, sigData, breakBefore=false) {
   </div>
 
   <div style="margin-top:14px;padding:10px 14px;background:#fff8f0;border:1px solid #f6ad55;border-radius:6px;font-size:10px;color:#744210;line-height:1.5;page-break-inside:avoid">
-    <strong>⚠ Important:</strong> This is a pre-filled working draft. It is NOT a filed tax return. Form 5472 must be attached to a Pro Forma Form 1120 and mailed to: IRS, P.O. Box 409101, Ogden, UT 84409. Failure to file on time results in a $25,000 penalty per form (§6038A). Filing deadline: April 15, ${taxYear+1}.
+    <strong>⚠ Important:</strong> This is a pre-filled working draft generated by <strong>MyTaxFly</strong>. It is NOT a filed tax return. Form 5472 must be attached to a Pro Forma Form 1120 and mailed to: IRS, P.O. Box 409101, Ogden, UT 84409. Failure to file on time results in a $25,000 penalty per form (§6038A). Filing deadline: April 15, ${taxYear+1}.
   </div>
-  <div style="margin-top:12px;text-align:center;font-size:10px;color:#bbb;border-top:1px solid #eee;padding-top:10px">Tax Year ${taxYear} · For informational purposes only</div>
+  <div style="margin-top:12px;text-align:center;font-size:10px;color:#bbb;border-top:1px solid #eee;padding-top:10px">Generated by <strong style="color:#00c896">MyTaxFly</strong> · mytaxfly.com · Tax Year ${taxYear}</div>
 </div>`;
 }
 
@@ -5036,6 +5122,8 @@ function buildFilingPackageHTML(p, filtered, taxYear, corpName, sigData) {
   const inc = filtered.filter(t=>t.type==='income').reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
   const exp = filtered.filter(t=>t.type==='expense').reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
   const coverHTML = `<div style="font-family:Arial,sans-serif;padding:60px 48px;background:#fff;text-align:center;min-height:600px;display:flex;flex-direction:column;align-items:center;justify-content:center;page-break-after:always">
+    <div style="font-size:28px;font-weight:900;color:#00c896;margin-bottom:6px">MyTaxFly</div>
+    <div style="display:inline-block;background:#00c896;color:#fff;font-size:10px;font-weight:700;padding:3px 14px;border-radius:20px;letter-spacing:.5px;margin-bottom:20px">ANNUAL FILING PACKAGE</div>
     <div style="font-size:22px;font-weight:800;color:#111;margin-bottom:8px">IRS Tax Filing Package</div>
     <div style="font-size:14px;color:#555;margin-bottom:32px">Foreign-Owned Single-Member LLC (Disregarded Entity) · Tax Year ${taxYear}</div>
     <table style="border-collapse:collapse;font-size:13px;margin:0 auto">
@@ -5096,6 +5184,8 @@ async function buildFilingPackageBlob(p, filtered, taxYear, corpName, sigData, o
   const exp = filtered.filter(t=>t.type==='expense').reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
   // Cover page (standalone, no page-break needed)
   const coverHTML = `<div style="font-family:Arial,sans-serif;padding:60px 48px;background:#fff;text-align:center;min-height:600px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+    <div style="font-size:28px;font-weight:900;color:#00c896;margin-bottom:6px">MyTaxFly</div>
+    <div style="display:inline-block;background:#00c896;color:#fff;font-size:10px;font-weight:700;padding:3px 14px;border-radius:20px;letter-spacing:.5px;margin-bottom:20px">ANNUAL FILING PACKAGE</div>
     <div style="font-size:22px;font-weight:800;color:#111;margin-bottom:8px">IRS Tax Filing Package</div>
     <div style="font-size:14px;color:#555;margin-bottom:32px">Foreign-Owned Single-Member LLC (Disregarded Entity) · Tax Year ${taxYear}</div>
     <table style="border-collapse:collapse;font-size:13px;margin:0 auto">
@@ -5208,6 +5298,35 @@ async function sendToAdvisor() {
   }
 }
 
+function selectIRSFormType(type) {
+  irsFormType = type;
+  const types = ['5472_1120','1065','7004'];
+  const ids   = {'5472_1120':'5472','1065':'1065','7004':'7004'};
+  types.forEach(t => {
+    const card  = document.getElementById('irs-type-' + ids[t]);
+    const check = document.getElementById('irs-check-' + ids[t]);
+    if (!card) return;
+    if (t === type) {
+      card.style.borderColor = 'var(--accent)';
+      if (check) check.style.display = '';
+    } else {
+      card.style.borderColor = 'var(--border)';
+      if (check) check.style.display = 'none';
+    }
+  });
+  // Show/hide extension sub-selector
+  const extRow = document.getElementById('irs-extend-row');
+  if (extRow) extRow.style.display = type === '7004' ? 'block' : 'none';
+  // Update send label
+  const labelMap = {
+    '5472_1120': 'USPS Certified Mail · Pro Forma 1120 + Form 5472 · IRS Ogden, UT 84409',
+    '1065':      'USPS Certified Mail · Form 1065 · IRS Hartford, CT 06176',
+    '7004':      'USPS Certified Mail · Form 7004 · IRS Ogden, UT 84201',
+  };
+  const lbl = document.getElementById('irs-send-label');
+  if (lbl) lbl.textContent = labelMap[type] || labelMap['5472_1120'];
+}
+
 async function openIRSFilingModal() {
   const p = getTaxProfile();
   if (!p.ein) { alert('Please complete your LLC profile first (EIN is required).'); return; }
@@ -5226,6 +5345,20 @@ async function openIRSFilingModal() {
   // Show selected tax year
   const tyEl = document.getElementById('irs-modal-taxyear');
   if (tyEl) tyEl.textContent = irsFilingYear;
+
+  // Update dynamic form-type fields
+  const IRS_INFO = {
+    '5472_1120': { badge: '🏢 Single-Member LLC (Foreign-Owned)', forms: 'Pro Forma 1120 + Form 5472', addr: 'P.O. Box 409101 · Ogden, UT 84409' },
+    '1065':      { badge: '👥 Multi-Member LLC (Partnership)',     forms: 'Form 1065',                  addr: 'P.O. Box 37032 · Hartford, CT 06176' },
+    '7004':      { badge: '⏱ Extension (6 Months)',               forms: `Form 7004 (extends Form ${irsExtendForm})`, addr: 'P.O. Box 7000 · Ogden, UT 84201' },
+  };
+  const info = IRS_INFO[irsFormType] || IRS_INFO['5472_1120'];
+  const badge = document.getElementById('irs-modal-type-badge');
+  if (badge) badge.textContent = info.badge;
+  const addrEl = document.getElementById('irs-modal-address');
+  if (addrEl) addrEl.textContent = info.addr;
+  const formsEl = document.getElementById('irs-modal-forms');
+  if (formsEl) formsEl.textContent = info.forms;
 
   // Load signature from Supabase
   const { data: { user } } = await sb.auth.getUser();
@@ -5490,7 +5623,7 @@ function closeUpgradeModal(){
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
-const APP_TR = {"en": {"signin": "Sign In", "create": "Create Account", "your_name": "Your Name", "email": "Email", "password": "Password", "llc_name": "LLC Name (optional)", "signin_btn": "Sign In →", "create_btn": "Create Account →", "back": "← Back to mytaxfly.com", "agree": "I agree to the", "tos": "Terms of Service", "and": "and", "pp": "Privacy Policy", "not_advisor": "MyTaxFly is not a licensed tax advisor.", "pw_min": "min. 8 characters", "nav_dashboard": "Dashboard", "nav_add": "Add Transaction", "nav_ai": "AI Advisor", "nav_reports": "Export Reports", "nav_legal": "Legal", "nav_signout": "Sign Out", "dash_sub": "Your LLC Overview · 2026", "stat_revenue": "Revenue", "stat_expense": "Expenses", "stat_profit": "Net Profit", "stat_tx": "Transactions", "stat_month": "This month", "stat_calc": "Revenue - Expenses", "recent_tx": "Recent Transactions", "by_cat": "Expenses by Category", "no_tx": "No transactions yet", "add_first": "Add your first transaction", "no_data": "No data yet", "after_first": "Appears after first entry", "deadlines": "IRS Deadlines", "q_taxes": "Quarterly Taxes", "annual": "Annual Report", "boi": "BOI Report", "filed": "Filed ✓", "completed": "Completed", "disclaimer": "⚠️ MyTaxFly is not a licensed tax advisor. Always consult a qualified CPA.", "add_title": "Add Transaction", "add_sub": "Enter manually or upload a receipt — AI categorizes automatically", "manual": "Manual Entry", "upload": "Upload Receipt", "ai_badge": "✦ AI auto-categorizes based on your description", "tx_type": "Transaction Type", "expense": "Expense", "income": "Income", "vendor": "Vendor / Description *", "amount": "Amount (USD) *", "date": "Date", "notes": "Notes (optional)", "vendor_ph": "e.g. Notion, AWS, Client payment", "notes_ph": "e.g. monthly subscription", "add_btn": "✦ Add & Auto-Categorize →", "drop_title": "Drop receipt here or click", "drop_sub": "PDF, JPG, PNG · Invoices, receipts, statements", "select_file": "Select File", "demo_btn": "Analyze Demo Receipt ▶", "demo_or": "Or test with a demo receipt:", "chat_title": "AI Tax Advisor", "chat_sub": "Ask anything about your LLC, taxes, and bookkeeping", "chat_welcome": "Hi! I'm your AI bookkeeping assistant. Ask me anything about US LLC taxes, deductible expenses, IRS deadlines, and bookkeeping.<br><br><strong>⚠️</strong> I'm not a licensed tax advisor. For complex decisions, always consult a CPA.", "q1": "What can I deduct?", "q2": "IRS Deadlines", "q3": "Form 5472", "q4": "Software expenses", "q5": "LLC vs S-Corp", "send": "Send →", "reports_title": "Export Reports", "reports_sub": "Export your bookkeeping for your accountant", "rep1": "Profit & Loss", "rep1_sub": "Revenue and expenses overview", "rep1_badge": "PDF Export", "rep2": "Tax Summary", "rep2_sub": "Deductible expenses by IRS category", "rep2_badge": "PDF Export", "rep3": "All Transactions", "rep3_sub": "Complete list as CSV", "rep3_badge": "CSV Export", "ai_report": "Generate AI Report", "ai_report_sub": "AI creates a professional report from all your transactions", "ai_report_btn": "Generate AI Report →", "rep_disclaimer": "⚠️ Reports are informational only. Not tax advice. Consult a licensed CPA before filing.", "legal_title": "Legal Documents", "legal_sub": "Terms of Service & Privacy Policy", "tab_tos": "Terms of Service", "tab_pp": "Privacy Policy", "added_dash": "Added to dashboard", "added_sub": "Transaction reflected in your P&L · ", "view_dash": "View →", "success": "Successfully added to dashboard", "success_sub": "Reflected in your P&L · "}, "de": {"signin": "Anmelden", "create": "Konto erstellen", "your_name": "Dein Name", "email": "E-Mail", "password": "Passwort", "llc_name": "LLC-Name (optional)", "signin_btn": "Anmelden →", "create_btn": "Konto erstellen →", "back": "← Zurück zu mytaxfly.com", "agree": "Ich stimme den", "tos": "Nutzungsbedingungen", "and": "und der", "pp": "Datenschutzerklärung", "not_advisor": "MyTaxFly ist kein zugelassener Steuerberater.", "pw_min": "mind. 8 Zeichen", "nav_dashboard": "Dashboard", "nav_add": "Transaktion hinzufügen", "nav_ai": "KI-Berater", "nav_reports": "Berichte", "nav_legal": "Rechtliches", "nav_signout": "Abmelden", "dash_sub": "Deine LLC-Übersicht · 2026", "stat_revenue": "Einnahmen", "stat_expense": "Ausgaben", "stat_profit": "Nettogewinn", "stat_tx": "Transaktionen", "stat_month": "Diesen Monat", "stat_calc": "Einnahmen - Ausgaben", "recent_tx": "Letzte Transaktionen", "by_cat": "Ausgaben nach Kategorie", "no_tx": "Noch keine Transaktionen", "add_first": "Erste Transaktion hinzufügen", "no_data": "Noch keine Daten", "after_first": "Erscheint nach dem ersten Eintrag", "deadlines": "IRS-Fristen", "q_taxes": "Quartalssteuern", "annual": "Jahresbericht", "boi": "BOI-Meldung", "filed": "Eingereicht ✓", "completed": "Erledigt", "disclaimer": "⚠️ MyTaxFly ist kein zugelassener Steuerberater. Wende dich immer an einen qualifizierten Steuerberater.", "add_title": "Transaktion hinzufügen", "add_sub": "Manuell eingeben oder Beleg hochladen — KI kategorisiert automatisch", "manual": "Manuelle Eingabe", "upload": "Beleg hochladen", "ai_badge": "✦ KI kategorisiert automatisch anhand deiner Beschreibung", "tx_type": "Transaktionstyp", "expense": "Ausgabe", "income": "Einnahme", "vendor": "Anbieter / Beschreibung *", "amount": "Betrag (USD) *", "date": "Datum", "notes": "Notizen (optional)", "vendor_ph": "z.B. Notion, AWS, Kundenzahlung", "notes_ph": "z.B. monatliches Abo", "add_btn": "✦ Hinzufügen & KI-Kategorisierung →", "drop_title": "Beleg hier ablegen oder klicken", "drop_sub": "PDF, JPG, PNG · Rechnungen, Quittungen, Kontoauszüge", "select_file": "Datei auswählen", "demo_btn": "Demo-Beleg analysieren ▶", "demo_or": "Oder mit einem Demo-Beleg testen:", "chat_title": "KI-Steuerberater", "chat_sub": "Stell alles über deine LLC, Steuern und Buchhaltung", "chat_welcome": "Hallo! Ich bin dein KI-Buchhaltungsassistent. Stell mir alles über US-LLC-Steuern, absetzbare Ausgaben und IRS-Fristen.<br><br><strong>⚠️</strong> Ich bin kein zugelassener Steuerberater. Wende dich bei komplexen Entscheidungen an einen Steuerprofi.", "q1": "Was kann ich absetzen?", "q2": "IRS-Fristen", "q3": "Formular 5472", "q4": "Software-Ausgaben", "q5": "LLC vs. S-Corp", "send": "Senden →", "reports_title": "Berichte", "reports_sub": "Exportiere deine Buchhaltung für deinen Steuerberater", "rep1": "Gewinn & Verlust", "rep1_sub": "Einnahmen- und Ausgabenübersicht", "rep1_badge": "PDF-Export", "rep2": "Steuerzusammenfassung", "rep2_sub": "Absetzbare Ausgaben nach IRS-Kategorie", "rep2_badge": "PDF-Export", "rep3": "Alle Transaktionen", "rep3_sub": "Vollständige Liste als CSV", "rep3_badge": "CSV-Export", "ai_report": "KI-Bericht erstellen", "ai_report_sub": "KI erstellt einen professionellen Bericht aus all deinen Transaktionen", "ai_report_btn": "KI-Bericht erstellen →", "rep_disclaimer": "⚠️ Berichte sind nur zur Information. Kein Steuerrat. Vor der Einreichung bitte Steuerberater konsultieren.", "legal_title": "Rechtliche Dokumente", "legal_sub": "Nutzungsbedingungen & Datenschutz", "tab_tos": "Nutzungsbedingungen", "tab_pp": "Datenschutz", "added_dash": "Zum Dashboard hinzugefügt", "added_sub": "Transaktion in deiner G&V erfasst · ", "view_dash": "Ansehen →", "success": "Erfolgreich zum Dashboard hinzugefügt", "success_sub": "In deiner G&V erfasst · "}, "es": {"signin": "Iniciar sesión", "create": "Crear cuenta", "your_name": "Tu nombre", "email": "Correo electrónico", "password": "Contraseña", "llc_name": "Nombre de LLC (opcional)", "signin_btn": "Iniciar sesión →", "create_btn": "Crear cuenta →", "back": "← Volver a mytaxfly.com", "agree": "Acepto los", "tos": "Términos de Servicio", "and": "y la", "pp": "Política de Privacidad", "not_advisor": "MyTaxFly no es un asesor fiscal autorizado.", "pw_min": "mín. 8 caracteres", "nav_dashboard": "Panel", "nav_add": "Añadir transacción", "nav_ai": "Asesor IA", "nav_reports": "Informes", "nav_legal": "Legal", "nav_signout": "Cerrar sesión", "dash_sub": "Resumen de tu LLC · 2026", "stat_revenue": "Ingresos", "stat_expense": "Gastos", "stat_profit": "Beneficio neto", "stat_tx": "Transacciones", "stat_month": "Este mes", "stat_calc": "Ingresos - Gastos", "recent_tx": "Transacciones recientes", "by_cat": "Gastos por categoría", "no_tx": "Sin transacciones", "add_first": "Añade tu primera transacción", "no_data": "Sin datos aún", "after_first": "Aparece tras el primer registro", "deadlines": "Próximos plazos del IRS", "q_taxes": "Impuestos trimestrales", "annual": "Informe anual", "boi": "Informe BOI", "filed": "Presentado ✓", "completed": "Completado", "disclaimer": "⚠️ MyTaxFly no es un asesor fiscal autorizado. Consulta siempre a un CPA cualificado.", "add_title": "Añadir transacción", "add_sub": "Introduce manualmente o sube un recibo — la IA categoriza automáticamente", "manual": "Entrada manual", "upload": "Subir recibo", "ai_badge": "✦ La IA categoriza automáticamente según tu descripción", "tx_type": "Tipo de transacción", "expense": "Gasto", "income": "Ingreso", "vendor": "Proveedor / Descripción *", "amount": "Importe (USD) *", "date": "Fecha", "notes": "Notas (opcional)", "vendor_ph": "ej. Notion, AWS, pago de cliente", "notes_ph": "ej. suscripción mensual", "add_btn": "✦ Añadir y categorizar con IA →", "drop_title": "Suelta el recibo aquí o haz clic", "drop_sub": "PDF, JPG, PNG · Facturas, recibos, extractos", "select_file": "Seleccionar archivo", "demo_btn": "Analizar recibo demo ▶", "demo_or": "O prueba con un recibo de demostración:", "chat_title": "Asesor Fiscal IA", "chat_sub": "Pregunta lo que quieras sobre tu LLC, impuestos y contabilidad", "chat_welcome": "¡Hola! Soy tu asistente de contabilidad IA. Pregúntame lo que quieras sobre impuestos de LLC en EE.UU., gastos deducibles y plazos del IRS.<br><br><strong>⚠️</strong> No soy un asesor fiscal autorizado. Para decisiones complejas, consulta siempre a un CPA.", "q1": "¿Qué puedo deducir?", "q2": "Plazos del IRS", "q3": "Formulario 5472", "q4": "Gastos de software", "q5": "LLC vs S-Corp", "send": "Enviar →", "reports_title": "Informes", "reports_sub": "Exporta tu contabilidad para tu asesor", "rep1": "Pérdidas y Ganancias", "rep1_sub": "Resumen de ingresos y gastos", "rep1_badge": "Exportar PDF", "rep2": "Resumen fiscal", "rep2_sub": "Gastos deducibles por categoría IRS", "rep2_badge": "Exportar PDF", "rep3": "Todas las transacciones", "rep3_sub": "Lista completa en CSV", "rep3_badge": "Exportar CSV", "ai_report": "Generar informe IA", "ai_report_sub": "La IA crea un informe profesional con todas tus transacciones", "ai_report_btn": "Generar informe IA →", "rep_disclaimer": "⚠️ Los informes son solo informativos. No constituyen asesoramiento fiscal. Consulta a un CPA antes de presentar.", "legal_title": "Documentos legales", "legal_sub": "Términos de Servicio y Política de Privacidad", "tab_tos": "Términos de Servicio", "tab_pp": "Política de Privacidad", "added_dash": "Añadido al panel", "added_sub": "Transacción reflejada en tu P&G · ", "view_dash": "Ver →", "success": "Añadido correctamente al panel", "success_sub": "Reflejado en tu P&G · "}, "fr": {"signin": "Se connecter", "create": "Créer un compte", "your_name": "Votre nom", "email": "E-mail", "password": "Mot de passe", "llc_name": "Nom de la LLC (facultatif)", "signin_btn": "Se connecter →", "create_btn": "Créer un compte →", "back": "← Retour à mytaxfly.com", "agree": "J'accepte les", "tos": "Conditions d'utilisation", "and": "et la", "pp": "Politique de confidentialité", "not_advisor": "MyTaxFly n'est pas un conseiller fiscal agréé.", "pw_min": "min. 8 caractères", "nav_dashboard": "Tableau de bord", "nav_add": "Ajouter une transaction", "nav_ai": "Conseiller IA", "nav_reports": "Rapports", "nav_legal": "Mentions légales", "nav_signout": "Se déconnecter", "dash_sub": "Vue d'ensemble de votre LLC · 2026", "stat_revenue": "Revenus", "stat_expense": "Dépenses", "stat_profit": "Bénéfice net", "stat_tx": "Transactions", "stat_month": "Ce mois-ci", "stat_calc": "Revenus - Dépenses", "recent_tx": "Transactions récentes", "by_cat": "Dépenses par catégorie", "no_tx": "Aucune transaction", "add_first": "Ajoutez votre première transaction", "no_data": "Pas encore de données", "after_first": "Apparaît après le premier enregistrement", "deadlines": "Prochaines échéances IRS", "q_taxes": "Impôts trimestriels", "annual": "Rapport annuel", "boi": "Rapport BOI", "filed": "Déposé ✓", "completed": "Terminé", "disclaimer": "⚠️ MyTaxFly n'est pas un conseiller fiscal agréé. Consultez toujours un CPA qualifié.", "add_title": "Ajouter une transaction", "add_sub": "Saisie manuelle ou import de reçu — l'IA catégorise automatiquement", "manual": "Saisie manuelle", "upload": "Importer un reçu", "ai_badge": "✦ L'IA catégorise automatiquement selon votre description", "tx_type": "Type de transaction", "expense": "Dépense", "income": "Revenu", "vendor": "Fournisseur / Description *", "amount": "Montant (USD) *", "date": "Date", "notes": "Notes (facultatif)", "vendor_ph": "ex. Notion, AWS, paiement client", "notes_ph": "ex. abonnement mensuel", "add_btn": "✦ Ajouter et catégoriser avec l'IA →", "drop_title": "Déposez le reçu ici ou cliquez", "drop_sub": "PDF, JPG, PNG · Factures, reçus, relevés bancaires", "select_file": "Choisir un fichier", "demo_btn": "Analyser le reçu démo ▶", "demo_or": "Ou tester avec un reçu de démonstration :", "chat_title": "Conseiller fiscal IA", "chat_sub": "Posez toutes vos questions sur votre LLC, vos impôts et votre comptabilité", "chat_welcome": "Bonjour ! Je suis votre assistant comptable IA. Posez-moi toutes vos questions sur les impôts LLC américains, les dépenses déductibles et les échéances IRS.<br><br><strong>⚠️</strong> Je ne suis pas un conseiller fiscal agréé. Pour les décisions complexes, consultez toujours un CPA.", "q1": "Que puis-je déduire ?", "q2": "Échéances IRS", "q3": "Formulaire 5472", "q4": "Dépenses logiciels", "q5": "LLC vs S-Corp", "send": "Envoyer →", "reports_title": "Rapports", "reports_sub": "Exportez votre comptabilité pour votre comptable", "rep1": "Résultat net", "rep1_sub": "Vue d'ensemble des revenus et dépenses", "rep1_badge": "Export PDF", "rep2": "Résumé fiscal", "rep2_sub": "Dépenses déductibles par catégorie IRS", "rep2_badge": "Export PDF", "rep3": "Toutes les transactions", "rep3_sub": "Liste complète en CSV", "rep3_badge": "Export CSV", "ai_report": "Générer un rapport IA", "ai_report_sub": "L'IA crée un rapport professionnel à partir de toutes vos transactions", "ai_report_btn": "Générer le rapport IA →", "rep_disclaimer": "⚠️ Les rapports sont fournis à titre informatif uniquement. Consultez un CPA avant de déposer.", "legal_title": "Documents légaux", "legal_sub": "Conditions d'utilisation et politique de confidentialité", "tab_tos": "Conditions d'utilisation", "tab_pp": "Politique de confidentialité", "added_dash": "Ajouté au tableau de bord", "added_sub": "Transaction reflétée dans votre compte de résultat · ", "view_dash": "Voir →", "success": "Ajouté avec succès au tableau de bord", "success_sub": "Reflété dans votre compte de résultat · "}, "pt": {"signin": "Entrar", "create": "Criar conta", "your_name": "Seu nome", "email": "E-mail", "password": "Senha", "llc_name": "Nome da LLC (opcional)", "signin_btn": "Entrar →", "create_btn": "Criar conta →", "back": "← Voltar ao mytaxfly.com", "agree": "Concordo com os", "tos": "Termos de Serviço", "and": "e a", "pp": "Política de Privacidade", "not_advisor": "MyTaxFly não é um consultor fiscal licenciado.", "pw_min": "mín. 8 caracteres", "nav_dashboard": "Painel", "nav_add": "Adicionar transação", "nav_ai": "Consultor IA", "nav_reports": "Relatórios", "nav_legal": "Legal", "nav_signout": "Sair", "dash_sub": "Visão geral da sua LLC · 2026", "stat_revenue": "Receitas", "stat_expense": "Despesas", "stat_profit": "Lucro líquido", "stat_tx": "Transações", "stat_month": "Este mês", "stat_calc": "Receitas - Despesas", "recent_tx": "Transações recentes", "by_cat": "Despesas por categoria", "no_tx": "Nenhuma transação", "add_first": "Adicione sua primeira transação", "no_data": "Sem dados ainda", "after_first": "Aparece após o primeiro lançamento", "deadlines": "Próximos prazos do IRS", "q_taxes": "Impostos trimestrais", "annual": "Relatório anual", "boi": "Relatório BOI", "filed": "Enviado ✓", "completed": "Concluído", "disclaimer": "⚠️ MyTaxFly não é um consultor fiscal licenciado. Consulte sempre um CPA qualificado.", "add_title": "Adicionar transação", "add_sub": "Insira manualmente ou envie um recibo — a IA categoriza automaticamente", "manual": "Entrada manual", "upload": "Enviar recibo", "ai_badge": "✦ A IA categoriza automaticamente com base na sua descrição", "tx_type": "Tipo de transação", "expense": "Despesa", "income": "Receita", "vendor": "Fornecedor / Descrição *", "amount": "Valor (USD) *", "date": "Data", "notes": "Notas (opcional)", "vendor_ph": "ex. Notion, AWS, pagamento de cliente", "notes_ph": "ex. assinatura mensal", "add_btn": "✦ Adicionar e categorizar com IA →", "drop_title": "Solte o recibo aqui ou clique", "drop_sub": "PDF, JPG, PNG · Faturas, recibos, extratos", "select_file": "Selecionar arquivo", "demo_btn": "Analisar recibo demo ▶", "demo_or": "Ou teste com um recibo de demonstração:", "chat_title": "Consultor Fiscal IA", "chat_sub": "Pergunte o que quiser sobre sua LLC, impostos e contabilidade", "chat_welcome": "Olá! Sou seu assistente de contabilidade IA. Pergunte o que quiser sobre impostos de LLC nos EUA, despesas dedutíveis e prazos do IRS.<br><br><strong>⚠️</strong> Não sou um consultor fiscal licenciado. Para decisões complexas, consulte sempre um CPA.", "q1": "O que posso deduzir?", "q2": "Prazos do IRS", "q3": "Formulário 5472", "q4": "Despesas com software", "q5": "LLC vs S-Corp", "send": "Enviar →", "reports_title": "Relatórios", "reports_sub": "Exporte sua contabilidade para seu contador", "rep1": "Lucros e Perdas", "rep1_sub": "Visão geral de receitas e despesas", "rep1_badge": "Exportar PDF", "rep2": "Resumo fiscal", "rep2_sub": "Despesas dedutíveis por categoria IRS", "rep2_badge": "Exportar PDF", "rep3": "Todas as transações", "rep3_sub": "Lista completa em CSV", "rep3_badge": "Exportar CSV", "ai_report": "Gerar relatório IA", "ai_report_sub": "A IA cria um relatório profissional com todas as suas transações", "ai_report_btn": "Gerar relatório IA →", "rep_disclaimer": "⚠️ Relatórios são apenas informativos. Não constituem aconselhamento fiscal. Consulte um CPA antes de declarar.", "legal_title": "Documentos legais", "legal_sub": "Termos de Serviço e Política de Privacidade", "tab_tos": "Termos de Serviço", "tab_pp": "Política de Privacidade", "added_dash": "Adicionado ao painel", "added_sub": "Transação refletida no seu DRE · ", "view_dash": "Ver →", "success": "Adicionado com sucesso ao painel", "success_sub": "Refletido no seu DRE · "}};
+const APP_TR = {"en": {"signin": "Sign In", "create": "Create Account", "your_name": "Your Name", "email": "Email", "password": "Password", "llc_name": "LLC Name (optional)", "signin_btn": "Sign In →", "create_btn": "Create Account →", "back": "← Back to mytaxfly.com", "agree": "I agree to the", "tos": "Terms of Service", "and": "and", "pp": "Privacy Policy", "not_advisor": "MyTaxFly is not a licensed tax advisor.", "pw_min": "min. 8 characters", "nav_dashboard": "Dashboard", "nav_add": "Add Transaction", "nav_ai": "AI Advisor", "nav_reports": "Export Reports", "nav_legal": "Legal", "nav_signout": "Sign Out", "dash_sub": "Your LLC Overview · 2026", "stat_revenue": "Revenue", "stat_expense": "Expenses", "stat_profit": "Net Profit", "stat_tx": "Transactions", "stat_month": "This month", "stat_calc": "Revenue - Expenses", "recent_tx": "Recent Transactions", "by_cat": "Expenses by Category", "no_tx": "No transactions yet", "add_first": "Add your first transaction", "no_data": "No data yet", "after_first": "Appears after first entry", "deadlines": "⚠️ Upcoming IRS Deadlines", "q_taxes": "Quarterly Taxes", "annual": "Annual Report", "boi": "BOI Report", "filed": "Filed ✓", "completed": "Completed", "disclaimer": "⚠️ MyTaxFly is not a licensed tax advisor. Always consult a qualified CPA.", "add_title": "Add Transaction", "add_sub": "Enter manually or upload a receipt — AI categorizes automatically", "manual": "Manual Entry", "upload": "Upload Receipt", "ai_badge": "✦ AI auto-categorizes based on your description", "tx_type": "Transaction Type", "expense": "Expense", "income": "Income", "vendor": "Vendor / Description *", "amount": "Amount (USD) *", "date": "Date", "notes": "Notes (optional)", "vendor_ph": "e.g. Notion, AWS, Client payment", "notes_ph": "e.g. monthly subscription", "add_btn": "✦ Add & Auto-Categorize →", "drop_title": "Drop receipt here or click", "drop_sub": "PDF, JPG, PNG · Invoices, receipts, statements", "select_file": "Select File", "demo_btn": "Analyze Demo Receipt ▶", "demo_or": "Or test with a demo receipt:", "chat_title": "AI Tax Advisor", "chat_sub": "Ask anything about your LLC, taxes, and bookkeeping", "chat_welcome": "Hi! I'm your AI bookkeeping assistant. Ask me anything about US LLC taxes, deductible expenses, IRS deadlines, and bookkeeping.<br><br><strong>⚠️</strong> I'm not a licensed tax advisor. For complex decisions, always consult a CPA.", "q1": "What can I deduct?", "q2": "IRS Deadlines", "q3": "Form 5472", "q4": "Software expenses", "q5": "LLC vs S-Corp", "send": "Send →", "reports_title": "Export Reports", "reports_sub": "Export your bookkeeping for your accountant", "rep1": "Profit & Loss", "rep1_sub": "Revenue and expenses overview", "rep1_badge": "PDF Export", "rep2": "Tax Summary", "rep2_sub": "Deductible expenses by IRS category", "rep2_badge": "PDF Export", "rep3": "All Transactions", "rep3_sub": "Complete list as CSV", "rep3_badge": "CSV Export", "ai_report": "Generate AI Report", "ai_report_sub": "AI creates a professional report from all your transactions", "ai_report_btn": "Generate AI Report →", "rep_disclaimer": "⚠️ Reports are informational only. Not tax advice. Consult a licensed CPA before filing.", "legal_title": "Legal Documents", "legal_sub": "Terms of Service & Privacy Policy", "tab_tos": "Terms of Service", "tab_pp": "Privacy Policy", "added_dash": "Added to dashboard", "added_sub": "Transaction reflected in your P&L · ", "view_dash": "View →", "success": "Successfully added to dashboard", "success_sub": "Reflected in your P&L · "}, "de": {"signin": "Anmelden", "create": "Konto erstellen", "your_name": "Dein Name", "email": "E-Mail", "password": "Passwort", "llc_name": "LLC-Name (optional)", "signin_btn": "Anmelden →", "create_btn": "Konto erstellen →", "back": "← Zurück zu mytaxfly.com", "agree": "Ich stimme den", "tos": "Nutzungsbedingungen", "and": "und der", "pp": "Datenschutzerklärung", "not_advisor": "MyTaxFly ist kein zugelassener Steuerberater.", "pw_min": "mind. 8 Zeichen", "nav_dashboard": "Dashboard", "nav_add": "Transaktion hinzufügen", "nav_ai": "KI-Berater", "nav_reports": "Berichte", "nav_legal": "Rechtliches", "nav_signout": "Abmelden", "dash_sub": "Deine LLC-Übersicht · 2026", "stat_revenue": "Einnahmen", "stat_expense": "Ausgaben", "stat_profit": "Nettogewinn", "stat_tx": "Transaktionen", "stat_month": "Diesen Monat", "stat_calc": "Einnahmen - Ausgaben", "recent_tx": "Letzte Transaktionen", "by_cat": "Ausgaben nach Kategorie", "no_tx": "Noch keine Transaktionen", "add_first": "Erste Transaktion hinzufügen", "no_data": "Noch keine Daten", "after_first": "Erscheint nach dem ersten Eintrag", "deadlines": "⚠️ Bevorstehende IRS-Fristen", "q_taxes": "Quartalssteuern", "annual": "Jahresbericht", "boi": "BOI-Meldung", "filed": "Eingereicht ✓", "completed": "Erledigt", "disclaimer": "⚠️ MyTaxFly ist kein zugelassener Steuerberater. Wende dich immer an einen qualifizierten Steuerberater.", "add_title": "Transaktion hinzufügen", "add_sub": "Manuell eingeben oder Beleg hochladen — KI kategorisiert automatisch", "manual": "Manuelle Eingabe", "upload": "Beleg hochladen", "ai_badge": "✦ KI kategorisiert automatisch anhand deiner Beschreibung", "tx_type": "Transaktionstyp", "expense": "Ausgabe", "income": "Einnahme", "vendor": "Anbieter / Beschreibung *", "amount": "Betrag (USD) *", "date": "Datum", "notes": "Notizen (optional)", "vendor_ph": "z.B. Notion, AWS, Kundenzahlung", "notes_ph": "z.B. monatliches Abo", "add_btn": "✦ Hinzufügen & KI-Kategorisierung →", "drop_title": "Beleg hier ablegen oder klicken", "drop_sub": "PDF, JPG, PNG · Rechnungen, Quittungen, Kontoauszüge", "select_file": "Datei auswählen", "demo_btn": "Demo-Beleg analysieren ▶", "demo_or": "Oder mit einem Demo-Beleg testen:", "chat_title": "KI-Steuerberater", "chat_sub": "Stell alles über deine LLC, Steuern und Buchhaltung", "chat_welcome": "Hallo! Ich bin dein KI-Buchhaltungsassistent. Stell mir alles über US-LLC-Steuern, absetzbare Ausgaben und IRS-Fristen.<br><br><strong>⚠️</strong> Ich bin kein zugelassener Steuerberater. Wende dich bei komplexen Entscheidungen an einen Steuerprofi.", "q1": "Was kann ich absetzen?", "q2": "IRS-Fristen", "q3": "Formular 5472", "q4": "Software-Ausgaben", "q5": "LLC vs. S-Corp", "send": "Senden →", "reports_title": "Berichte", "reports_sub": "Exportiere deine Buchhaltung für deinen Steuerberater", "rep1": "Gewinn & Verlust", "rep1_sub": "Einnahmen- und Ausgabenübersicht", "rep1_badge": "PDF-Export", "rep2": "Steuerzusammenfassung", "rep2_sub": "Absetzbare Ausgaben nach IRS-Kategorie", "rep2_badge": "PDF-Export", "rep3": "Alle Transaktionen", "rep3_sub": "Vollständige Liste als CSV", "rep3_badge": "CSV-Export", "ai_report": "KI-Bericht erstellen", "ai_report_sub": "KI erstellt einen professionellen Bericht aus all deinen Transaktionen", "ai_report_btn": "KI-Bericht erstellen →", "rep_disclaimer": "⚠️ Berichte sind nur zur Information. Kein Steuerrat. Vor der Einreichung bitte Steuerberater konsultieren.", "legal_title": "Rechtliche Dokumente", "legal_sub": "Nutzungsbedingungen & Datenschutz", "tab_tos": "Nutzungsbedingungen", "tab_pp": "Datenschutz", "added_dash": "Zum Dashboard hinzugefügt", "added_sub": "Transaktion in deiner G&V erfasst · ", "view_dash": "Ansehen →", "success": "Erfolgreich zum Dashboard hinzugefügt", "success_sub": "In deiner G&V erfasst · "}, "es": {"signin": "Iniciar sesión", "create": "Crear cuenta", "your_name": "Tu nombre", "email": "Correo electrónico", "password": "Contraseña", "llc_name": "Nombre de LLC (opcional)", "signin_btn": "Iniciar sesión →", "create_btn": "Crear cuenta →", "back": "← Volver a mytaxfly.com", "agree": "Acepto los", "tos": "Términos de Servicio", "and": "y la", "pp": "Política de Privacidad", "not_advisor": "MyTaxFly no es un asesor fiscal autorizado.", "pw_min": "mín. 8 caracteres", "nav_dashboard": "Panel", "nav_add": "Añadir transacción", "nav_ai": "Asesor IA", "nav_reports": "Informes", "nav_legal": "Legal", "nav_signout": "Cerrar sesión", "dash_sub": "Resumen de tu LLC · 2026", "stat_revenue": "Ingresos", "stat_expense": "Gastos", "stat_profit": "Beneficio neto", "stat_tx": "Transacciones", "stat_month": "Este mes", "stat_calc": "Ingresos - Gastos", "recent_tx": "Transacciones recientes", "by_cat": "Gastos por categoría", "no_tx": "Sin transacciones", "add_first": "Añade tu primera transacción", "no_data": "Sin datos aún", "after_first": "Aparece tras el primer registro", "deadlines": "⚠️ Próximos plazos del IRS", "q_taxes": "Impuestos trimestrales", "annual": "Informe anual", "boi": "Informe BOI", "filed": "Presentado ✓", "completed": "Completado", "disclaimer": "⚠️ MyTaxFly no es un asesor fiscal autorizado. Consulta siempre a un CPA cualificado.", "add_title": "Añadir transacción", "add_sub": "Introduce manualmente o sube un recibo — la IA categoriza automáticamente", "manual": "Entrada manual", "upload": "Subir recibo", "ai_badge": "✦ La IA categoriza automáticamente según tu descripción", "tx_type": "Tipo de transacción", "expense": "Gasto", "income": "Ingreso", "vendor": "Proveedor / Descripción *", "amount": "Importe (USD) *", "date": "Fecha", "notes": "Notas (opcional)", "vendor_ph": "ej. Notion, AWS, pago de cliente", "notes_ph": "ej. suscripción mensual", "add_btn": "✦ Añadir y categorizar con IA →", "drop_title": "Suelta el recibo aquí o haz clic", "drop_sub": "PDF, JPG, PNG · Facturas, recibos, extractos", "select_file": "Seleccionar archivo", "demo_btn": "Analizar recibo demo ▶", "demo_or": "O prueba con un recibo de demostración:", "chat_title": "Asesor Fiscal IA", "chat_sub": "Pregunta lo que quieras sobre tu LLC, impuestos y contabilidad", "chat_welcome": "¡Hola! Soy tu asistente de contabilidad IA. Pregúntame lo que quieras sobre impuestos de LLC en EE.UU., gastos deducibles y plazos del IRS.<br><br><strong>⚠️</strong> No soy un asesor fiscal autorizado. Para decisiones complejas, consulta siempre a un CPA.", "q1": "¿Qué puedo deducir?", "q2": "Plazos del IRS", "q3": "Formulario 5472", "q4": "Gastos de software", "q5": "LLC vs S-Corp", "send": "Enviar →", "reports_title": "Informes", "reports_sub": "Exporta tu contabilidad para tu asesor", "rep1": "Pérdidas y Ganancias", "rep1_sub": "Resumen de ingresos y gastos", "rep1_badge": "Exportar PDF", "rep2": "Resumen fiscal", "rep2_sub": "Gastos deducibles por categoría IRS", "rep2_badge": "Exportar PDF", "rep3": "Todas las transacciones", "rep3_sub": "Lista completa en CSV", "rep3_badge": "Exportar CSV", "ai_report": "Generar informe IA", "ai_report_sub": "La IA crea un informe profesional con todas tus transacciones", "ai_report_btn": "Generar informe IA →", "rep_disclaimer": "⚠️ Los informes son solo informativos. No constituyen asesoramiento fiscal. Consulta a un CPA antes de presentar.", "legal_title": "Documentos legales", "legal_sub": "Términos de Servicio y Política de Privacidad", "tab_tos": "Términos de Servicio", "tab_pp": "Política de Privacidad", "added_dash": "Añadido al panel", "added_sub": "Transacción reflejada en tu P&G · ", "view_dash": "Ver →", "success": "Añadido correctamente al panel", "success_sub": "Reflejado en tu P&G · "}, "fr": {"signin": "Se connecter", "create": "Créer un compte", "your_name": "Votre nom", "email": "E-mail", "password": "Mot de passe", "llc_name": "Nom de la LLC (facultatif)", "signin_btn": "Se connecter →", "create_btn": "Créer un compte →", "back": "← Retour à mytaxfly.com", "agree": "J'accepte les", "tos": "Conditions d'utilisation", "and": "et la", "pp": "Politique de confidentialité", "not_advisor": "MyTaxFly n'est pas un conseiller fiscal agréé.", "pw_min": "min. 8 caractères", "nav_dashboard": "Tableau de bord", "nav_add": "Ajouter une transaction", "nav_ai": "Conseiller IA", "nav_reports": "Rapports", "nav_legal": "Mentions légales", "nav_signout": "Se déconnecter", "dash_sub": "Vue d'ensemble de votre LLC · 2026", "stat_revenue": "Revenus", "stat_expense": "Dépenses", "stat_profit": "Bénéfice net", "stat_tx": "Transactions", "stat_month": "Ce mois-ci", "stat_calc": "Revenus - Dépenses", "recent_tx": "Transactions récentes", "by_cat": "Dépenses par catégorie", "no_tx": "Aucune transaction", "add_first": "Ajoutez votre première transaction", "no_data": "Pas encore de données", "after_first": "Apparaît après le premier enregistrement", "deadlines": "⚠️ Prochaines échéances IRS", "q_taxes": "Impôts trimestriels", "annual": "Rapport annuel", "boi": "Rapport BOI", "filed": "Déposé ✓", "completed": "Terminé", "disclaimer": "⚠️ MyTaxFly n'est pas un conseiller fiscal agréé. Consultez toujours un CPA qualifié.", "add_title": "Ajouter une transaction", "add_sub": "Saisie manuelle ou import de reçu — l'IA catégorise automatiquement", "manual": "Saisie manuelle", "upload": "Importer un reçu", "ai_badge": "✦ L'IA catégorise automatiquement selon votre description", "tx_type": "Type de transaction", "expense": "Dépense", "income": "Revenu", "vendor": "Fournisseur / Description *", "amount": "Montant (USD) *", "date": "Date", "notes": "Notes (facultatif)", "vendor_ph": "ex. Notion, AWS, paiement client", "notes_ph": "ex. abonnement mensuel", "add_btn": "✦ Ajouter et catégoriser avec l'IA →", "drop_title": "Déposez le reçu ici ou cliquez", "drop_sub": "PDF, JPG, PNG · Factures, reçus, relevés bancaires", "select_file": "Choisir un fichier", "demo_btn": "Analyser le reçu démo ▶", "demo_or": "Ou tester avec un reçu de démonstration :", "chat_title": "Conseiller fiscal IA", "chat_sub": "Posez toutes vos questions sur votre LLC, vos impôts et votre comptabilité", "chat_welcome": "Bonjour ! Je suis votre assistant comptable IA. Posez-moi toutes vos questions sur les impôts LLC américains, les dépenses déductibles et les échéances IRS.<br><br><strong>⚠️</strong> Je ne suis pas un conseiller fiscal agréé. Pour les décisions complexes, consultez toujours un CPA.", "q1": "Que puis-je déduire ?", "q2": "Échéances IRS", "q3": "Formulaire 5472", "q4": "Dépenses logiciels", "q5": "LLC vs S-Corp", "send": "Envoyer →", "reports_title": "Rapports", "reports_sub": "Exportez votre comptabilité pour votre comptable", "rep1": "Résultat net", "rep1_sub": "Vue d'ensemble des revenus et dépenses", "rep1_badge": "Export PDF", "rep2": "Résumé fiscal", "rep2_sub": "Dépenses déductibles par catégorie IRS", "rep2_badge": "Export PDF", "rep3": "Toutes les transactions", "rep3_sub": "Liste complète en CSV", "rep3_badge": "Export CSV", "ai_report": "Générer un rapport IA", "ai_report_sub": "L'IA crée un rapport professionnel à partir de toutes vos transactions", "ai_report_btn": "Générer le rapport IA →", "rep_disclaimer": "⚠️ Les rapports sont fournis à titre informatif uniquement. Consultez un CPA avant de déposer.", "legal_title": "Documents légaux", "legal_sub": "Conditions d'utilisation et politique de confidentialité", "tab_tos": "Conditions d'utilisation", "tab_pp": "Politique de confidentialité", "added_dash": "Ajouté au tableau de bord", "added_sub": "Transaction reflétée dans votre compte de résultat · ", "view_dash": "Voir →", "success": "Ajouté avec succès au tableau de bord", "success_sub": "Reflété dans votre compte de résultat · "}, "pt": {"signin": "Entrar", "create": "Criar conta", "your_name": "Seu nome", "email": "E-mail", "password": "Senha", "llc_name": "Nome da LLC (opcional)", "signin_btn": "Entrar →", "create_btn": "Criar conta →", "back": "← Voltar ao mytaxfly.com", "agree": "Concordo com os", "tos": "Termos de Serviço", "and": "e a", "pp": "Política de Privacidade", "not_advisor": "MyTaxFly não é um consultor fiscal licenciado.", "pw_min": "mín. 8 caracteres", "nav_dashboard": "Painel", "nav_add": "Adicionar transação", "nav_ai": "Consultor IA", "nav_reports": "Relatórios", "nav_legal": "Legal", "nav_signout": "Sair", "dash_sub": "Visão geral da sua LLC · 2026", "stat_revenue": "Receitas", "stat_expense": "Despesas", "stat_profit": "Lucro líquido", "stat_tx": "Transações", "stat_month": "Este mês", "stat_calc": "Receitas - Despesas", "recent_tx": "Transações recentes", "by_cat": "Despesas por categoria", "no_tx": "Nenhuma transação", "add_first": "Adicione sua primeira transação", "no_data": "Sem dados ainda", "after_first": "Aparece após o primeiro lançamento", "deadlines": "⚠️ Próximos prazos do IRS", "q_taxes": "Impostos trimestrais", "annual": "Relatório anual", "boi": "Relatório BOI", "filed": "Enviado ✓", "completed": "Concluído", "disclaimer": "⚠️ MyTaxFly não é um consultor fiscal licenciado. Consulte sempre um CPA qualificado.", "add_title": "Adicionar transação", "add_sub": "Insira manualmente ou envie um recibo — a IA categoriza automaticamente", "manual": "Entrada manual", "upload": "Enviar recibo", "ai_badge": "✦ A IA categoriza automaticamente com base na sua descrição", "tx_type": "Tipo de transação", "expense": "Despesa", "income": "Receita", "vendor": "Fornecedor / Descrição *", "amount": "Valor (USD) *", "date": "Data", "notes": "Notas (opcional)", "vendor_ph": "ex. Notion, AWS, pagamento de cliente", "notes_ph": "ex. assinatura mensal", "add_btn": "✦ Adicionar e categorizar com IA →", "drop_title": "Solte o recibo aqui ou clique", "drop_sub": "PDF, JPG, PNG · Faturas, recibos, extratos", "select_file": "Selecionar arquivo", "demo_btn": "Analisar recibo demo ▶", "demo_or": "Ou teste com um recibo de demonstração:", "chat_title": "Consultor Fiscal IA", "chat_sub": "Pergunte o que quiser sobre sua LLC, impostos e contabilidade", "chat_welcome": "Olá! Sou seu assistente de contabilidade IA. Pergunte o que quiser sobre impostos de LLC nos EUA, despesas dedutíveis e prazos do IRS.<br><br><strong>⚠️</strong> Não sou um consultor fiscal licenciado. Para decisões complexas, consulte sempre um CPA.", "q1": "O que posso deduzir?", "q2": "Prazos do IRS", "q3": "Formulário 5472", "q4": "Despesas com software", "q5": "LLC vs S-Corp", "send": "Enviar →", "reports_title": "Relatórios", "reports_sub": "Exporte sua contabilidade para seu contador", "rep1": "Lucros e Perdas", "rep1_sub": "Visão geral de receitas e despesas", "rep1_badge": "Exportar PDF", "rep2": "Resumo fiscal", "rep2_sub": "Despesas dedutíveis por categoria IRS", "rep2_badge": "Exportar PDF", "rep3": "Todas as transações", "rep3_sub": "Lista completa em CSV", "rep3_badge": "Exportar CSV", "ai_report": "Gerar relatório IA", "ai_report_sub": "A IA cria um relatório profissional com todas as suas transações", "ai_report_btn": "Gerar relatório IA →", "rep_disclaimer": "⚠️ Relatórios são apenas informativos. Não constituem aconselhamento fiscal. Consulte um CPA antes de declarar.", "legal_title": "Documentos legais", "legal_sub": "Termos de Serviço e Política de Privacidade", "tab_tos": "Termos de Serviço", "tab_pp": "Política de Privacidade", "added_dash": "Adicionado ao painel", "added_sub": "Transação refletida no seu DRE · ", "view_dash": "Ver →", "success": "Adicionado com sucesso ao painel", "success_sub": "Refletido no seu DRE · "}};
 const APP_FLAGS = {en:'🇬🇧',de:'🇩🇪',es:'🇪🇸',fr:'🇫🇷',pt:'🇵🇹'};
 const APP_NAMES = {en:'EN',de:'DE',es:'ES',fr:'FR',pt:'POR'};
 
@@ -7597,11 +7730,14 @@ document.addEventListener('click', e => {
     </div>
     <div style="font-size:13px;color:var(--text3);margin-bottom:20px">Your signed Filing Package will be printed and sent via USPS Certified Mail to the IRS. You receive a tracking number.</div>
 
+    <!-- Form type badge in modal -->
+    <div id="irs-modal-type-badge" style="display:inline-flex;align-items:center;gap:6px;background:rgba(0,200,150,0.1);border:1px solid rgba(0,200,150,0.2);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;color:var(--accent);margin-bottom:16px"></div>
+
     <!-- Recipient -->
     <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px">
       <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Recipient (IRS)</div>
       <div style="font-size:13px;font-weight:600;color:var(--text)">Internal Revenue Service</div>
-      <div style="font-size:12px;color:var(--text2)">P.O. Box 409101 · Ogden, UT 84409</div>
+      <div id="irs-modal-address" style="font-size:12px;color:var(--text2)">P.O. Box 409101 · Ogden, UT 84409</div>
     </div>
 
     <!-- Sender (from tax profile) -->
@@ -7621,7 +7757,7 @@ document.addEventListener('click', e => {
     <div style="background:var(--bg3);border:1px solid rgba(124,58,237,0.25);border-radius:10px;padding:12px 14px;margin-bottom:14px">
       <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Filing Details</div>
       <div style="font-size:12px;color:var(--text2);margin-bottom:3px">📅 Tax Year: <strong id="irs-modal-taxyear" style="color:#a78bfa">—</strong> &nbsp;(Jan 1 – Dec 31)</div>
-      <div style="font-size:12px;color:var(--text2);margin-bottom:3px">📄 Forms: <strong style="color:var(--text)">Pro Forma 1120 + Form 5472</strong></div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:3px">📄 Forms: <strong id="irs-modal-forms" style="color:var(--text)">Pro Forma 1120 + Form 5472</strong></div>
       <div style="font-size:12px;color:var(--text2)">📬 Estimated delivery: <strong style="color:var(--text)">5–7 business days</strong> · USPS Certified Mail</div>
     </div>
 
