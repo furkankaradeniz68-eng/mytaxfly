@@ -1,5 +1,5 @@
-// Creates a Stripe Financial Connections session so the browser can open the
-// bank-connection flow. The client_secret is short-lived and single-use.
+// Creates a Stripe Financial Connections session so the browser can open
+// the Stripe Link modal and let the user connect their bank account.
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
@@ -15,16 +15,28 @@ export default async function handler(req, res) {
   const Stripe = (await import('stripe')).default;
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' });
 
-  try {
-    const session = await stripe.financialConnections.sessions.create({
-      account_holder: { type: 'individual' },
-      permissions: ['transactions', 'balances'],
-      filters: { countries: ['US'] },
-    });
+  // Resolve or create a Stripe customer so we can attach FC accounts to it
+  const { data: profile } = await sb
+    .from('profiles')
+    .select('stripe_customer_id')
+    .eq('id', user.id)
+    .maybeSingle();
 
-    return res.status(200).json({ client_secret: session.client_secret });
-  } catch (err) {
-    console.error('Stripe FC session error:', err);
-    return res.status(502).json({ error: err.message || 'Failed to create session' });
+  let customerId = profile?.stripe_customer_id;
+  if (!customerId) {
+    const customer = await stripe.customers.create({ email: user.email, metadata: { supabase_uid: user.id } });
+    customerId = customer.id;
+    await sb.from('profiles').update({ stripe_customer_id: customerId }).eq('id', user.id);
   }
+
+  const session = await stripe.financialConnections.sessions.create({
+    account_holder: { type: 'customer', customer: customerId },
+    permissions: ['transactions', 'balances', 'ownership'],
+    filters: { countries: ['US'] },
+  });
+
+  return res.status(200).json({
+    clientSecret: session.client_secret,
+    publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
+  });
 }
