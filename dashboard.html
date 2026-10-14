@@ -5328,7 +5328,13 @@ async function previewIRSPdf() {
     const _irsFrom = new Date(irsFilingYear, 0, 1);
     const _irsTo   = new Date(irsFilingYear, 11, 31, 23, 59, 59);
     const filtered = transactions.filter(t => { const d=new Date(t.date); return d>=_irsFrom && d<=_irsTo; });
-    const blob = await buildIRSAcroBlob(p, filtered, irsFilingYear, llcName || p.llcName || '', irsFormType, irsExtendForm);
+    // Load signature for preview
+    let sigDataPreview = null;
+    try {
+      const { data: { user } } = await sb.auth.getUser();
+      sigDataPreview = user?.user_metadata?.signature_data || localStorage.getItem('mtf_signature') || null;
+    } catch(e) { sigDataPreview = localStorage.getItem('mtf_signature') || null; }
+    const blob = await buildIRSAcroBlob(p, filtered, irsFilingYear, llcName || p.llcName || '', irsFormType, irsExtendForm, sigDataPreview);
     const url  = URL.createObjectURL(blob);
 
     // Show in preview modal
@@ -5352,12 +5358,13 @@ async function previewIRSPdf() {
 }
 
 // Fill actual IRS PDF templates with user data via pdf-lib coordinate drawing
-async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extendForm) {
+async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extendForm, sigData) {
   const { PDFDocument, rgb, StandardFonts } = PDFLib;
 
   const addr = p.address || {};
   const cityStateZip = [addr.city, addr.state, addr.zip].filter(Boolean).join(', ');
   const yr2 = String(taxYear).slice(-2);
+  const todayStr = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
 
   // Helper: fetch a form PDF as bytes
   async function fetchForm(name) {
@@ -5373,6 +5380,19 @@ async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extend
     if (!text) return;
     const y = 792 - mupdfY1 + 2;
     page.drawText(String(text), { x: mupdfX0 + 2, y, size, font, color: rgb(0, 0, 0) });
+  }
+
+  // Embed signature image (base64 PNG data URL) into a page at given position
+  async function drawSignature(doc, page, dataUrl, x, y, maxW = 120, maxH = 30) {
+    if (!dataUrl) return;
+    try {
+      const base64 = dataUrl.split(',')[1];
+      const imgBytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+      const img = await doc.embedPng(imgBytes);
+      const { width, height } = img.scale(1);
+      const scale = Math.min(maxW / width, maxH / height, 1);
+      page.drawImage(img, { x, y, width: width * scale, height: height * scale });
+    } catch(e) { /* signature embed failed silently */ }
   }
 
   if (formType === '7004') {
@@ -5398,6 +5418,10 @@ async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extend
     drawField(p0, font, '0', 576, 504);                              // tentative tax
     drawField(p0, font, '0', 600, 504);                              // payments
     drawField(p0, font, '0', 624, 504);                              // balance due
+    // Signature line: f7004 page bottom ~y=720 PyMuPDF → pdflib y≈74
+    await drawSignature(doc, p0, sigData, 87, 74);
+    drawField(p0, font, todayStr, 732, 300, 8);                      // date
+    drawField(p0, font, corpName, 756, 87, 8);                       // title/name
 
     const finalBytes = await doc.save();
     return new Blob([finalBytes], { type: 'application/pdf' });
@@ -5418,6 +5442,10 @@ async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extend
     drawField(p0, font, addr.city || '', 162, 123);                  // city
     drawField(p0, font, addr.zip || '', 162, 325);                   // zip
     drawField(p0, font, p.ein, 114, 490);                            // EIN
+    // Signature line: f1065 page bottom ~y=724 PyMuPDF → pdflib y≈70
+    await drawSignature(doc, p0, sigData, 87, 70);
+    drawField(p0, font, todayStr, 736, 320, 8);                      // date
+    drawField(p0, font, 'Managing Member', 748, 87, 8);              // title
 
     const finalBytes = await doc.save();
     return new Blob([finalBytes], { type: 'application/pdf' });
@@ -5450,6 +5478,12 @@ async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extend
   p1.drawText('Foreign-Owned U.S. DE', {
     x: 124, y: 792 - 70, size: 8, font: bold1120, color: rgb(0, 0, 0)
   });
+  // Signature on last page of 1120 (page index 5 = 6th page)
+  const p1pages = doc1120.getPages();
+  const p1last = p1pages[p1pages.length - 1];
+  await drawSignature(doc1120, p1last, sigData, 87, 74);
+  drawField(p1last, font1120, todayStr, 732, 310, 8);                // date
+  drawField(p1last, font1120, 'Managing Member', 756, 87, 8);        // title
 
   // Fill Form 5472
   const doc5472 = await PDFDocument.load(bytes5472, { ignoreEncryption: true });
@@ -5476,6 +5510,12 @@ async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extend
     drawField(q1, font5472, owner.ref_id || '', 456, 181, 8);        // ref ID (2c)
     drawField(q1, font5472, owner.ftin || '', 456, 354, 8);          // FTIN (2d)
   }
+  // Signature on last page of 5472
+  const q1pages = doc5472.getPages();
+  const q1last = q1pages[q1pages.length - 1];
+  await drawSignature(doc5472, q1last, sigData, 87, 74);
+  drawField(q1last, font5472, todayStr, 732, 310, 8);                // date
+  drawField(q1last, font5472, 'Managing Member', 756, 87, 8);        // title
 
   // Merge: f1120 pages + f5472 pages
   const merged = await PDFDocument.create();
@@ -5591,22 +5631,14 @@ async function sendToIRS() {
     const { data: { user } } = await sb.auth.getUser();
     const sigData = user?.user_metadata?.signature_data || null;
 
-    // Build filing package PDF — filter transactions for the chosen complete tax year
+    // Build filing package PDF — fill actual IRS form templates
     const _irsFrom  = new Date(irsFilingYear, 0, 1);
     const _irsTo    = new Date(irsFilingYear, 11, 31, 23, 59, 59);
     const filtered  = transactions.filter(t => { const d=new Date(t.date); return d>=_irsFrom && d<=_irsTo; });
     const taxYear   = irsFilingYear;
     const corpName  = llcName || p.llcName || '';
 
-    // Render each section separately then merge — avoids canvas-slicing page-break artifacts
-    const opts = {
-      margin: [12.7, 12.7, 12.7, 12.7],  // 0.5 in margins — US Letter
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true },
-      pagebreak: { mode: ['css', 'legacy'] },
-      jsPDF: { unit: 'mm', format: [215.9, 279.4], orientation: 'portrait' }  // US Letter 8.5×11 in
-    };
-    const blob = await buildFilingPackageBlob(p, filtered, taxYear, corpName, sigData, opts);
+    const blob = await buildIRSAcroBlob(p, filtered, taxYear, corpName, irsFormType, irsExtendForm, sigData);
 
     btn.textContent = 'Mailing to IRS…';
 
