@@ -5089,6 +5089,13 @@ function buildForm5472HTML(p, filtered, taxYear, sigData, breakBefore=false) {
 </div>`;
 }
 
+async function _loadSigData() {
+  try {
+    const { data: { user } } = await sb.auth.getUser();
+    return user?.user_metadata?.signature_data || localStorage.getItem('mtf_signature') || null;
+  } catch(e) { return localStorage.getItem('mtf_signature') || null; }
+}
+
 async function exportForm1120() {
   const p = getTaxProfile();
   if (!p.ein) { alert('Please complete your LLC profile first (EIN is required).'); return; }
@@ -5096,7 +5103,8 @@ async function exportForm1120() {
   const taxYear = reportPeriodFrom ? reportPeriodFrom.getFullYear() : new Date().getFullYear() - 1;
   const corpName = llcName || p.llcName || '';
   try {
-    const blob = await buildIRSAcroBlob(p, filtered, taxYear, corpName, '5472_1120', null, null);
+    const sigData = await _loadSigData();
+    const blob = await buildIRSAcroBlob(p, filtered, taxYear, corpName, '5472_1120', null, sigData);
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -5113,8 +5121,8 @@ async function exportForm5472() {
   const taxYear = reportPeriodFrom ? reportPeriodFrom.getFullYear() : new Date().getFullYear() - 1;
   const corpName = llcName || p.llcName || '';
   try {
-    // Form 5472 wird zusammen mit 1120 als Paket exportiert (IRS-Vorschrift: zusammen einreichen)
-    const blob = await buildIRSAcroBlob(p, filtered, taxYear, corpName, '5472_1120', null, null);
+    const sigData = await _loadSigData();
+    const blob = await buildIRSAcroBlob(p, filtered, taxYear, corpName, '5472_1120', null, sigData);
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -5228,7 +5236,8 @@ async function exportFilingPackage() {
   const taxYear = reportPeriodFrom ? reportPeriodFrom.getFullYear() : new Date().getFullYear() - 1;
   const corpName = llcName || p.llcName || '';
   try {
-    const blob = await buildIRSAcroBlob(p, filtered, taxYear, corpName, '5472_1120', null, null);
+    const sigData = await _loadSigData();
+    const blob = await buildIRSAcroBlob(p, filtered, taxYear, corpName, '5472_1120', null, sigData);
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
