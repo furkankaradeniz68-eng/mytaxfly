@@ -1,6 +1,5 @@
-// Fetches new transactions from a Stripe Financial Connections account and
-// imports them into MyTaxFly. Uses the transaction ID as a cursor to avoid
-// re-importing already-seen transactions.
+// Fetches transactions from the user's Stripe Financial Connections account
+// and imports them into MyTaxFly's transactions table.
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
@@ -13,128 +12,107 @@ export default async function handler(req, res) {
   const { data: { user }, error: authError } = await sb.auth.getUser(token);
   if (authError || !user) return res.status(401).json({ error: 'Unauthorized' });
 
-  // Load the stored connection
-  const { data: conn, error: connError } = await sb
-    .from('bank_connections')
-    .select('*')
-    .eq('user_id', user.id)
-    .eq('bank', 'stripe')
-    .single();
+  const { accountId } = req.body || {};
 
-  if (connError || !conn) return res.status(404).json({ error: 'No bank connection found. Please connect your bank first.' });
+  // Load connection record — if accountId supplied, sync only that; else sync all
+  let query = sb.from('bank_connections').select('*').eq('user_id', user.id).eq('bank', 'stripe_fc');
+  if (accountId) query = query.eq('account_id', accountId);
+  const { data: connections, error: connError } = await query;
+
+  if (connError || !connections?.length) {
+    return res.status(404).json({ error: 'No bank connection found' });
+  }
 
   const Stripe = (await import('stripe')).default;
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' });
 
-  // Paginate through all transactions for this account
-  const allTransactions = [];
-  let startingAfter = conn.sync_cursor || undefined;
+  let totalImported = 0;
+  let totalSkipped = 0;
 
-  try {
-    let hasMore = true;
-    while (hasMore) {
-      const params = {
-        account: conn.account_id,
-        limit: 100,
-      };
-      if (startingAfter) params.starting_after = startingAfter;
+  for (const conn of connections) {
+    const stripeAccountId = conn.account_id;
 
-      const page = await stripe.financialConnections.transactions.list(params);
+    // Paginate transactions (Stripe FC returns max 100 per page)
+    let allTx = [];
+    let startingAfter;
+    try {
+      let hasMore = true;
+      while (hasMore) {
+        const params = { limit: 100 };
+        if (startingAfter) params.starting_after = startingAfter;
+        if (conn.sync_cursor) params.starting_after = conn.sync_cursor;
 
-      allTransactions.push(...(page.data || []));
-      hasMore = page.has_more;
+        const page = await stripe.financialConnections.accounts.listTransactions(
+          stripeAccountId,
+          params
+        );
 
-      if (page.data && page.data.length > 0) {
-        startingAfter = page.data[page.data.length - 1].id;
-      } else {
-        hasMore = false;
+        allTx = allTx.concat(page.data || []);
+        hasMore = page.has_more;
+        if (page.data?.length) startingAfter = page.data[page.data.length - 1].id;
+        if (!page.has_more) break;
       }
+    } catch (e) {
+      console.error('Stripe FC transactions error:', e.message);
+      if (e.code === 'financial_connections_account_inactive') {
+        await sb.from('bank_connections').delete().eq('id', conn.id);
+        return res.status(401).json({ error: 'Bank connection expired. Please reconnect.' });
+      }
+      return res.status(502).json({ error: e.message || 'Failed to fetch transactions from Stripe' });
     }
-  } catch (err) {
-    console.error('Stripe FC transaction fetch error:', err);
-    return res.status(502).json({ error: err.message || 'Failed to fetch transactions from Stripe' });
-  }
 
-  if (!allTransactions.length) {
-    await sb.from('bank_connections')
-      .update({ last_synced_at: new Date().toISOString() })
-      .eq('id', conn.id);
-    return res.status(200).json({ imported: 0, skipped: 0 });
-  }
+    if (!allTx.length) {
+      await sb.from('bank_connections')
+        .update({ last_synced_at: new Date().toISOString() })
+        .eq('id', conn.id);
+      continue;
+    }
 
-  // Map Stripe FC category strings to MyTaxFly categories
-  function mapCategory(stripeCategory, isExpense) {
-    if (!isExpense) return 'Income';
-    if (!stripeCategory) return 'Uncategorized';
-    const cat = stripeCategory.toLowerCase();
-
-    if (cat.includes('travel') || cat.includes('airline') || cat.includes('hotel')) return 'Travel';
-    if (cat.includes('food') || cat.includes('restaurant') || cat.includes('dining')) return 'Meals';
-    if (cat.includes('software') || cat.includes('subscription') || cat.includes('saas') ||
-        cat.includes('internet') || cat.includes('telecom')) return 'Software & Tools';
-    if (cat.includes('advertis') || cat.includes('marketing')) return 'Advertising';
-    if (cat.includes('legal') || cat.includes('accounting') || cat.includes('tax')) return 'Legal & Professional';
-    if (cat.includes('office') || cat.includes('supplies') || cat.includes('shipping')) return 'Office & Supplies';
-    if (cat.includes('transfer') || cat.includes('bank') || cat.includes('fee')) return 'Other';
-    if (cat.includes('payroll') || cat.includes('salary')) return 'Payroll';
-
-    return 'Uncategorized';
-  }
-
-  // Stripe FC amount is in cents, positive = credit (money in), negative = debit (money out)
-  const mapped = allTransactions.map(t => {
-    const amountCents = t.amount; // positive = credit, negative = debit
-    const isExpense = amountCents < 0;
-    const category = mapCategory(t.category, isExpense);
-    return {
+    // Stripe FC amount: positive = debit/expense (money leaving), negative = credit/income
+    const mapped = allTx.map(t => ({
       user_id: user.id,
       external_id: t.id,
       source: 'stripe_fc',
-      vendor: t.description || 'Bank Transaction',
-      amount: Math.abs(amountCents) / 100,
+      vendor: t.description || 'Bank Transfer',
+      amount: Math.abs(t.amount) / 100,
       currency: (t.currency || 'usd').toUpperCase(),
-      date: new Date(t.transacted_at * 1000).toISOString().split('T')[0],
-      type: isExpense ? 'expense' : 'income',
-      category,
-      deductible: isExpense && category !== 'Other' && category !== 'Uncategorized',
+      date: new Date(t.transacted_at * 1000).toISOString().slice(0, 10),
+      type: t.amount > 0 ? 'expense' : 'income',
+      category: 'Uncategorized',
+      deductible: t.amount > 0,
       deductible_percent: 100,
       note: t.description || '',
       entity_id: null,
-    };
-  });
+    }));
 
-  // Dedup by external_id to avoid double-imports on re-sync
-  const extIds = mapped.map(t => t.external_id);
-  const { data: existing } = await sb
-    .from('transactions')
-    .select('external_id')
-    .eq('user_id', user.id)
-    .in('external_id', extIds);
+    // Dedup by external_id
+    const extIds = mapped.map(t => t.external_id);
+    const { data: existing } = await sb
+      .from('transactions')
+      .select('external_id')
+      .eq('user_id', user.id)
+      .in('external_id', extIds);
 
-  const existingSet = new Set((existing || []).map(t => t.external_id));
-  const toInsert = mapped.filter(t => !existingSet.has(t.external_id));
+    const existingSet = new Set((existing || []).map(t => t.external_id));
+    const toInsert = mapped.filter(t => !existingSet.has(t.external_id));
 
-  let imported = 0;
-  if (toInsert.length > 0) {
-    const { error: insertError } = await sb.from('transactions').insert(toInsert);
-    if (insertError) {
-      console.error('Insert error:', insertError);
-      return res.status(500).json({ error: 'Failed to save transactions' });
+    if (toInsert.length > 0) {
+      const { error: insertError } = await sb.from('transactions').insert(toInsert);
+      if (insertError) {
+        console.error('Insert error:', insertError);
+        return res.status(500).json({ error: 'Failed to save transactions' });
+      }
     }
-    imported = toInsert.length;
+
+    totalImported += toInsert.length;
+    totalSkipped += mapped.length - toInsert.length;
+
+    // Update cursor to newest transaction so next sync only fetches what's new
+    const newCursor = allTx[0]?.id;
+    await sb.from('bank_connections')
+      .update({ last_synced_at: new Date().toISOString(), sync_cursor: newCursor || conn.sync_cursor })
+      .eq('id', conn.id);
   }
 
-  // Save the latest transaction ID as cursor so next sync only fetches newer ones
-  const newCursor = allTransactions.length > 0 ? allTransactions[0].id : conn.sync_cursor;
-
-  await sb.from('bank_connections').update({
-    last_synced_at: new Date().toISOString(),
-    sync_cursor: newCursor,
-  }).eq('id', conn.id);
-
-  return res.status(200).json({
-    imported,
-    skipped: mapped.length - imported,
-    total: mapped.length,
-  });
+  return res.status(200).json({ imported: totalImported, skipped: totalSkipped });
 }
