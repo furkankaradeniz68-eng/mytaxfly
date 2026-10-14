@@ -6355,11 +6355,9 @@ function applyTenantConfig(cfg) {
   }
   // Advisor login tab
   const advisorTab = document.getElementById('tab-advisor');
-  const loginTabs  = document.querySelector('.login-tabs');
   const forceAdvisor = new URLSearchParams(location.search).has('advisor');
   const showAdvisor = cfg.show_advisor_login || forceAdvisor;
   if (advisorTab) advisorTab.style.display = showAdvisor ? '' : 'none';
-  if (loginTabs)  loginTabs.style.display  = showAdvisor ? '' : 'none';
   // Feature flags
   if (cfg.show_ai_advisor === false) {
     const el = document.getElementById('nav-ai-item'); if (el) el.style.display = 'none';
