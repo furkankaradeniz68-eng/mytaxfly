@@ -11,6 +11,7 @@
 <script defer src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+<script src="https://js.stripe.com/v3/"></script>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0d0f14;--bg2:#13161e;--bg3:#1a1e28;--border:#252a38;--accent:#00c896;--accent2:#0099ff;--warn:#ff6b35;--text:#e8eaf2;--text2:#7a8099;--text3:#4a5068;--card:#161922;--radius:12px;}
@@ -1307,7 +1308,7 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
         <div class="entry-tab active" id="tab-manual" onclick="switchTab('manual')"><svg style="display:inline;vertical-align:-2px;margin-right:5px" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d='M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7'/><path d='M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z'/></svg><span id="t-tab-manual">Manual Entry</span></div>
         <div class="entry-tab" id="tab-upload" onclick="switchTab('upload')"><svg style="display:inline;vertical-align:-2px;margin-right:5px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span id="t-tab-upload">Upload Receipt</span></div>
         <div class="entry-tab" id="tab-csv" onclick="switchTab('csv')"><svg style="display:inline;vertical-align:-2px;margin-right:5px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 19 19 12"/></svg>Import CSV</div>
-        <div class="entry-tab biz-only" id="tab-bank" style="opacity:0.6;cursor:default;position:relative" onclick="showBankComingSoon()"><svg style="display:inline;vertical-align:-2px;margin-right:5px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>Bank Sync <span style="font-size:9px;font-weight:800;padding:2px 6px;background:rgba(245,158,11,0.2);color:#f59e0b;border-radius:20px;border:1px solid rgba(245,158,11,0.3);margin-left:4px;vertical-align:1px">SOON</span></div>
+        <div class="entry-tab biz-only" id="tab-bank" onclick="showBankPanel()"><svg style="display:inline;vertical-align:-2px;margin-right:5px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>Bank Sync</div>
       </div>
       <div id="panel-manual">
         <div class="entry-form">
@@ -1358,25 +1359,37 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
         <div id="csv-preview"></div>
       </div>
       <div id="panel-bank" style="display:none">
-        <div style="text-align:center;padding:40px 20px">
-          <div style="width:64px;height:64px;background:rgba(245,158,11,0.1);border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+        <!-- NOT connected state -->
+        <div id="bank-connect-view" style="text-align:center;padding:40px 20px">
+          <div style="width:64px;height:64px;background:rgba(0,200,150,0.1);border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
           </div>
-          <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#f59e0b;margin-bottom:10px;text-transform:uppercase">Coming Soon</div>
           <div style="font-size:20px;font-weight:800;color:var(--text);margin-bottom:12px">Bank Sync</div>
-          <div style="font-size:13px;color:var(--text2);max-width:380px;margin:0 auto 28px;line-height:1.7">Connect your bank directly — MyTaxFly will automatically pull in your transactions every day. No more manual entry. Supports Mercury, Chase, Wise, Bank of America and more.</div>
-          <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:32px">
-            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;color:var(--text2)">Mercury</div>
-            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;color:var(--text2)">Chase</div>
-            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;color:var(--text2)">Wise</div>
-            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;color:var(--text2)">Bank of America</div>
-            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;color:var(--text2)">Wells Fargo</div>
-            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;color:var(--text2)">+ more</div>
+          <div style="font-size:13px;color:var(--text2);max-width:400px;margin:0 auto 28px;line-height:1.7">Connect your bank account securely via Stripe. MyTaxFly will automatically pull in your transactions. Supports 10,000+ US banks including Mercury, Chase, Wise, and Bank of America.</div>
+          <button class="btn-primary" style="padding:12px 28px;font-size:14px;display:inline-flex;align-items:center;gap:8px" onclick="connectBankStripe()" id="bank-connect-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Connect Bank via Stripe
+          </button>
+          <div style="margin-top:20px;font-size:11px;color:var(--text3);display:flex;align-items:center;justify-content:center;gap:6px">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Secured by Stripe Financial Connections · Bank-level encryption
           </div>
-          <div style="background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);border-radius:12px;padding:16px 20px;display:inline-flex;align-items:center;gap:10px;font-size:13px;color:var(--text2)">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
-            We'll notify you as soon as Bank Sync is available.
-          </div>
+        </div>
+        <!-- CONNECTED state -->
+        <div id="bank-connected-view" style="display:none;padding:24px">
+          <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:16px">Connected Banks</div>
+          <div id="bank-accounts-list" style="display:flex;flex-direction:column;gap:12px;margin-bottom:24px"></div>
+          <button class="btn-primary" style="padding:10px 22px;font-size:13px;display:inline-flex;align-items:center;gap:7px" onclick="syncBankNow()" id="bank-sync-btn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            Sync Now
+          </button>
+          <button style="margin-left:12px;padding:10px 18px;font-size:13px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--text2);cursor:pointer" onclick="connectBankStripe()">+ Add Bank</button>
+          <div id="bank-sync-status" style="margin-top:16px;font-size:12px;color:var(--text2);display:none"></div>
+        </div>
+        <!-- Loading state -->
+        <div id="bank-loading-view" style="display:none;text-align:center;padding:60px 20px;color:var(--text2);font-size:13px">
+          <div class="spinner" style="margin:0 auto 16px"></div>
+          Loading bank status…
         </div>
       </div>
     </div>
@@ -6988,13 +7001,156 @@ const BANK_COLUMN_MAPS = {
   other:    { date: ['date','transaction date'], vendor: ['description','payee','merchant'], amount: ['amount','debit','credit'], type_hint: 'sign' }
 };
 
-function showBankComingSoon() {
+function showBankPanel() {
   ['manual','upload','csv','bank'].forEach(t=>{
     const tb=document.getElementById('tab-'+t);
     const pn=document.getElementById('panel-'+t);
     if(tb) tb.classList.toggle('active',t==='bank');
     if(pn) pn.style.display=t==='bank'?'block':'none';
   });
+  loadBankStatus();
+}
+
+async function loadBankStatus() {
+  const connectView  = document.getElementById('bank-connect-view');
+  const connectedView = document.getElementById('bank-connected-view');
+  const loadingView  = document.getElementById('bank-loading-view');
+  if (!connectView) return;
+
+  connectView.style.display  = 'none';
+  connectedView.style.display = 'none';
+  loadingView.style.display  = 'block';
+
+  try {
+    const { data: connections } = await _sb
+      .from('bank_connections')
+      .select('*')
+      .eq('user_id', _user.id)
+      .eq('bank', 'stripe_fc');
+
+    loadingView.style.display = 'none';
+
+    if (!connections || connections.length === 0) {
+      connectView.style.display = 'block';
+      return;
+    }
+
+    connectedView.style.display = 'block';
+    const list = document.getElementById('bank-accounts-list');
+    list.innerHTML = connections.map(c => {
+      const lastSync = c.last_synced_at
+        ? 'Last synced: ' + new Date(c.last_synced_at).toLocaleString('en-US', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' })
+        : 'Never synced';
+      return `
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="width:38px;height:38px;background:rgba(0,200,150,0.1);border-radius:10px;display:flex;align-items:center;justify-content:center">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            </div>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:var(--text)">${escHtml(c.account_name || 'Bank Account')}</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px">${lastSync}</div>
+            </div>
+          </div>
+          <button onclick="disconnectBank('${c.id}')" style="background:transparent;border:none;cursor:pointer;color:var(--text3);font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid var(--border)" title="Disconnect">Disconnect</button>
+        </div>`;
+    }).join('');
+  } catch(e) {
+    loadingView.style.display = 'none';
+    connectView.style.display = 'block';
+    console.error('loadBankStatus error:', e);
+  }
+}
+
+async function connectBankStripe() {
+  const btn = document.getElementById('bank-connect-btn');
+  const origText = btn ? btn.innerHTML : '';
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span style="opacity:.7">Opening Stripe…</span>'; }
+
+  try {
+    const sess = await authFetch('/api/stripe-fc-session', { method: 'POST' });
+    if (!sess.ok) {
+      const err = await sess.json();
+      showToast('Bank connection error: ' + (err.error || 'Unknown error'), 'error');
+      return;
+    }
+    const { clientSecret, publishableKey } = await sess.json();
+    if (!publishableKey) { showToast('Stripe key not configured. Check STRIPE_PUBLISHABLE_KEY env var.', 'error'); return; }
+
+    const stripe = Stripe(publishableKey);
+    const result = await stripe.collectFinancialConnectionsAccounts({ clientSecret });
+
+    if (result.error) {
+      showToast(result.error.message || 'Bank connection cancelled', 'warn');
+      return;
+    }
+
+    const accounts = result.financialConnectionsSession?.accounts || [];
+    if (!accounts.length) { showToast('No bank account was connected.', 'warn'); return; }
+
+    // Persist connected accounts to Supabase
+    for (const acct of accounts) {
+      await _sb.from('bank_connections').upsert({
+        user_id: _user.id,
+        bank: 'stripe_fc',
+        access_token: acct.id,
+        account_id: acct.id,
+        account_name: acct.institution_name || acct.display_name || 'Bank Account',
+        last_synced_at: null,
+        sync_cursor: null,
+      }, { onConflict: 'user_id,account_id' });
+    }
+
+    showToast('Bank connected! Syncing transactions…', 'success');
+    await loadBankStatus();
+    await syncBankNow();
+  } catch(e) {
+    console.error('connectBankStripe error:', e);
+    showToast('Failed to open Stripe: ' + e.message, 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = origText; }
+  }
+}
+
+async function syncBankNow() {
+  const btn = document.getElementById('bank-sync-btn');
+  const statusEl = document.getElementById('bank-sync-status');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span style="opacity:.7">Syncing…</span>'; }
+  if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = 'Fetching transactions from Stripe…'; }
+
+  try {
+    const res = await authFetch('/api/stripe-fc-sync', { method: 'POST' });
+    const data = await res.json();
+    if (!res.ok) {
+      if (statusEl) { statusEl.textContent = 'Sync error: ' + (data.error || 'Unknown error'); statusEl.style.color = 'var(--warn)'; }
+      showToast('Sync failed: ' + (data.error || 'Unknown'), 'error');
+      return;
+    }
+    const msg = data.imported > 0
+      ? `Synced: ${data.imported} new transaction${data.imported === 1 ? '' : 's'} imported.`
+      : 'Already up to date — no new transactions.';
+    if (statusEl) { statusEl.textContent = msg; statusEl.style.color = 'var(--text2)'; }
+    showToast(msg, 'success');
+    await loadBankStatus();
+    if (data.imported > 0) renderTransactions();
+  } catch(e) {
+    console.error('syncBankNow error:', e);
+    if (statusEl) { statusEl.textContent = 'Sync error: ' + e.message; }
+    showToast('Sync failed: ' + e.message, 'error');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Sync Now';
+    }
+  }
+}
+
+async function disconnectBank(connectionId) {
+  if (!confirm('Disconnect this bank account? Existing transactions will remain.')) return;
+  const { error } = await _sb.from('bank_connections').delete().eq('id', connectionId).eq('user_id', _user.id);
+  if (error) { showToast('Failed to disconnect: ' + error.message, 'error'); return; }
+  showToast('Bank disconnected.', 'success');
+  loadBankStatus();
 }
 
 function selectBank(bank) {
