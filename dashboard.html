@@ -2625,7 +2625,7 @@ async function loadAdvisorClients(advisorId) {
       statusMap[r.client_id]    = r.status;
       notesMap[r.client_id]     = r.notes;
       // irs_status text takes priority; fall back to boolean irs_filed
-      irsStatusMap[r.client_id] = r.irs_status || (r.irs_filed ? 'done' : 'pending');
+      irsStatusMap[r.client_id] = r.irs_status || (r.irs_filed ? 'done' : 'not_done');
     });
 
     // Get profiles for all clients
@@ -2671,7 +2671,7 @@ async function loadAdvisorClients(advisorId) {
       const stats    = statsPerClient[p.id] || { revenue: 0, expenses: 0, lastDate: null, txCount: 0 };
       const status   = statusMap[p.id] || 'active';
       const note     = (notesMap[p.id] || '').replace(/"/g,'&quot;');
-      const irsStatus = irsStatusMap[p.id] || 'pending';
+      const irsStatus = irsStatusMap[p.id] || 'not_done';
       const initial   = (p.name || p.email || '?')[0].toUpperCase();
       const lastAct   = stats.lastDate ? new Date(stats.lastDate).toLocaleDateString('en-US', {month:'short', day:'numeric'}) : 'No data';
       const profit    = stats.revenue - stats.expenses;
