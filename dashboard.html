@@ -389,6 +389,13 @@ body{overflow-x:hidden;max-width:100vw;}
 #upload-queue-btn{width:100%;padding:14px;font-size:15px;font-weight:700;border-radius:10px;background:var(--accent);color:#0d0f14;border:none;cursor:pointer;margin-bottom:20px;transition:opacity 0.2s;display:none;}
 #upload-queue-btn:hover{opacity:0.85;}
 #upload-queue-btn:disabled{opacity:0.5;cursor:not-allowed;}
+/* Bank statement preview */
+.bs-preview-table{width:100%;border-collapse:collapse;font-size:13px;}
+.bs-preview-table th{padding:6px 8px;text-align:left;color:var(--text3);font-weight:600;border-bottom:1px solid var(--border);}
+.bs-preview-table td{padding:7px 8px;border-bottom:1px solid rgba(255,255,255,0.04);}
+.bs-preview-table tr:hover td{background:var(--bg3);}
+.bs-import-btn{padding:10px 22px;font-size:13px;font-weight:700;border-radius:10px;background:var(--accent);color:#0d0f14;border:none;cursor:pointer;transition:opacity 0.2s;}
+.bs-import-btn:hover{opacity:0.85;}
 .btn-sec{background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:10px 20px;font-family:'Montserrat',sans-serif;font-size:13px;cursor:pointer;transition:all 0.2s;}
 .btn-sec:hover{border-color:var(--accent);color:var(--accent);}
 .result-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px;animation:fadeIn 0.4s ease;}
@@ -1335,8 +1342,8 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
       <div id="panel-upload" style="display:none">
         <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)">
           <div class="empty-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
-          <div class="upload-title" id="t-drop-title">Drop receipt here or click</div>
-          <div class="upload-sub" id="t-drop-sub">PDF, JPG, PNG · Invoices, receipts, statements</div>
+          <div class="upload-title" id="t-drop-title">Drop Bank Statement or Receipt</div>
+          <div class="upload-sub" id="t-drop-sub">PDF, JPG, PNG · Bank statements, invoices, receipts · AI reads everything</div>
           <br><button class="btn-sec" onclick="event.stopPropagation();document.getElementById('file-input').click()"><span id="t-select-file">Select File</span></button>
         </div>
         <input type="file" id="file-input" accept=".pdf,.jpg,.jpeg,.png,.txt" multiple onchange="handleFileUpload(event)">
@@ -4206,37 +4213,60 @@ function readTxt(f){return new Promise(r=>{const fr=new FileReader();fr.onload=(
 function buildUploadPrompt(){
   return `Analyze this financial document for a US LLC (LLC name: "${llcName}").
 
-CRITICAL — Determine type by reading sender and recipient carefully:
-- Look at FROM / ISSUED BY / VENDOR / SELLER: if this is a company other than "${llcName}" → they sent this document TO the LLC → type = "expense"
-- Look at BILL TO / INVOICE TO / CLIENT / CUSTOMER: if this shows "${llcName}" as the recipient → type = "expense"
-- If "${llcName}" appears as the SENDER / FROM / ISSUED BY → the LLC sent this invoice to a client → type = "income"
-- If "Bill To" / "Invoice To" shows a customer name (not "${llcName}") and "${llcName}" is the issuer → type = "income"
-- Receipts, subscription confirmations, order confirmations from any vendor → type = "expense"
-- Bank statements: positive/credit entries → income, negative/debit entries → expense
-- When in doubt: who is paying whom? If the LLC is PAYING → expense. If the LLC is RECEIVING money → income.
-- Currency: keep the original currency code exactly as shown (EUR, USD, GBP, CHF, etc.)
+STEP 1 — Detect document type:
+- BANK_STATEMENT: multi-page or multi-row PDF listing many transactions (Kontoauszug, account statement, bank export, extract). These have columns: date | description | amount.
+- RECEIPT: single transaction document (invoice, receipt, order confirmation, subscription email).
 
-Respond ONLY with valid JSON, no extra text:
-{"vendor":"name of the other party","amount":0.00,"currency":"original currency code","date":"YYYY-MM-DD","category":"Software & Tools / Marketing / Office & Supplies / Travel / Meals / Professional Services / Other","type":"expense or income","deductible":true,"deductible_percent":100,"note":"Brief IRS deductibility explanation"}`;
+STEP 2a — For BANK STATEMENTS respond with:
+{"type":"bank_statement","account_name":"bank or account name if visible","period":"e.g. Sep 2026","currency":"primary currency","transactions":[...]}
+Each transaction: {"vendor":"clean name","amount":0.00,"currency":"EUR","date":"YYYY-MM-DD","category":"...","tx_type":"expense or income","deductible":true,"deductible_percent":100,"note":"brief note"}
+
+STEP 2b — For RECEIPTS/INVOICES respond with:
+{"type":"receipt","vendor":"name","amount":0.00,"currency":"original code","date":"YYYY-MM-DD","category":"...","tx_type":"expense or income","deductible":true,"deductible_percent":100,"note":"brief IRS note"}
+
+BANK STATEMENT RULES:
+- German format: dates DD.MM.YYYY → YYYY-MM-DD, amounts use comma decimal (30,99 → 30.99)
+- Negative amounts = expense. Positive amounts = income.
+- German keywords: Kartenzahlung=card, Lastschrift=direct debit, Zahlungseingang=payment received, Echtzeitüberweisung=instant transfer, Entgelt/Gebühr=bank fee
+- PayPal: extract real vendor from description (e.g. "PP.4029.PP SPOTIFY AB" → vendor="Spotify")
+- Revolut/N26/Wise own-account transfers: category="Transfer (Personal)", deductible=false, deductible_percent=0
+- Bank fees (Entgeltabrechnung, Kontoführung): category="Banking & Fees", deductible=true
+- SKIP: opening balance, closing balance, column header lines — only include actual debit/credit rows
+- Clean vendor names: strip IBANs, reference numbers, transaction IDs. "LIDL 1234 BERLIN" → "LIDL"
+
+RECEIPT RULES:
+- FROM/ISSUED BY is a company → expense. LLC is the SENDER/ISSUER → income.
+- Receipts, subscriptions, order confirmations → expense.
+
+CATEGORIES (use exactly): Software & Tools | Marketing & Advertising | Office & Supplies | Travel & Transportation | Meals & Entertainment | Professional Services | Banking & Fees | Insurance | Phone & Communications | Health & Fitness | Donations & Charity | Client Revenue | Transfer (Personal) | Other
+
+Respond ONLY with valid JSON. No markdown. No extra text.`;
 }
 
 async function analyzeWithClaude(fn,b64,mt,loaderId,fileUrl){
   const isImg=mt.startsWith('image/');
   const PROMPT=buildUploadPrompt();
   const ca=isImg?[{type:'image',source:{type:'base64',media_type:mt,data:b64}},{type:'text',text:PROMPT}]:[{type:'document',source:{type:'base64',media_type:'application/pdf',data:b64}},{type:'text',text:PROMPT}];
+  // Bank statements can have 30+ transactions — need more tokens
+  const maxTok = mt==='application/pdf' ? 4000 : 1000;
   try{
-    const text=await callClaude([{role:'user',content:ca}],null,1000);
+    const text=await callClaude([{role:'user',content:ca}],null,maxTok);
     const res=JSON.parse(text.replace(/```json|```/g,'').trim());
-    res.filename=fn; if(fileUrl) res.fileUrl=fileUrl;
-    await autoConvertResult(res);
-    const cardId=renderResult(fn,res,loaderId);
-    await addTransaction(res);
-    const _findT=()=>transactions.find(x=>res._id&&String(x._id)===String(res._id))||transactions.find(x=>x.vendor===res.vendor&&x.date===res.date&&String(x.amount)===String(res.amount));
-    const editBtn=document.getElementById('edit-btn-'+cardId);
-    if(editBtn){editBtn.style.opacity='1';editBtn.style.pointerEvents='auto';editBtn.onclick=()=>{const t=_findT();if(t)openEditModal(t._id);};}
-    const delBtn=document.getElementById('del-btn-'+cardId);
-    if(delBtn){delBtn.style.opacity='1';delBtn.style.pointerEvents='auto';delBtn.onclick=()=>{const t=_findT();if(t)deleteTransaction(t._id);};}
-
+    if(res.type==='bank_statement'&&Array.isArray(res.transactions)){
+      renderBankStatementPreview(res,fn,loaderId,fileUrl);
+    } else {
+      // Single receipt/invoice — normalize tx_type → type for backward compat
+      if(res.tx_type&&!res.type) res.type=res.tx_type;
+      res.filename=fn; if(fileUrl) res.fileUrl=fileUrl;
+      await autoConvertResult(res);
+      const cardId=renderResult(fn,res,loaderId);
+      await addTransaction(res);
+      const _findT=()=>transactions.find(x=>res._id&&String(x._id)===String(res._id))||transactions.find(x=>x.vendor===res.vendor&&x.date===res.date&&String(x.amount)===String(res.amount));
+      const editBtn=document.getElementById('edit-btn-'+cardId);
+      if(editBtn){editBtn.style.opacity='1';editBtn.style.pointerEvents='auto';editBtn.onclick=()=>{const t=_findT();if(t)openEditModal(t._id);};}
+      const delBtn=document.getElementById('del-btn-'+cardId);
+      if(delBtn){delBtn.style.opacity='1';delBtn.style.pointerEvents='auto';delBtn.onclick=()=>{const t=_findT();if(t)deleteTransaction(t._id);};}
+    }
   }catch(e){
     const el=document.getElementById(loaderId);
     if(el) el.outerHTML=`<div class="result-card"><div style="color:var(--warn)">❌ ${fn}: ${e.message}</div></div>`;
@@ -4277,6 +4307,102 @@ function renderResult(fn,r,loaderId){
   if(el) el.outerHTML=card;
   setTimeout(()=>{const b=document.getElementById(bannerId);if(b){b.style.transition='all 0.5s ease';b.style.opacity='1';b.style.transform='translateY(0)';}},300);
   return cardId;
+}
+
+// ── BANK STATEMENT PREVIEW ────────────────────────────────
+const _bsData = {}; // keyed by previewId
+
+function renderBankStatementPreview(res, fn, loaderId, fileUrl){
+  const txs = res.transactions;
+  const previewId = 'bsp-' + Date.now();
+  _bsData[previewId] = { txs, fileUrl };
+
+  const totalExp = txs.filter(t=>t.tx_type==='expense').reduce((s,t)=>s+t.amount,0);
+  const totalInc = txs.filter(t=>t.tx_type==='income').reduce((s,t)=>s+t.amount,0);
+
+  const rows = txs.map((t,i)=>{
+    const inc = t.tx_type==='income';
+    const curr = t.currency||res.currency||'EUR';
+    return `<tr>
+      <td style="width:24px"><input type="checkbox" id="bs-chk-${previewId}-${i}" checked style="accent-color:var(--accent);cursor:pointer"></td>
+      <td style="color:var(--text2);white-space:nowrap;font-size:12px">${t.date}</td>
+      <td style="font-weight:600;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(t.vendor||'Unknown')}</td>
+      <td style="color:${inc?'var(--accent)':'var(--warn)'};white-space:nowrap;text-align:right;font-weight:700">${inc?'+':'-'}${t.amount.toFixed(2)} ${curr}</td>
+      <td style="color:var(--text2);font-size:12px;white-space:nowrap">${escHtml(t.category||'Other')}</td>
+    </tr>`;
+  }).join('');
+
+  const allChkId = 'bs-all-'+previewId;
+  const html = `<div class="result-card" id="${previewId}">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+      <div>
+        <div style="font-weight:800;font-size:15px">📊 Bank Statement — ${txs.length} Transactions Found</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:3px">${escHtml(fn)}${res.period?' · '+escHtml(res.period):''}${res.account_name?' · '+escHtml(res.account_name):''}</div>
+      </div>
+      <div style="text-align:right;font-size:12px;color:var(--text2)">
+        <span style="color:var(--accent)">+${totalInc.toFixed(2)}</span> &nbsp;/&nbsp; <span style="color:var(--warn)">-${totalExp.toFixed(2)}</span> ${res.currency||'EUR'}
+      </div>
+    </div>
+    <div style="overflow-x:auto;margin-bottom:14px;max-height:320px;overflow-y:auto">
+      <table class="bs-preview-table">
+        <thead style="position:sticky;top:0;background:var(--card)">
+          <tr>
+            <th><input type="checkbox" id="${allChkId}" checked title="Select all" style="accent-color:var(--accent);cursor:pointer" onchange="document.querySelectorAll('[id^=bs-chk-${previewId}-]').forEach(c=>c.checked=this.checked)"></th>
+            <th>Date</th><th>Vendor</th><th style="text-align:right">Amount</th><th>Category</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <button class="bs-import-btn" id="bs-btn-${previewId}" onclick="importBankTransactions('${previewId}')">
+        <svg style="display:inline;vertical-align:-2px;margin-right:5px" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4'/><polyline points='17 8 12 3 7 8'/><line x1='12' y1='3' x2='12' y2='15'/></svg>
+        Import Selected
+      </button>
+      <span style="font-size:12px;color:var(--text2)">Review and deselect any rows you don't want to import.</span>
+    </div>
+    <div id="bs-result-${previewId}"></div>
+  </div>`;
+
+  const el = document.getElementById(loaderId);
+  if(el) el.outerHTML = html;
+}
+
+async function importBankTransactions(previewId){
+  const { txs, fileUrl } = _bsData[previewId] || {};
+  if(!txs) return;
+
+  const btn = document.getElementById('bs-btn-'+previewId);
+  if(btn){ btn.disabled=true; btn.textContent='Importing…'; }
+
+  const selected = txs.filter((_,i)=>{
+    const chk = document.getElementById(`bs-chk-${previewId}-${i}`);
+    return chk && chk.checked;
+  });
+
+  let ok=0, fail=0;
+  for(const t of selected){
+    try{
+      const r = {
+        vendor: t.vendor, amount: t.amount,
+        currency: t.currency||'EUR', date: t.date,
+        category: t.category||'Other',
+        type: t.tx_type||'expense',
+        deductible: t.deductible!==false,
+        deductible_percent: t.deductible_percent??100,
+        note: t.note||'',
+        filename: '', fileUrl: fileUrl||null,
+        source: 'bank_statement',
+      };
+      await autoConvertResult(r);
+      await addTransaction(r);
+      ok++;
+    }catch(e){ fail++; }
+  }
+
+  const res = document.getElementById('bs-result-'+previewId);
+  if(res) res.innerHTML = `<div class="success-banner" style="opacity:1;transform:none;margin-top:12px"><div class="success-icon">✓</div><div><div class="success-title">${ok} transaction${ok!==1?'s':''} imported${fail?', '+fail+' failed':''}</div><div class="success-sub"><span style="cursor:pointer;text-decoration:underline;color:var(--accent)" onclick="showPage('dashboard',document.querySelectorAll('.nav-item')[0])">View Dashboard →</span></div></div></div>`;
+  if(btn){ btn.disabled=false; btn.textContent='Done'; btn.style.opacity='0.5'; btn.style.pointerEvents='none'; }
 }
 
 async function runDemo(){
@@ -6114,6 +6240,7 @@ document.addEventListener('click', e=>{
 // ── NUMBER FORMAT ─────────────────────────────────────────
 // Format: 3.500,00$ (German locale, $ after number)
 function fmt(n){ return n.toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2})+'$'; }
+function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 let currentPlan = 'basic'; // default, overwritten after login
 const PLAN_LEVEL = {basic:1, pro:2, business:3};
