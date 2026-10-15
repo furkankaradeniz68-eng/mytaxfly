@@ -152,6 +152,11 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
 .advisor-status-select.active{background-color:rgba(0,200,150,0.12);color:var(--accent);}
 .advisor-status-select.pending{background-color:rgba(246,173,85,0.12);color:#f6ad55;}
 .advisor-status-select.review{background-color:rgba(255,107,53,0.12);color:var(--warn);}
+/* IRS status dropdown */
+.irs-status-select{appearance:none;background:transparent;border:none;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;cursor:pointer;padding:4px 20px 4px 10px;border-radius:20px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%237a8099' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 4px center;}
+.irs-status-select.not_done{background-color:rgba(229,62,62,0.12);color:#e53e3e;}
+.irs-status-select.pending{background-color:rgba(246,173,85,0.12);color:#f6ad55;}
+.irs-status-select.done{background-color:rgba(0,200,150,0.12);color:#00c896;}
 /* Card note row */
 .advisor-card-note{width:100%;background:transparent;border:none;border-top:1px solid var(--border);padding:10px 0 0;margin-top:14px;font-family:'Montserrat',sans-serif;font-size:12px;color:var(--text3);resize:none;outline:none;line-height:1.5;transition:color 0.2s;}
 .advisor-card-note::placeholder{color:var(--text3);opacity:0.6;}
@@ -1034,6 +1039,10 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
       <div class="advisor-client-count"><span id="adv-stat-clients">—</span> Clients</div>
     </div>
     <div class="advisor-sub" id="advisor-sub">Select a client to view their dashboard and transactions</div>
+    <div id="adv-irs-summary" style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:11px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;font-size:13px;color:var(--text2)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--accent)"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      <span id="adv-irs-text">— of — clients completed IRS filing</span>
+    </div>
     <div style="margin-bottom:20px">
       <input type="text" id="advisor-search" placeholder="🔍  Search clients by name or email…" oninput="filterAdvisorClients(this.value)" style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:11px 16px;color:var(--text1);font-family:'Montserrat',sans-serif;font-size:13px;outline:none;transition:border-color 0.2s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
     </div>
@@ -2582,13 +2591,19 @@ async function loadAdvisorClients(advisorId) {
   grid.innerHTML = '<div class="advisor-empty">Loading clients...</div>';
 
   try {
-    // Get clients assigned to this advisor (irs_filed is optional — column may not exist yet)
+    // Get clients — irs_status (text) preferred; falls back to irs_filed (boolean)
     let { data: acRows, error: acErr } = await sb
       .from('advisor_clients')
-      .select('client_id, notes, status, irs_filed')
+      .select('client_id, notes, status, irs_filed, irs_status')
       .eq('advisor_id', advisorId);
 
-    // Graceful fallback if irs_filed column doesn't exist yet
+    // Graceful fallback if new columns don't exist yet
+    if (acErr) {
+      ({ data: acRows, error: acErr } = await sb
+        .from('advisor_clients')
+        .select('client_id, notes, status, irs_filed')
+        .eq('advisor_id', advisorId));
+    }
     if (acErr) {
       ({ data: acRows, error: acErr } = await sb
         .from('advisor_clients')
@@ -2603,10 +2618,15 @@ async function loadAdvisorClients(advisorId) {
     }
 
     const clientIds = acRows.map(r => r.client_id);
-    const statusMap  = {};
-    const notesMap   = {};
-    const irsFiledMap = {};
-    acRows.forEach(r => { statusMap[r.client_id] = r.status; notesMap[r.client_id] = r.notes; irsFiledMap[r.client_id] = r.irs_filed || false; });
+    const statusMap    = {};
+    const notesMap     = {};
+    const irsStatusMap = {};
+    acRows.forEach(r => {
+      statusMap[r.client_id]    = r.status;
+      notesMap[r.client_id]     = r.notes;
+      // irs_status text takes priority; fall back to boolean irs_filed
+      irsStatusMap[r.client_id] = r.irs_status || (r.irs_filed ? 'done' : 'pending');
+    });
 
     // Get profiles for all clients
     const { data: profiles } = await sb
@@ -2651,16 +2671,13 @@ async function loadAdvisorClients(advisorId) {
       const stats    = statsPerClient[p.id] || { revenue: 0, expenses: 0, lastDate: null, txCount: 0 };
       const status   = statusMap[p.id] || 'active';
       const note     = (notesMap[p.id] || '').replace(/"/g,'&quot;');
-      const irsFiled = irsFiledMap[p.id] || false;
-      const initial  = (p.name || p.email || '?')[0].toUpperCase();
-      const lastAct  = stats.lastDate ? new Date(stats.lastDate).toLocaleDateString('en-US', {month:'short', day:'numeric'}) : 'No data';
-      const profit   = stats.revenue - stats.expenses;
-      const txCount  = stats.txCount || 0;
-      const safeId   = p.id.replace(/-/g,'');
-      const safeName = (p.name||p.email).replace(/'/g,"\\'");
-      const irsFiledBadge = irsFiled
-        ? `<span title="IRS filing marked as submitted" onclick="event.stopPropagation();toggleIRSFiled('${p.id}','${safeId}',false)" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;background:rgba(0,200,150,0.12);border:1px solid rgba(0,200,150,0.3);color:#00c896;border-radius:20px;padding:3px 9px;font-size:10px;font-weight:700;white-space:nowrap" id="irs-badge-${safeId}">IRS ✓ Filed</span>`
-        : `<span title="Mark IRS filing as submitted" onclick="event.stopPropagation();toggleIRSFiled('${p.id}','${safeId}',true)" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;background:rgba(255,200,50,0.08);border:1px solid rgba(255,200,50,0.2);color:#f6ad55;border-radius:20px;padding:3px 9px;font-size:10px;font-weight:700;white-space:nowrap" id="irs-badge-${safeId}">IRS Pending</span>`;
+      const irsStatus = irsStatusMap[p.id] || 'pending';
+      const initial   = (p.name || p.email || '?')[0].toUpperCase();
+      const lastAct   = stats.lastDate ? new Date(stats.lastDate).toLocaleDateString('en-US', {month:'short', day:'numeric'}) : 'No data';
+      const profit    = stats.revenue - stats.expenses;
+      const txCount   = stats.txCount || 0;
+      const safeId    = p.id.replace(/-/g,'');
+      const safeName  = (p.name||p.email).replace(/'/g,"\\'");
 
       return `
         <div class="advisor-client-card" style="flex-direction:column;align-items:stretch;cursor:default">
@@ -2670,7 +2687,6 @@ async function loadAdvisorClients(advisorId) {
               <div style="min-width:0;flex:1">
                 <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
                   <div class="advisor-client-name">${p.name || p.email.split('@')[0]}</div>
-                  ${irsFiledBadge}
                 </div>
                 <div class="advisor-client-email">${p.email}</div>
               </div>
@@ -2692,12 +2708,12 @@ async function loadAdvisorClients(advisorId) {
                 <div class="advisor-client-stat-label">Last Activity</div>
                 <div class="advisor-client-stat-val">${lastAct}</div>
               </div>
-              <select class="advisor-status-select ${status}" id="status-${safeId}"
-                onchange="updateClientStatus('${p.id}',this.value,this)"
+              <select class="irs-status-select ${irsStatus}" id="irs-${safeId}"
+                onchange="updateIRSStatus('${p.id}','${safeId}',this.value,this)"
                 onclick="event.stopPropagation()">
-                <option value="active"  ${status==='active' ?'selected':''}>● Active</option>
-                <option value="pending" ${status==='pending'?'selected':''}>● Pending</option>
-                <option value="review"  ${status==='review' ?'selected':''}>● Needs Review</option>
+                <option value="not_done" ${irsStatus==='not_done'?'selected':''}>● IRS not done</option>
+                <option value="pending"  ${irsStatus==='pending' ?'selected':''}>● IRS pending</option>
+                <option value="done"     ${irsStatus==='done'    ?'selected':''}>● IRS done</option>
               </select>
               <button class="advisor-view-btn" onclick="openClientView('${p.id}','${safeName}')">View →</button>
             </div>
@@ -2722,12 +2738,12 @@ async function loadAdvisorClients(advisorId) {
                 <span class="advisor-mobile-stat-val">${stats.lastDate ? new Date(stats.lastDate).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : 'No data'}</span>
               </div>
             </div>
-            <select class="advisor-status-select ${status} advisor-mobile-status" id="status-mob-${safeId}"
-              onchange="updateClientStatus('${p.id}',this.value,this);document.getElementById('status-${safeId}').value=this.value;document.getElementById('status-${safeId}').className='advisor-status-select '+this.value"
+            <select class="irs-status-select ${irsStatus} advisor-mobile-status" id="irs-mob-${safeId}"
+              onchange="updateIRSStatus('${p.id}','${safeId}',this.value,this)"
               onclick="event.stopPropagation()">
-              <option value="active"  ${status==='active' ?'selected':''}>● Active</option>
-              <option value="pending" ${status==='pending'?'selected':''}>● Pending</option>
-              <option value="review"  ${status==='review' ?'selected':''}>● Needs Review</option>
+              <option value="not_done" ${irsStatus==='not_done'?'selected':''}>● IRS not done</option>
+              <option value="pending"  ${irsStatus==='pending' ?'selected':''}>● IRS pending</option>
+              <option value="done"     ${irsStatus==='done'    ?'selected':''}>● IRS done</option>
             </select>
           </div>
           <div class="advisor-card-note-wrap">
@@ -2741,6 +2757,8 @@ async function loadAdvisorClients(advisorId) {
           </div>
         </div>`;
     }).join('');
+
+    updateIRSSummary();
 
   } catch(e) {
     console.error('loadAdvisorClients error:', e);
@@ -3158,21 +3176,29 @@ async function saveClientNote(clientId, noteText, savedElId) {
     console.error('saveClientNote error:', e);
   }
 }
-async function toggleIRSFiled(clientId, safeId, filed) {
-  const badge = document.getElementById('irs-badge-' + safeId);
-  if (filed) {
-    if (badge) badge.outerHTML = `<span title="IRS filing marked as submitted" onclick="event.stopPropagation();toggleIRSFiled('${clientId}','${safeId}',false)" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;background:rgba(0,200,150,0.12);border:1px solid rgba(0,200,150,0.3);color:#00c896;border-radius:20px;padding:3px 9px;font-size:10px;font-weight:700;white-space:nowrap" id="irs-badge-${safeId}">IRS ✓ Filed</span>`;
-  } else {
-    if (badge) badge.outerHTML = `<span title="Mark IRS filing as submitted" onclick="event.stopPropagation();toggleIRSFiled('${clientId}','${safeId}',true)" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;background:rgba(255,200,50,0.08);border:1px solid rgba(255,200,50,0.2);color:#f6ad55;border-radius:20px;padding:3px 9px;font-size:10px;font-weight:700;white-space:nowrap" id="irs-badge-${safeId}">IRS Pending</span>`;
-  }
+function updateIRSSummary() {
+  const selects = [...document.querySelectorAll('.irs-status-select:not(.advisor-mobile-status)')];
+  const total = selects.length;
+  const done  = selects.filter(s => s.value === 'done').length;
+  const el = document.getElementById('adv-irs-text');
+  if (!el) return;
+  el.textContent = `${done} of ${total} client${total !== 1 ? 's' : ''} completed IRS filing`;
+  el.style.color = done === total && total > 0 ? 'var(--accent)' : 'var(--text2)';
+}
+
+async function updateIRSStatus(clientId, safeId, newStatus, selectEl) {
+  selectEl.className = `irs-status-select ${newStatus}`;
+  const mob = document.getElementById(`irs-mob-${safeId}`);
+  if (mob) { mob.value = newStatus; mob.className = `irs-status-select advisor-mobile-status ${newStatus}`; }
+  updateIRSSummary();
   try {
     const { data: { user } } = await sb.auth.getUser();
     await sb.from('advisor_clients')
-      .update({ irs_filed: filed })
+      .update({ irs_status: newStatus, irs_filed: newStatus === 'done' })
       .eq('advisor_id', user.id)
       .eq('client_id', clientId);
   } catch(e) {
-    console.error('toggleIRSFiled error:', e);
+    console.error('updateIRSStatus error:', e);
   }
 }
 // ── END STATUS + NOTES ────────────────────────────────────────────────────────
