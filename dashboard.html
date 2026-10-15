@@ -2041,9 +2041,12 @@ let _appInitialized = false;
     const stored = JSON.parse(raw);
     const user = stored?.user;
     if (!user?.id) return;
-    // Valid cached user — launch immediately (async, intentionally not awaited)
+    // Valid cached user — defer to a microtask so all `let`/`const` declarations
+    // in the script finish initializing before launchApp() runs. Without this,
+    // launchApp's synchronous body hits TDZ errors on variables declared later
+    // in the file (e.g. TAX_PROFILE_KEY, reportPeriodFrom, …).
     _appInitialized = true;
-    launchApp(user);
+    Promise.resolve().then(() => launchApp(user));
   } catch(e) { /* fall through to background validation */ }
 })();
 
