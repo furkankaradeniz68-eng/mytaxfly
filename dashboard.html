@@ -2000,13 +2000,32 @@ const { createClient } = supabase;
 const sb = createClient('https://yacwkxstvqvdgiiffwos.supabase.co', 'sb_publishable_JAGI28ms4nmK_dDoS1BLzA_O8locPZk');
 
 // ── STATE ─────────────────────────────────────────────────
-// Declared before the instant-launch IIFE to avoid TDZ errors:
-// _instantLaunch calls launchApp() synchronously (no await on the call site),
-// so launchApp's body runs before let declarations further down would be reached.
+// All let/const declarations that launchApp() or its callees may access must
+// live here — BEFORE the _instantLaunch IIFE. That IIFE calls launchApp()
+// without await, so its body runs synchronously before any later `let`
+// declaration is reached, landing in the Temporal Dead Zone and throwing
+// "Cannot access 'X' before initialization" on page refresh.
 let userName='', llcName='', userEmail='', transactions=[], chatHistory=[];
 let chatSessions=[], currentChatId=null;
 let currentType='expense';
 let uploadType='expense';
+let periodFrom=null, periodTo=null;
+const _ry=new Date().getFullYear();
+let reportPeriodFrom=new Date(_ry,0,1), reportPeriodTo=new Date(_ry,11,31);
+let irsFilingYear = _ry - 1;
+let irsFormType = '5472_1120';
+let irsExtendForm = '1065';
+let mfaFactorId=null, mfaChallengeId=null;
+let advisorMode = false;
+let advisorCurrentClientId = null;
+let isAdvisorUser = false;
+let adminAllUsers = [];
+let _editingTenantId = null;
+let noteDebounceTimers = {};
+let clientAdvisorId = null;
+let notesPollingInterval = null;
+let notesRealtimeChannel = null;
+let clientRealtimeChannel = null;
 
 // ── INSTANT LAUNCH — zero network latency for returning users ─────────────
 // Supabase v2 stores the full session (including user object + metadata) in
@@ -2078,15 +2097,6 @@ function setUploadType(type){
     ? 'Uploading an invoice you sent to a client (income)'
     : 'Uploading a receipt or bill you received (expense)';
 }
-let periodFrom=null, periodTo=null;
-// Reports page has its own independent period filter (defaults to full current year)
-const _ry=new Date().getFullYear();
-let reportPeriodFrom=new Date(_ry,0,1), reportPeriodTo=new Date(_ry,11,31);
-// IRS filing year — always a complete calendar year, defaults to prior year
-let irsFilingYear = _ry - 1;
-// IRS form type selection: '5472_1120' | '1065' | '7004'
-let irsFormType = '5472_1120';
-let irsExtendForm = '1065'; // for 7004 extension
 
 // ── PERIOD FILTER ─────────────────────────────────────────
 function getPeriodRange(val){
@@ -2274,7 +2284,6 @@ function showError(msg){
   el.textContent=msg; el.style.display='block';
 }
 
-let mfaFactorId=null, mfaChallengeId=null;
 
 function switchLoginMode(mode) {
   const clientTab  = document.getElementById('tab-login');
@@ -2535,10 +2544,6 @@ async function addTransaction(r){
 
 // ── LAUNCH APP ────────────────────────────────────────────
 // ── ADVISOR SYSTEM ────────────────────────────────────────────────────────────
-
-let advisorMode = false;          // true when advisor is viewing a client
-let advisorCurrentClientId = null;
-let isAdvisorUser = false;        // true when logged in AS an advisor
 
 async function fetchUserRole() {
   try {
@@ -2876,7 +2881,6 @@ async function launchAdminView(user) {
   await loadAdminData();
 }
 
-let adminAllUsers = [];
 
 async function loadAdminData() {
   try {
@@ -2974,7 +2978,6 @@ function switchAdminTab(tab, el) {
 }
 
 // Tenant modal
-let _editingTenantId = null;
 async function openTenantModal(tenantId) {
   _editingTenantId = tenantId || null;
   document.getElementById('tenant-modal-title').textContent = tenantId ? 'Edit Tenant' : 'New Tenant';
@@ -3132,7 +3135,6 @@ async function updateClientStatus(clientId, newStatus, selectEl) {
   }
 }
 
-let noteDebounceTimers = {};
 function autoResizeNote(el) {
   el.style.height = 'auto';
   el.style.height = el.scrollHeight + 'px';
@@ -3180,7 +3182,6 @@ function filterAdvisorClients(query) {
 }
 
 // ── CLIENT-SIDE ADVISOR CHAT CHECK ───────────────────────────────────────────
-let clientAdvisorId = null;
 
 async function checkClientAdvisorChat(userId) {
   if (isAdvisorUser) return; // advisors never see "My Advisor Chat"
@@ -3214,9 +3215,6 @@ async function checkClientAdvisorChat(userId) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ── CLIENT NOTES (Realtime) ───────────────────────────────────────────────────
-let notesPollingInterval = null;   // fallback only
-let notesRealtimeChannel = null;   // advisor → client channel
-let clientRealtimeChannel = null;  // client → advisor channel
 
 async function loadClientNotes(clientId) {
   const wrap = document.getElementById('notes-messages');
