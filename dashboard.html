@@ -6545,7 +6545,8 @@ function applyTenantConfig(cfg) {
   const advisorTab = document.getElementById('tab-advisor');
   const forceAdvisor = new URLSearchParams(location.search).has('advisor');
   const isMytaxfly = (cfg.tenant_id === 'mytaxfly') || (location.hostname.replace(/^www\./,'') === 'mytaxfly.com');
-  const showAdvisor = !isMytaxfly && (cfg.show_advisor_login || forceAdvisor);
+  // forceAdvisor (?advisor in URL) always wins — even on mytaxfly.com main domain
+  const showAdvisor = forceAdvisor || (!isMytaxfly && cfg.show_advisor_login);
   if (advisorTab) advisorTab.style.display = showAdvisor ? '' : 'none';
   // Feature flags
   if (cfg.show_ai_advisor === false) {
