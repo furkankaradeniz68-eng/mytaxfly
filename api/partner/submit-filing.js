@@ -130,16 +130,25 @@ export default async function handler(req, res) {
   }
 
   // ── Mail to IRS via Lob ───────────────────────────────────────────────────
-  // IRS mailing addresses for paper filings:
-  //   5472+1120 (Foreign-Owned DE): Internal Revenue Service, Ogden, UT 84201-0011
-  //   1065:                         Internal Revenue Service, Ogden, UT 84201-0011
-  // IRS mailing addresses (USPS Certified Mail via Lob)
+  // IRS mailing addresses — verified against IRS instructions (Dec 2024)
+  //
+  // 5472+1120 (Foreign-Owned DE): PIN Unit per Form 5472 Instructions (12/2024).
+  //   Write "Foreign Owned U.S. DE" across top of 1120. Fax alt: 855-887-7737.
+  //   Source: irs.gov/instructions/i5472 — NOT the general 1120 P.O. Box address.
+  //
+  // 1120 (C-Corp, no 5472): Ogden P.O. Box for all corporations.
+  //
+  // 1065 (Partnership): Ogden UT 84201-0011 for international/foreign partnerships.
+  //   Hartford CT address is outdated and no longer valid.
+  //   Source: irs.gov "Where to File Form 1065"
+  //
+  // 7004 (Extension): Same address as the main form being extended.
   const IRS_ADDRESS = {
-    '5472_1120': { name: 'Internal Revenue Service', address_line1: 'P.O. Box 409101', address_city: 'Ogden',    address_state: 'UT', address_zip: '84409' },
-    '1120':      { name: 'Internal Revenue Service', address_line1: 'P.O. Box 409101', address_city: 'Ogden',    address_state: 'UT', address_zip: '84409' },
-    '5472':      { name: 'Internal Revenue Service', address_line1: 'P.O. Box 409101', address_city: 'Ogden',    address_state: 'UT', address_zip: '84409' },
-    '1065':      { name: 'Internal Revenue Service', address_line1: 'P.O. Box 37032',  address_city: 'Hartford', address_state: 'CT', address_zip: '06176' },
-    '7004':      { name: 'Internal Revenue Service', address_line1: 'P.O. Box 409101', address_city: 'Ogden',    address_state: 'UT', address_zip: '84409' },
+    '5472_1120': { name: 'Internal Revenue Service', address_line1: '1973 Rulon White Blvd', address_line2: 'M/S 6112 Attn: PIN Unit', address_city: 'Ogden', address_state: 'UT', address_zip: '84201' },
+    '5472':      { name: 'Internal Revenue Service', address_line1: '1973 Rulon White Blvd', address_line2: 'M/S 6112 Attn: PIN Unit', address_city: 'Ogden', address_state: 'UT', address_zip: '84201' },
+    '1120':      { name: 'Internal Revenue Service', address_line1: 'P.O. Box 409101',        address_city: 'Ogden',    address_state: 'UT', address_zip: '84409' },
+    '1065':      { name: 'Internal Revenue Service', address_line1: 'P.O. Box 409101',        address_city: 'Ogden',    address_state: 'UT', address_zip: '84409' },
+    '7004':      { name: 'Internal Revenue Service', address_line1: 'P.O. Box 409101',        address_city: 'Ogden',    address_state: 'UT', address_zip: '84409' },
   };
 
   let lobResult  = null;
@@ -251,6 +260,7 @@ async function sendMailLob({ pdfBytes, toAddress, fromAddress, description, apiK
   // Recipient (IRS)
   form.append('to[name]',             toAddress.name);
   form.append('to[address_line1]',    toAddress.address_line1);
+  if (toAddress.address_line2) form.append('to[address_line2]', toAddress.address_line2);
   form.append('to[address_city]',     toAddress.address_city);
   form.append('to[address_state]',    toAddress.address_state);
   form.append('to[address_zip]',      toAddress.address_zip);
