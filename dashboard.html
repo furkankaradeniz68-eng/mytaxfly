@@ -1999,6 +1999,15 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
 const { createClient } = supabase;
 const sb = createClient('https://yacwkxstvqvdgiiffwos.supabase.co', 'sb_publishable_JAGI28ms4nmK_dDoS1BLzA_O8locPZk');
 
+// ── STATE ─────────────────────────────────────────────────
+// Declared before the instant-launch IIFE to avoid TDZ errors:
+// _instantLaunch calls launchApp() synchronously (no await on the call site),
+// so launchApp's body runs before let declarations further down would be reached.
+let userName='', llcName='', userEmail='', transactions=[], chatHistory=[];
+let chatSessions=[], currentChatId=null;
+let currentType='expense';
+let uploadType='expense';
+
 // ── INSTANT LAUNCH — zero network latency for returning users ─────────────
 // Supabase v2 stores the full session (including user object + metadata) in
 // localStorage synchronously. We read it immediately — no network call — and
@@ -2058,12 +2067,6 @@ let _appInitialized = false;
   }
 })();
 const ADMIN_EMAILS = ['furkan.karadeniz68@googlemail.com', 'anil@aynauniverse.com', 'info@llc-starten.de', 'solutionthirteenllc@gmail.com', 'sales@taxxit-consulting.com'];
-
-// ── STATE ─────────────────────────────────────────────────
-let userName='', llcName='', userEmail='', transactions=[], chatHistory=[];
-let chatSessions=[], currentChatId=null;
-let currentType='expense';
-let uploadType='expense';
 
 function setUploadType(type){
   uploadType=type;
