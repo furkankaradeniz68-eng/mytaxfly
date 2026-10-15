@@ -33,7 +33,7 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST')   return res.status(405).json({ error: 'Method not allowed' });
 
-  const { pdfBase64, fromName, fromAddress, fromCity, taxYear } = req.body || {};
+  const { pdfBase64, fromName, fromAddress, fromCity, taxYear, formType } = req.body || {};
   if (!pdfBase64 || !fromName || !fromAddress) {
     return res.status(400).json({ error: 'Missing required fields (pdfBase64, fromName, fromAddress)' });
   }
@@ -52,12 +52,24 @@ export default async function handler(req, res) {
   // Build multipart form for Lob Letters API
   const form = new FormData();
 
-  // Recipient — IRS Ogden address for Form 1120 + 5472
-  form.append('to[name]',             'Internal Revenue Service');
-  form.append('to[address_line1]',    'P.O. Box 409101');
-  form.append('to[address_city]',     'Ogden');
-  form.append('to[address_state]',    'UT');
-  form.append('to[address_zip]',      '84409');
+  // IRS mailing addresses — verified against IRS instructions (Dec 2024)
+  // 5472+1120 / 5472 → PIN Unit per Form 5472 Instructions (12/2024).
+  //   Write "Foreign Owned U.S. DE" across top. Fax alt: 855-887-7737.
+  // 1120 standalone / 1065 / 7004 → P.O. Box 409101, Ogden UT 84409.
+  const isDE = !formType || formType === '5472_1120' || formType === '5472';
+  const irsName  = 'Internal Revenue Service';
+  const irsLine1 = isDE ? '1973 Rulon White Blvd' : 'P.O. Box 409101';
+  const irsLine2 = isDE ? 'M/S 6112 Attn: PIN Unit' : null;
+  const irsCity  = 'Ogden';
+  const irsState = 'UT';
+  const irsZip   = isDE ? '84201' : '84409';
+
+  form.append('to[name]',             irsName);
+  form.append('to[address_line1]',    irsLine1);
+  if (irsLine2) form.append('to[address_line2]', irsLine2);
+  form.append('to[address_city]',     irsCity);
+  form.append('to[address_state]',    irsState);
+  form.append('to[address_zip]',      irsZip);
   form.append('to[address_country]',  'US');
 
   // Sender — LLC address from tax profile
@@ -72,6 +84,7 @@ export default async function handler(req, res) {
   form.append('color',         'false');          // black & white is fine for IRS forms
   form.append('double_sided',  'true');
   form.append('extra_service', 'certified');      // USPS Certified Mail with tracking
+  form.append('use_type',      'operational');    // required by Lob; IRS filings = operational
 
   // Attach PDF
   form.append('file', pdfBlob, `FilingPackage_${taxYear || 'current'}.pdf`);
