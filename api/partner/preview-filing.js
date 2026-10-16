@@ -65,7 +65,8 @@ export default async function handler(req, res) {
   if (signErr) return res.status(500).json({ error: 'Failed to generate PDF URL.' });
 
   return res.status(200).json({
-    pdf_url: signedData.signedUrl,
+    pdf_url:    signedData.signedUrl,
+    pdf_base64: Buffer.from(pdfBytes).toString('base64'),
     expires_at: expiresAt,
     form_type,
     tax_year,
