@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MyTaxFly Partner Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0f14;--card:#151820;--card2:#1a1f2e;
+  --accent:#00c896;--accent2:#00a87e;
+  --border:rgba(255,255,255,0.07);
+  --text:#e8eaf0;--text2:#8890a4;--text3:#555e72;
+  --red:#e53e3e;--yellow:#f6ad55;--green:#00c896;
+}
+body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ── Login ── */
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.login-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:40px;width:100%;max-width:420px}
+.login-logo{font-size:22px;font-weight:800;color:var(--accent);margin-bottom:8px}
+.login-sub{font-size:13px;color:var(--text2);margin-bottom:28px}
+.login-card label{font-size:12px;font-weight:700;color:var(--text2);display:block;margin-bottom:6px}
+.login-card input{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:11px 14px;color:var(--text);font-family:inherit;font-size:13px;outline:none}
+.login-card input:focus{border-color:var(--accent)}
+.login-btn{margin-top:16px;width:100%;background:var(--accent);color:#0d0f14;border:none;border-radius:8px;padding:12px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.login-btn:hover{background:var(--accent2)}
+.login-err{margin-top:12px;font-size:12px;color:var(--red);display:none}
+
+/* ── App shell ── */
+#app{display:none}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 28px;border-bottom:1px solid var(--border);background:var(--card)}
+.topbar-logo{font-size:16px;font-weight:800;color:var(--accent)}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.topbar-pid{font-size:11px;color:var(--text3);font-family:monospace}
+.logout-btn{background:transparent;border:1px solid var(--border);color:var(--text2);border-radius:6px;padding:6px 12px;font-family:inherit;font-size:12px;cursor:pointer}
+.logout-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+.tabs{display:flex;gap:4px;padding:16px 28px 0;border-bottom:1px solid var(--border)}
+.tab{background:transparent;border:none;color:var(--text2);font-family:inherit;font-size:13px;font-weight:600;padding:10px 18px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab:hover:not(.active){color:var(--text)}
+
+.content{padding:28px;max-width:1100px}
+
+/* ── Stats ── */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:28px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 20px}
+.stat-label{font-size:11px;color:var(--text2);font-weight:700;margin-bottom:6px}
+.stat-value{font-size:28px;font-weight:800;color:var(--text)}
+.stat-value.green{color:var(--green)}
+.stat-value.yellow{color:var(--yellow)}
+.stat-value.red{color:var(--red)}
+
+/* ── Table ── */
+.section-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:14px}
+.table-wrap{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead th{padding:11px 16px;text-align:left;font-size:11px;font-weight:700;color:var(--text2);border-bottom:1px solid var(--border);white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--border)}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--card2)}
+tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
+.mono{font-family:monospace;font-size:11px;color:var(--text2)}
+.empty-row td{text-align:center;color:var(--text3);padding:28px}
+
+/* ── Status badge ── */
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.badge.faxed,.badge.mailed{background:rgba(0,200,150,0.12);color:var(--green)}
+.badge.submitted{background:rgba(246,173,85,0.12);color:var(--yellow)}
+.badge.failed,.badge.error{background:rgba(229,62,62,0.12);color:var(--red)}
+.badge.pending{background:rgba(136,144,164,0.12);color:var(--text2)}
+
+.badge-ok{background:rgba(0,200,150,0.12);color:var(--green)}
+.badge-fail{background:rgba(229,62,62,0.12);color:var(--red)}
+
+/* ── Settings ── */
+.settings-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;max-width:520px;margin-bottom:20px}
+.settings-card h3{font-size:13px;font-weight:700;margin-bottom:4px}
+.settings-card p{font-size:12px;color:var(--text2);margin-bottom:16px}
+.settings-card label{font-size:11px;font-weight:700;color:var(--text2);display:block;margin-bottom:6px}
+.settings-card input{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:inherit;font-size:13px;outline:none}
+.settings-card input:focus{border-color:var(--accent)}
+.save-btn{margin-top:12px;background:var(--accent);color:#0d0f14;border:none;border-radius:8px;padding:10px 20px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.save-btn:hover{background:var(--accent2)}
+.save-msg{margin-top:8px;font-size:12px;color:var(--accent);display:none}
+
+.apikey-box{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 13px;font-family:monospace;font-size:12px;color:var(--text2);word-break:break-all;user-select:all}
+
+/* ── Loading ── */
+.loading{color:var(--text3);font-size:13px;padding:20px 0}
+</style>
+</head>
+<body>
+
+<!-- Login -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">MyTaxFly</div>
+    <div class="login-sub">Partner Dashboard</div>
+    <label>API Key</label>
+    <input type="password" id="api-key-input" placeholder="mtf_live_..." autocomplete="off">
+    <button class="login-btn" onclick="login()">Sign In</button>
+    <div class="login-err" id="login-err">Invalid or inactive API key.</div>
+  </div>
+</div>
+
+<!-- App -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-logo">MyTaxFly Partner</div>
+    <div class="topbar-right">
+      <span class="topbar-pid" id="topbar-pid"></span>
+      <button class="logout-btn" onclick="logout()">Sign Out</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('overview')">Overview</button>
+    <button class="tab" onclick="showTab('filings')">Filings</button>
+    <button class="tab" onclick="showTab('webhooks')">Webhooks</button>
+    <button class="tab" onclick="showTab('settings')">Settings</button>
+  </div>
+
+  <!-- Overview -->
+  <div class="content" id="tab-overview">
+    <div class="stats" id="stats-row">
+      <div class="stat-card"><div class="stat-label">Total Filings</div><div class="stat-value" id="s-total">—</div></div>
+      <div class="stat-card"><div class="stat-label">Mailed to IRS</div><div class="stat-value green" id="s-mailed">—</div></div>
+      <div class="stat-card"><div class="stat-label">Pending</div><div class="stat-value yellow" id="s-pending">—</div></div>
+      <div class="stat-card"><div class="stat-label">Failed</div><div class="stat-value red" id="s-failed">—</div></div>
+    </div>
+    <div class="section-title">Recent Filings</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>LLC Name</th><th>EIN</th><th>Form</th><th>Tax Year</th><th>Status</th><th>Submitted</th>
+        </tr></thead>
+        <tbody id="overview-tbody"><tr class="empty-row"><td colspan="6">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Filings -->
+  <div class="content" id="tab-filings" style="display:none">
+    <div class="section-title">All Filings</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>LLC Name</th><th>EIN</th><th>External ID</th><th>Form</th><th>Year</th><th>Signer</th><th>Status</th><th>Letter ID</th><th>Date</th>
+        </tr></thead>
+        <tbody id="filings-tbody"><tr class="empty-row"><td colspan="9">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Webhooks -->
+  <div class="content" id="tab-webhooks" style="display:none">
+    <div class="section-title">Webhook Delivery Log</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Event</th><th>Status</th><th>HTTP</th><th>Response</th><th>Timestamp</th>
+        </tr></thead>
+        <tbody id="webhooks-tbody"><tr class="empty-row"><td colspan="5">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Settings -->
+  <div class="content" id="tab-settings" style="display:none">
+    <div class="settings-card">
+      <h3>API Key</h3>
+      <p>Use this key in the <code>X-API-Key</code> header for all API requests.</p>
+      <div class="apikey-box" id="settings-apikey">—</div>
+    </div>
+    <div class="settings-card">
+      <h3>Webhook URL</h3>
+      <p>We'll POST a JSON payload to this URL on every status change (filing.submitted, filing.mailed, filing.failed).</p>
+      <label>Endpoint URL</label>
+      <input type="url" id="webhook-url-input" placeholder="https://your-system.com/webhook">
+      <button class="save-btn" onclick="saveWebhookUrl()">Save</button>
+      <div class="save-msg" id="save-msg">Saved.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+let API_KEY = localStorage.getItem('mtf_partner_key') || '';
+const BASE = '/api/partner';
+
+async function apiFetch(path, opts = {}) {
+  const res = await fetch(BASE + path, {
+    ...opts,
+    headers: { 'X-API-Key': API_KEY, 'Content-Type': 'application/json', ...(opts.headers || {}) },
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error || res.statusText);
+  return json;
+}
+
+async function login() {
+  const key = document.getElementById('api-key-input').value.trim();
+  if (!key) return;
+  API_KEY = key;
+  try {
+    const s = await apiFetch('/settings');
+    localStorage.setItem('mtf_partner_key', key);
+    document.getElementById('topbar-pid').textContent = s.partner_id;
+    document.getElementById('settings-apikey').textContent = key;
+    document.getElementById('webhook-url-input').value = s.webhook_url || '';
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    loadAll();
+  } catch {
+    document.getElementById('login-err').style.display = 'block';
+  }
+}
+
+function logout() {
+  localStorage.removeItem('mtf_partner_key');
+  API_KEY = '';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('api-key-input').value = '';
+}
+
+async function loadAll() {
+  await Promise.all([loadFilings(), loadWebhooks()]);
+}
+
+async function loadFilings() {
+  try {
+    const { filings } = await apiFetch('/filings');
+    renderStats(filings);
+    renderOverview(filings.slice(0, 10));
+    renderFilings(filings);
+  } catch (e) {
+    document.getElementById('overview-tbody').innerHTML = `<tr class="empty-row"><td colspan="6">${e.message}</td></tr>`;
+    document.getElementById('filings-tbody').innerHTML  = `<tr class="empty-row"><td colspan="9">${e.message}</td></tr>`;
+  }
+}
+
+async function loadWebhooks() {
+  try {
+    const { deliveries } = await apiFetch('/webhook-logs');
+    renderWebhooks(deliveries);
+  } catch (e) {
+    document.getElementById('webhooks-tbody').innerHTML = `<tr class="empty-row"><td colspan="5">${e.message}</td></tr>`;
+  }
+}
+
+function renderStats(filings) {
+  document.getElementById('s-total').textContent  = filings.length;
+  document.getElementById('s-mailed').textContent = filings.filter(f => f.status === 'faxed' || f.status === 'mailed').length;
+  document.getElementById('s-pending').textContent= filings.filter(f => f.status === 'submitted' || f.status === 'pending').length;
+  document.getElementById('s-failed').textContent = filings.filter(f => f.status === 'failed' || f.status === 'error').length;
+}
+
+function statusBadge(s) {
+  return `<span class="badge ${s}">${s}</span>`;
+}
+
+function fmtDate(d) {
+  return d ? new Date(d).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' }) : '—';
+}
+
+function renderOverview(filings) {
+  const tb = document.getElementById('overview-tbody');
+  if (!filings.length) { tb.innerHTML = '<tr class="empty-row"><td colspan="6">No filings yet.</td></tr>'; return; }
+  tb.innerHTML = filings.map(f => `<tr>
+    <td>${f.company_name || '—'}</td>
+    <td class="mono">${f.company_ein || '—'}</td>
+    <td><span class="badge pending">${f.form_type}</span></td>
+    <td>${f.tax_year}</td>
+    <td>${statusBadge(f.status)}</td>
+    <td class="mono">${fmtDate(f.created_at)}</td>
+  </tr>`).join('');
+}
+
+function renderFilings(filings) {
+  const tb = document.getElementById('filings-tbody');
+  if (!filings.length) { tb.innerHTML = '<tr class="empty-row"><td colspan="9">No filings yet.</td></tr>'; return; }
+  tb.innerHTML = filings.map(f => `<tr>
+    <td>${f.company_name || '—'}</td>
+    <td class="mono">${f.company_ein || '—'}</td>
+    <td class="mono">${f.external_id}</td>
+    <td>${f.form_type}</td>
+    <td>${f.tax_year}</td>
+    <td>${f.signer_name || '—'}</td>
+    <td>${statusBadge(f.status)}</td>
+    <td class="mono">${f.fax_id || '—'}</td>
+    <td class="mono">${fmtDate(f.created_at)}</td>
+  </tr>`).join('');
+}
+
+function renderWebhooks(deliveries) {
+  const tb = document.getElementById('webhooks-tbody');
+  if (!deliveries.length) { tb.innerHTML = '<tr class="empty-row"><td colspan="5">No webhook deliveries yet.</td></tr>'; return; }
+  tb.innerHTML = deliveries.map(d => `<tr>
+    <td>${d.event}</td>
+    <td><span class="badge ${d.success ? 'badge-ok faxed' : 'badge-fail failed'}">${d.success ? 'OK' : 'Failed'}</span></td>
+    <td class="mono">${d.status_code ?? '—'}</td>
+    <td class="mono" style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.response_body || '—'}</td>
+    <td class="mono">${fmtDate(d.created_at)}</td>
+  </tr>`).join('');
+}
+
+async function saveWebhookUrl() {
+  const url = document.getElementById('webhook-url-input').value.trim();
+  try {
+    await apiFetch('/settings', { method: 'PATCH', body: JSON.stringify({ webhook_url: url || null }) });
+    const msg = document.getElementById('save-msg');
+    msg.style.display = 'block';
+    setTimeout(() => msg.style.display = 'none', 3000);
+  } catch (e) { alert(e.message); }
+}
+
+function showTab(name) {
+  ['overview','filings','webhooks','settings'].forEach(t => {
+    document.getElementById('tab-' + t).style.display = t === name ? 'block' : 'none';
+    document.querySelectorAll('.tab').forEach((el, i) => {
+      el.classList.toggle('active', ['overview','filings','webhooks','settings'][i] === name);
+    });
+  });
+}
+
+// Auto-login if key stored
+if (API_KEY) {
+  document.getElementById('api-key-input').value = API_KEY;
+  login();
+}
+
+document.getElementById('api-key-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') login();
+});
+</script>
+</body>
+</html>
