@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -136,8 +136,8 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
     <div class="login-sub">Partner Dashboard</div>
     <label>API Key</label>
     <input type="password" id="api-key-input" placeholder="mtf_live_..." autocomplete="off">
-    <button class="login-btn" onclick="login()">Sign In</button>
-    <div class="login-err" id="login-err">Invalid or inactive API key.</div>
+    <button class="login-btn" onclick="login()">Anmelden</button>
+    <div class="login-err" id="login-err">Ungültiger oder inaktiver API Key.</div>
   </div>
 </div>
 
@@ -147,59 +147,59 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
     <div class="topbar-logo">MyTaxFly Partner</div>
     <div class="topbar-right">
       <span class="topbar-pid" id="topbar-pid"></span>
-      <button class="logout-btn" onclick="logout()">Sign Out</button>
+      <button class="logout-btn" onclick="logout()">Abmelden</button>
     </div>
   </div>
 
   <div class="tabs">
-    <button class="tab active" onclick="showTab('overview')">Overview</button>
-    <button class="tab" onclick="showTab('filings')">Filings</button>
+    <button class="tab active" onclick="showTab('overview')">Übersicht</button>
+    <button class="tab" onclick="showTab('filings')">Einreichungen</button>
     <button class="tab" onclick="showTab('webhooks')">Webhooks</button>
-    <button class="tab" onclick="showTab('settings')">Settings</button>
+    <button class="tab" onclick="showTab('settings')">Einstellungen</button>
     <button class="tab" onclick="showTab('docs')">API Docs</button>
   </div>
 
   <!-- Overview -->
   <div class="content" id="tab-overview">
     <div class="stats" id="stats-row">
-      <div class="stat-card"><div class="stat-label">Total Filings</div><div class="stat-value" id="s-total">—</div></div>
-      <div class="stat-card"><div class="stat-label">Mailed to IRS</div><div class="stat-value green" id="s-mailed">—</div></div>
-      <div class="stat-card"><div class="stat-label">Pending</div><div class="stat-value yellow" id="s-pending">—</div></div>
-      <div class="stat-card"><div class="stat-label">Failed</div><div class="stat-value red" id="s-failed">—</div></div>
+      <div class="stat-card"><div class="stat-label">Einreichungen gesamt</div><div class="stat-value" id="s-total">—</div></div>
+      <div class="stat-card"><div class="stat-label">An IRS versendet</div><div class="stat-value green" id="s-mailed">—</div></div>
+      <div class="stat-card"><div class="stat-label">Ausstehend</div><div class="stat-value yellow" id="s-pending">—</div></div>
+      <div class="stat-card"><div class="stat-label">Fehlgeschlagen</div><div class="stat-value red" id="s-failed">—</div></div>
     </div>
-    <div class="section-title">Recent Filings</div>
+    <div class="section-title">Letzte Einreichungen</div>
     <div class="table-wrap">
       <table>
         <thead><tr>
-          <th>LLC Name</th><th>EIN</th><th>Form</th><th>Tax Year</th><th>Status</th><th>Submitted</th>
+          <th>LLC Name</th><th>EIN</th><th>Formular</th><th>Steuerjahr</th><th>Status</th><th>Eingereicht</th>
         </tr></thead>
-        <tbody id="overview-tbody"><tr class="empty-row"><td colspan="6">Loading…</td></tr></tbody>
+        <tbody id="overview-tbody"><tr class="empty-row"><td colspan="6">Wird geladen…</td></tr></tbody>
       </table>
     </div>
   </div>
 
   <!-- Filings -->
   <div class="content" id="tab-filings" style="display:none">
-    <div class="section-title">All Filings</div>
+    <div class="section-title">Alle Einreichungen</div>
     <div class="table-wrap">
       <table>
         <thead><tr>
-          <th>LLC Name</th><th>EIN</th><th>External ID</th><th>Form</th><th>Year</th><th>Signer</th><th>Status</th><th>Letter ID</th><th>Date</th>
+          <th>LLC Name</th><th>EIN</th><th>External ID</th><th>Formular</th><th>Jahr</th><th>Unterzeichner</th><th>Status</th><th>Brief-ID</th><th>Datum</th>
         </tr></thead>
-        <tbody id="filings-tbody"><tr class="empty-row"><td colspan="9">Loading…</td></tr></tbody>
+        <tbody id="filings-tbody"><tr class="empty-row"><td colspan="9">Wird geladen…</td></tr></tbody>
       </table>
     </div>
   </div>
 
   <!-- Webhooks -->
   <div class="content" id="tab-webhooks" style="display:none">
-    <div class="section-title">Webhook Delivery Log</div>
+    <div class="section-title">Webhook Zustellungs-Log</div>
     <div class="table-wrap">
       <table>
         <thead><tr>
-          <th>Event</th><th>Status</th><th>HTTP</th><th>Response</th><th>Timestamp</th>
+          <th>Event</th><th>Status</th><th>HTTP</th><th>Antwort</th><th>Zeitstempel</th>
         </tr></thead>
-        <tbody id="webhooks-tbody"><tr class="empty-row"><td colspan="5">Loading…</td></tr></tbody>
+        <tbody id="webhooks-tbody"><tr class="empty-row"><td colspan="5">Wird geladen…</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -208,66 +208,66 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
   <div class="content" id="tab-docs" style="display:none;max-width:1000px">
     <div class="docs-layout">
       <nav class="docs-nav">
-        <div class="nav-group">Getting Started</div>
-        <a href="#auth" onclick="scrollDoc('auth')">Authentication</a>
-        <a href="#flow" onclick="scrollDoc('flow')">Typical Flow</a>
-        <div class="nav-group">Endpoints</div>
-        <a href="#preview" onclick="scrollDoc('preview')">Preview Filing</a>
-        <a href="#submit" onclick="scrollDoc('submit')">Submit Filing</a>
-        <a href="#status" onclick="scrollDoc('status')">Filing Status</a>
-        <a href="#filings" onclick="scrollDoc('filings')">List Filings</a>
-        <a href="#settings-ep" onclick="scrollDoc('settings-ep')">Settings</a>
-        <div class="nav-group">Reference</div>
+        <div class="nav-group">Einstieg</div>
+        <a href="#auth" onclick="scrollDoc('auth')">Authentifizierung</a>
+        <a href="#flow" onclick="scrollDoc('flow')">Ablauf</a>
+        <div class="nav-group">Endpunkte</div>
+        <a href="#preview" onclick="scrollDoc('preview')">Vorschau</a>
+        <a href="#submit" onclick="scrollDoc('submit')">Einreichen</a>
+        <a href="#status" onclick="scrollDoc('status')">Status abfragen</a>
+        <a href="#filings" onclick="scrollDoc('filings')">Alle Einreichungen</a>
+        <a href="#settings-ep" onclick="scrollDoc('settings-ep')">Einstellungen</a>
+        <div class="nav-group">Referenz</div>
         <a href="#webhook-ref" onclick="scrollDoc('webhook-ref')">Webhooks</a>
-        <a href="#form-types" onclick="scrollDoc('form-types')">Form Types</a>
-        <a href="#statuses" onclick="scrollDoc('statuses')">Statuses</a>
+        <a href="#form-types" onclick="scrollDoc('form-types')">Formular-Typen</a>
+        <a href="#statuses" onclick="scrollDoc('statuses')">Status-Werte</a>
       </nav>
 
       <div id="docs-main">
 
         <!-- Auth -->
         <div class="doc-section" id="doc-auth">
-          <h2>Authentication</h2>
-          <p>All requests require your API key in the <code>X-API-Key</code> header.</p>
+          <h2>Authentifizierung</h2>
+          <p>Alle Anfragen erfordern deinen API Key im <code>X-API-Key</code> Header.</p>
           <div class="code-block"><span class="key">X-API-Key</span>: mtf_live_xxxxxxxxxxxxxxxx</div>
-          <p>The system is currently running in <strong>test mode</strong> — letters are created but not physically mailed. No action needed on your side.</p>
+          <p>Das System läuft aktuell im <strong>Testmodus</strong> — Briefe werden erstellt, aber nicht physisch versendet. Kein Handlungsbedarf auf deiner Seite.</p>
         </div>
 
         <!-- Flow -->
         <div class="doc-section" id="doc-flow">
-          <h2>Typical Flow</h2>
-          <p>The recommended flow for submitting a signed filing:</p>
+          <h2>Ablauf</h2>
+          <p>Empfohlener Ablauf für eine unterschriebene Einreichung:</p>
           <ul>
-            <li><strong>1.</strong> Call <code>POST /preview-filing</code> with form data → receive <code>pdf_base64</code></li>
-            <li><strong>2.</strong> Show PDF to client for review and signature</li>
-            <li><strong>3.</strong> Call <code>POST /submit-filing</code> with <code>signed_pdf_base64</code> → letter mailed to IRS</li>
-            <li><strong>4.</strong> Receive status update via Webhook (if configured)</li>
+            <li><strong>1.</strong> <code>POST /preview-filing</code> mit Formulardaten aufrufen → <code>pdf_base64</code> erhalten</li>
+            <li><strong>2.</strong> PDF dem Kunden zur Prüfung und Unterschrift zeigen</li>
+            <li><strong>3.</strong> <code>POST /submit-filing</code> mit <code>signed_pdf_base64</code> aufrufen → Brief geht ans IRS</li>
+            <li><strong>4.</strong> Statusänderung per Webhook empfangen (wenn konfiguriert)</li>
           </ul>
         </div>
 
         <!-- Preview -->
         <div class="doc-section" id="doc-preview">
-          <h2>Preview Filing</h2>
+          <h2>Vorschau generieren</h2>
           <div class="endpoint"><span class="method post">POST</span><span class="endpoint-path">/api/partner/preview-filing</span></div>
-          <p>Generates the tax form as a PDF and returns it as Base64. Use this to show the client a preview before signing.</p>
+          <p>Generiert das Steuerformular als PDF und gibt es als Base64 zurück. Damit kannst du dem Kunden eine Vorschau zum Unterschreiben zeigen.</p>
           <h3>Request Body</h3>
           <table class="field-table">
-            <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+            <thead><tr><th>Feld</th><th>Typ</th><th>Beschreibung</th></tr></thead>
             <tbody>
-              <tr><td>external_id</td><td class="req">required</td><td>Your own ID for this client/filing</td></tr>
-              <tr><td>form_type</td><td class="req">required</td><td>See Form Types below</td></tr>
-              <tr><td>tax_year</td><td class="req">required</td><td>Number, e.g. <code>2024</code></td></tr>
-              <tr><td>company.name</td><td class="req">required</td><td>LLC name</td></tr>
-              <tr><td>company.ein</td><td class="req">required</td><td>EIN, e.g. <code>"12-3456789"</code></td></tr>
-              <tr><td>company.address.city</td><td class="req">required</td><td>Registered city</td></tr>
-              <tr><td>company.address.state</td><td class="req">required</td><td>2-letter state, e.g. <code>"DE"</code></td></tr>
-              <tr><td>company.address.street</td><td class="opt">optional</td><td>Street address</td></tr>
-              <tr><td>company.address.zip</td><td class="opt">optional</td><td>ZIP code</td></tr>
-              <tr><td>foreign_owner</td><td class="opt">required for 5472_1120</td><td>Object with <code>name</code>, <code>country</code></td></tr>
-              <tr><td>transactions</td><td class="opt">optional</td><td>Array of transaction objects for Form 5472</td></tr>
-              <tr><td>partners</td><td class="opt">required for 1065</td><td>Array of partner objects</td></tr>
-              <tr><td>financials</td><td class="opt">optional</td><td>Financial data object</td></tr>
-              <tr><td>extend_form</td><td class="opt">optional</td><td>For 7004: form being extended, default <code>"1120"</code></td></tr>
+              <tr><td>external_id</td><td class="req">erforderlich</td><td>Deine eigene ID für diesen Kunden/Einreichung</td></tr>
+              <tr><td>form_type</td><td class="req">erforderlich</td><td>Siehe Formular-Typen unten</td></tr>
+              <tr><td>tax_year</td><td class="req">erforderlich</td><td>Zahl, z.B. <code>2024</code></td></tr>
+              <tr><td>company.name</td><td class="req">erforderlich</td><td>Name der LLC</td></tr>
+              <tr><td>company.ein</td><td class="req">erforderlich</td><td>EIN, z.B. <code>"12-3456789"</code></td></tr>
+              <tr><td>company.address.city</td><td class="req">erforderlich</td><td>Registrierte Stadt</td></tr>
+              <tr><td>company.address.state</td><td class="req">erforderlich</td><td>2-Buchstaben-Staat, z.B. <code>"DE"</code></td></tr>
+              <tr><td>company.address.street</td><td class="opt">optional</td><td>Straße</td></tr>
+              <tr><td>company.address.zip</td><td class="opt">optional</td><td>Postleitzahl</td></tr>
+              <tr><td>foreign_owner</td><td class="opt">erforderlich für 5472_1120</td><td>Objekt mit <code>name</code>, <code>country</code></td></tr>
+              <tr><td>transactions</td><td class="opt">optional</td><td>Array von Transaktionen für Form 5472</td></tr>
+              <tr><td>partners</td><td class="opt">erforderlich für 1065</td><td>Array von Partner-Objekten</td></tr>
+              <tr><td>financials</td><td class="opt">optional</td><td>Finanzdaten-Objekt</td></tr>
+              <tr><td>extend_form</td><td class="opt">optional</td><td>Für 7004: Formular das verlängert wird, Standard <code>"1120"</code></td></tr>
             </tbody>
           </table>
           <h3>Response</h3>
@@ -282,50 +282,50 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
 
         <!-- Submit -->
         <div class="doc-section" id="doc-submit">
-          <h2>Submit Filing</h2>
+          <h2>Einreichung absenden</h2>
           <div class="endpoint"><span class="method post">POST</span><span class="endpoint-path">/api/partner/submit-filing</span></div>
-          <p>Submits the filing to the IRS via physical mail. Two modes:</p>
+          <p>Reicht das Formular per physischem Brief beim IRS ein. Zwei Modi:</p>
           <ul>
-            <li><strong>With <code>signed_pdf_base64</code>:</strong> Upload the signed PDF directly — generation is skipped</li>
-            <li><strong>Without <code>signed_pdf_base64</code>:</strong> We generate the PDF and embed an e-signature block</li>
+            <li><strong>Mit <code>signed_pdf_base64</code>:</strong> Unterschriebenes PDF direkt hochladen — Generierung wird übersprungen</li>
+            <li><strong>Ohne <code>signed_pdf_base64</code>:</strong> Wir generieren das PDF und fügen einen E-Signatur-Block ein</li>
           </ul>
           <h3>Request Body</h3>
           <table class="field-table">
-            <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+            <thead><tr><th>Feld</th><th>Typ</th><th>Beschreibung</th></tr></thead>
             <tbody>
-              <tr><td>external_id</td><td class="req">required</td><td>Must match the <code>preview-filing</code> call</td></tr>
-              <tr><td>form_type</td><td class="req">required</td><td>See Form Types below</td></tr>
-              <tr><td>tax_year</td><td class="req">required</td><td>Number</td></tr>
-              <tr><td>company</td><td class="req">required</td><td>Same as preview-filing</td></tr>
-              <tr><td>signer_name</td><td class="req">required</td><td>Full name of the signer</td></tr>
-              <tr><td>signer_title</td><td class="req">required</td><td>Title, e.g. <code>"Managing Member"</code></td></tr>
-              <tr><td>signed_pdf_base64</td><td class="opt">optional</td><td>Pre-signed PDF as Base64 — skips generation</td></tr>
-              <tr><td>ip_address</td><td class="opt">optional</td><td>Client IP for e-signature record</td></tr>
-              <tr><td>foreign_owner</td><td class="opt">required for 5472_1120</td><td>Same as preview-filing</td></tr>
-              <tr><td>transactions</td><td class="opt">optional</td><td>Same as preview-filing</td></tr>
-              <tr><td>partners</td><td class="opt">required for 1065</td><td>Same as preview-filing</td></tr>
+              <tr><td>external_id</td><td class="req">erforderlich</td><td>Muss mit dem <code>preview-filing</code> Aufruf übereinstimmen</td></tr>
+              <tr><td>form_type</td><td class="req">erforderlich</td><td>Siehe Formular-Typen unten</td></tr>
+              <tr><td>tax_year</td><td class="req">erforderlich</td><td>Zahl</td></tr>
+              <tr><td>company</td><td class="req">erforderlich</td><td>Wie bei preview-filing</td></tr>
+              <tr><td>signer_name</td><td class="req">erforderlich</td><td>Vollständiger Name des Unterzeichners</td></tr>
+              <tr><td>signer_title</td><td class="req">erforderlich</td><td>Titel, z.B. <code>"Managing Member"</code></td></tr>
+              <tr><td>signed_pdf_base64</td><td class="opt">optional</td><td>Unterschriebenes PDF als Base64 — überspringt die Generierung</td></tr>
+              <tr><td>ip_address</td><td class="opt">optional</td><td>IP-Adresse des Kunden für E-Signatur-Nachweis</td></tr>
+              <tr><td>foreign_owner</td><td class="opt">erforderlich für 5472_1120</td><td>Wie bei preview-filing</td></tr>
+              <tr><td>transactions</td><td class="opt">optional</td><td>Wie bei preview-filing</td></tr>
+              <tr><td>partners</td><td class="opt">erforderlich für 1065</td><td>Wie bei preview-filing</td></tr>
             </tbody>
           </table>
           <h3>Response</h3>
           <div class="code-block">{
   <span class="key">"filing_id"</span>:         <span class="str">"uuid..."</span>,
-  <span class="key">"status"</span>:            <span class="str">"faxed"</span>,           <span class="comment">// or "submitted"</span>
-  <span class="key">"letter_id"</span>:         <span class="str">"ltr_..."</span>,         <span class="comment">// mail provider ID</span>
-  <span class="key">"tracking_number"</span>:   <span class="str">"9400..."</span>,         <span class="comment">// USPS tracking</span>
+  <span class="key">"status"</span>:            <span class="str">"faxed"</span>,           <span class="comment">// oder "submitted"</span>
+  <span class="key">"letter_id"</span>:         <span class="str">"ltr_..."</span>,         <span class="comment">// Brief-ID</span>
+  <span class="key">"tracking_number"</span>:   <span class="str">"9400..."</span>,         <span class="comment">// USPS Tracking</span>
   <span class="key">"expected_delivery"</span>: <span class="str">"2024-04-05"</span>,
-  <span class="key">"pdf_url"</span>:           <span class="str">"https://..."</span>,      <span class="comment">// signed URL, 7 days</span>
+  <span class="key">"pdf_url"</span>:           <span class="str">"https://..."</span>,      <span class="comment">// gültig 7 Tage</span>
   <span class="key">"external_id"</span>:       <span class="str">"client_001"</span>,
   <span class="key">"form_type"</span>:         <span class="str">"5472_1120"</span>,
   <span class="key">"tax_year"</span>:          <span class="num">2024</span>
 }</div>
-          <p>Duplicate submissions (same <code>external_id</code> + <code>form_type</code> + <code>tax_year</code>) are rejected with HTTP 409.</p>
+          <p>Doppelte Einreichungen (gleiche <code>external_id</code> + <code>form_type</code> + <code>tax_year</code>) werden mit HTTP 409 abgelehnt.</p>
         </div>
 
         <!-- Status -->
         <div class="doc-section" id="doc-status">
-          <h2>Filing Status</h2>
+          <h2>Status abfragen</h2>
           <div class="endpoint"><span class="method get">GET</span><span class="endpoint-path">/api/partner/filing-status?filing_id=uuid</span></div>
-          <p>Returns the current status of a single filing.</p>
+          <p>Gibt den aktuellen Status einer einzelnen Einreichung zurück.</p>
           <div class="code-block">{
   <span class="key">"filing_id"</span>:  <span class="str">"uuid..."</span>,
   <span class="key">"status"</span>:     <span class="str">"faxed"</span>,
@@ -336,9 +336,9 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
 
         <!-- Filings list -->
         <div class="doc-section" id="doc-filings">
-          <h2>List Filings</h2>
+          <h2>Alle Einreichungen</h2>
           <div class="endpoint"><span class="method get">GET</span><span class="endpoint-path">/api/partner/filings</span></div>
-          <p>Returns all filings for your partner account, newest first (max 200).</p>
+          <p>Gibt alle Einreichungen deines Partner-Accounts zurück, neueste zuerst (max. 200).</p>
           <div class="code-block">{
   <span class="key">"filings"</span>: [
     {
@@ -357,27 +357,27 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
 
         <!-- Settings endpoint -->
         <div class="doc-section" id="doc-settings-ep">
-          <h2>Settings</h2>
+          <h2>Einstellungen</h2>
           <div class="endpoint"><span class="method get">GET</span><span class="endpoint-path">/api/partner/settings</span></div>
-          <p>Returns your partner ID and current webhook URL.</p>
+          <p>Gibt deine Partner-ID und aktuelle Webhook-URL zurück.</p>
           <div class="endpoint" style="margin-top:14px"><span class="method patch">PATCH</span><span class="endpoint-path">/api/partner/settings</span></div>
-          <p>Update your webhook URL.</p>
+          <p>Webhook-URL aktualisieren.</p>
           <div class="code-block"><span class="comment">// Request body</span>
-{ <span class="key">"webhook_url"</span>: <span class="str">"https://your-system.com/webhook"</span> }
+{ <span class="key">"webhook_url"</span>: <span class="str">"https://dein-system.com/webhook"</span> }
 
-<span class="comment">// Set to null to remove</span>
+<span class="comment">// Auf null setzen zum Entfernen</span>
 { <span class="key">"webhook_url"</span>: <span class="bool">null</span> }</div>
         </div>
 
         <!-- Webhooks -->
         <div class="doc-section" id="doc-webhook-ref">
           <h2>Webhooks</h2>
-          <p>Configure a webhook URL in Settings. We send a <code>POST</code> request with <code>Content-Type: application/json</code> and the header <code>X-MyTaxFly-Event</code> on every status change.</p>
+          <p>Webhook-URL in den Einstellungen hinterlegen. Wir senden bei jeder Statusänderung einen <code>POST</code> mit <code>Content-Type: application/json</code> und dem Header <code>X-MyTaxFly-Event</code>.</p>
           <h3>Events</h3>
           <ul>
-            <li><code>filing.submitted</code> — filing created, mail pending</li>
-            <li><code>filing.mailed</code> — letter sent via USPS Certified Mail</li>
-            <li><code>filing.failed</code> — an error occurred</li>
+            <li><code>filing.submitted</code> — Einreichung erstellt, Brief ausstehend</li>
+            <li><code>filing.mailed</code> — Brief per USPS Certified Mail versendet</li>
+            <li><code>filing.failed</code> — Ein Fehler ist aufgetreten</li>
           </ul>
           <h3>Payload</h3>
           <div class="code-block">{
@@ -391,35 +391,35 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
   <span class="key">"tracking_number"</span>: <span class="str">"9400..."</span>,
   <span class="key">"timestamp"</span>:      <span class="str">"2024-03-15T10:05:00Z"</span>
 }</div>
-          <p>Your endpoint must return HTTP 2xx within 10 seconds. Failed deliveries are logged in the Webhooks tab.</p>
+          <p>Dein Endpunkt muss innerhalb von 10 Sekunden HTTP 2xx zurückgeben. Fehlgeschlagene Zustellungen werden im Webhooks-Tab protokolliert.</p>
         </div>
 
         <!-- Form types -->
         <div class="doc-section" id="doc-form-types">
-          <h2>Form Types</h2>
+          <h2>Formular-Typen</h2>
           <table class="field-table">
-            <thead><tr><th>form_type</th><th>Description</th></tr></thead>
+            <thead><tr><th>form_type</th><th>Beschreibung</th></tr></thead>
             <tbody>
-              <tr><td>5472_1120</td><td>Form 5472 + Form 1120 — foreign-owned single-member LLC (most common)</td></tr>
-              <tr><td>1065</td><td>Form 1065 — partnership return</td></tr>
-              <tr><td>1120</td><td>Form 1120 — C-Corporation return</td></tr>
-              <tr><td>5472</td><td>Form 5472 standalone</td></tr>
-              <tr><td>7004</td><td>Form 7004 — automatic extension request</td></tr>
+              <tr><td>5472_1120</td><td>Form 5472 + Form 1120 — foreign-owned single-member LLC (häufigster Fall)</td></tr>
+              <tr><td>1065</td><td>Form 1065 — Partnership Return</td></tr>
+              <tr><td>1120</td><td>Form 1120 — C-Corporation Return</td></tr>
+              <tr><td>5472</td><td>Form 5472 einzeln</td></tr>
+              <tr><td>7004</td><td>Form 7004 — Fristverlängerungsantrag</td></tr>
             </tbody>
           </table>
-          <p>All filings are mailed to the IRS via USPS Certified Mail. LLCs are assumed to have no US principal office (P.O. Box 409101, Ogden UT 84409 for 1065/1120; PIN Unit for 5472+1120).</p>
+          <p>Alle Einreichungen werden per USPS Certified Mail an das IRS versendet. LLCs werden ohne US-Geschäftssitz angenommen (P.O. Box 409101, Ogden UT 84409 für 1065/1120; PIN Unit für 5472+1120).</p>
         </div>
 
         <!-- Statuses -->
         <div class="doc-section" id="doc-statuses">
-          <h2>Filing Statuses</h2>
+          <h2>Status-Werte</h2>
           <table class="field-table">
-            <thead><tr><th>Status</th><th>Meaning</th></tr></thead>
+            <thead><tr><th>Status</th><th>Bedeutung</th></tr></thead>
             <tbody>
-              <tr><td>submitted</td><td>Filing recorded, mail not yet confirmed</td></tr>
-              <tr><td>faxed</td><td>Letter successfully sent via USPS Certified Mail</td></tr>
-              <tr><td>failed</td><td>Mail delivery failed — contact support</td></tr>
-              <tr><td>pending</td><td>Processing</td></tr>
+              <tr><td>submitted</td><td>Einreichung gespeichert, Versand noch ausstehend</td></tr>
+              <tr><td>faxed</td><td>Brief erfolgreich per USPS Certified Mail versendet</td></tr>
+              <tr><td>failed</td><td>Versand fehlgeschlagen — Support kontaktieren</td></tr>
+              <tr><td>pending</td><td>Wird verarbeitet</td></tr>
             </tbody>
           </table>
         </div>
@@ -432,16 +432,16 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
   <div class="content" id="tab-settings" style="display:none">
     <div class="settings-card">
       <h3>API Key</h3>
-      <p>Use this key in the <code>X-API-Key</code> header for all API requests.</p>
+      <p>Verwende diesen Key im <code>X-API-Key</code> Header für alle API-Anfragen.</p>
       <div class="apikey-box" id="settings-apikey">—</div>
     </div>
     <div class="settings-card">
       <h3>Webhook URL</h3>
-      <p>We'll POST a JSON payload to this URL on every status change (filing.submitted, filing.mailed, filing.failed).</p>
-      <label>Endpoint URL</label>
-      <input type="url" id="webhook-url-input" placeholder="https://your-system.com/webhook">
-      <button class="save-btn" onclick="saveWebhookUrl()">Save</button>
-      <div class="save-msg" id="save-msg">Saved.</div>
+      <p>Bei jedem Statuswechsel senden wir einen POST an diese URL (filing.submitted, filing.mailed, filing.failed).</p>
+      <label>Endpunkt URL</label>
+      <input type="url" id="webhook-url-input" placeholder="https://dein-system.com/webhook">
+      <button class="save-btn" onclick="saveWebhookUrl()">Speichern</button>
+      <div class="save-msg" id="save-msg">Gespeichert.</div>
     </div>
   </div>
 </div>
@@ -497,8 +497,8 @@ async function loadFilings() {
     renderOverview(filings.slice(0, 10));
     renderFilings(filings);
   } catch (e) {
-    document.getElementById('overview-tbody').innerHTML = `<tr class="empty-row"><td colspan="6">${e.message}</td></tr>`;
-    document.getElementById('filings-tbody').innerHTML  = `<tr class="empty-row"><td colspan="9">${e.message}</td></tr>`;
+    document.getElementById('overview-tbody').innerHTML = `<tr class="empty-row"><td colspan="6">Fehler: ${e.message}</td></tr>`;
+    document.getElementById('filings-tbody').innerHTML  = `<tr class="empty-row"><td colspan="9">Fehler: ${e.message}</td></tr>`;
   }
 }
 
@@ -507,7 +507,7 @@ async function loadWebhooks() {
     const { deliveries } = await apiFetch('/webhook-logs');
     renderWebhooks(deliveries);
   } catch (e) {
-    document.getElementById('webhooks-tbody').innerHTML = `<tr class="empty-row"><td colspan="5">${e.message}</td></tr>`;
+    document.getElementById('webhooks-tbody').innerHTML = `<tr class="empty-row"><td colspan="5">Fehler: ${e.message}</td></tr>`;
   }
 }
 
@@ -528,7 +528,7 @@ function fmtDate(d) {
 
 function renderOverview(filings) {
   const tb = document.getElementById('overview-tbody');
-  if (!filings.length) { tb.innerHTML = '<tr class="empty-row"><td colspan="6">No filings yet.</td></tr>'; return; }
+  if (!filings.length) { tb.innerHTML = '<tr class="empty-row"><td colspan="6">Noch keine Einreichungen.</td></tr>'; return; }
   tb.innerHTML = filings.map(f => `<tr>
     <td>${f.company_name || '—'}</td>
     <td class="mono">${f.company_ein || '—'}</td>
@@ -541,7 +541,7 @@ function renderOverview(filings) {
 
 function renderFilings(filings) {
   const tb = document.getElementById('filings-tbody');
-  if (!filings.length) { tb.innerHTML = '<tr class="empty-row"><td colspan="9">No filings yet.</td></tr>'; return; }
+  if (!filings.length) { tb.innerHTML = '<tr class="empty-row"><td colspan="9">Noch keine Einreichungen.</td></tr>'; return; }
   tb.innerHTML = filings.map(f => `<tr>
     <td>${f.company_name || '—'}</td>
     <td class="mono">${f.company_ein || '—'}</td>
@@ -557,7 +557,7 @@ function renderFilings(filings) {
 
 function renderWebhooks(deliveries) {
   const tb = document.getElementById('webhooks-tbody');
-  if (!deliveries.length) { tb.innerHTML = '<tr class="empty-row"><td colspan="5">No webhook deliveries yet.</td></tr>'; return; }
+  if (!deliveries.length) { tb.innerHTML = '<tr class="empty-row"><td colspan="5">Noch keine Webhook-Zustellungen.</td></tr>'; return; }
   tb.innerHTML = deliveries.map(d => `<tr>
     <td>${d.event}</td>
     <td><span class="badge ${d.success ? 'badge-ok faxed' : 'badge-fail failed'}">${d.success ? 'OK' : 'Failed'}</span></td>
