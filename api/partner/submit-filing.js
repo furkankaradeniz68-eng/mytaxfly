@@ -30,6 +30,7 @@ export default async function handler(req, res) {
     partners = [], financials = {},
     signer_name, signer_title, ip_address,
     extend_form = '1120', signature_png_base64 = null,
+    signed_pdf_base64 = null, // pre-signed PDF upload — skips generation & e-sig overlay
   } = req.body || {};
 
   // ── Validation ────────────────────────────────────────────────────────────
@@ -69,31 +70,38 @@ export default async function handler(req, res) {
     });
   }
 
-  // ── Generate PDF ──────────────────────────────────────────────────────────
+  // ── PDF: use uploaded signed PDF or generate from form data ──────────────
   let pdfBytes;
-  try {
-    const { generatePdf } = await import('./_generate-pdf.js');
-    pdfBytes = await generatePdf({ form_type, company, foreign_owner, transactions, partners, financials, tax_year, extend_form, signature_png_base64 });
-  } catch (err) {
-    console.error('PDF generation error:', err);
-    return res.status(500).json({ error: 'PDF generation failed: ' + err.message });
-  }
+  if (signed_pdf_base64) {
+    try {
+      pdfBytes = Buffer.from(signed_pdf_base64, 'base64');
+    } catch (err) {
+      return res.status(400).json({ error: 'Invalid signed_pdf_base64: not valid base64.' });
+    }
+  } else {
+    try {
+      const { generatePdf } = await import('./_generate-pdf.js');
+      pdfBytes = await generatePdf({ form_type, company, foreign_owner, transactions, partners, financials, tax_year, extend_form, signature_png_base64 });
+    } catch (err) {
+      console.error('PDF generation error:', err);
+      return res.status(500).json({ error: 'PDF generation failed: ' + err.message });
+    }
 
-  // ── Embed e-signature block ───────────────────────────────────────────────
-  try {
-    pdfBytes = await embedSignature(pdfBytes, {
-      signer_name, signer_title, ip_address,
-      signed_at: new Date().toISOString(),
-      form_type, tax_year,
-    });
-  } catch (err) {
-    console.error('Signature embed error:', err);
-    return res.status(500).json({ error: 'Signature embedding failed: ' + err.message });
+    try {
+      pdfBytes = await embedSignature(pdfBytes, {
+        signer_name, signer_title, ip_address,
+        signed_at: new Date().toISOString(),
+        form_type, tax_year,
+      });
+    } catch (err) {
+      console.error('Signature embed error:', err);
+      return res.status(500).json({ error: 'Signature embedding failed: ' + err.message });
+    }
   }
 
   // ── Store in Supabase Storage ─────────────────────────────────────────────
   const timestamp = Date.now();
-  const filename = `${partner.partner_id}/${external_id}/${tax_year}_${form_type}_signed_${timestamp}.pdf`;
+  const filename = `${partner.partner_id}/${external_id}/${tax_year}_${form_type}_${signed_pdf_base64 ? 'uploaded' : 'signed'}_${timestamp}.pdf`;
 
   const { error: upErr } = await sb.storage.from('filings').upload(
     filename, Buffer.from(pdfBytes), { contentType: 'application/pdf', upsert: false }
@@ -178,6 +186,25 @@ export default async function handler(req, res) {
   await sb.from('filings')
     .update({ fax_id: lobResult?.id ?? null, status: mailStatus })
     .eq('id', filing.id);
+
+  // ── Fire webhook ──────────────────────────────────────────────────────────
+  if (partner.webhook_url) {
+    const { fireWebhook } = await import('./_webhook.js');
+    await fireWebhook(sb, {
+      partnerId:  partner.partner_id,
+      webhookUrl: partner.webhook_url,
+      event:      mailStatus === 'faxed' ? 'filing.mailed' : 'filing.submitted',
+      payload: {
+        filing_id:       filing.id,
+        external_id,
+        form_type,
+        tax_year,
+        status:          mailStatus,
+        letter_id:       lobResult?.id      ?? null,
+        tracking_number: lobResult?.tracking ?? null,
+      },
+    });
+  }
 
   return res.status(201).json({
     filing_id:         filing.id,
