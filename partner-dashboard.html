@@ -90,6 +90,41 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
 
 /* ── Loading ── */
 .loading{color:var(--text3);font-size:13px;padding:20px 0}
+
+/* ── Docs ── */
+.docs-layout{display:grid;grid-template-columns:200px 1fr;gap:28px;align-items:start}
+.docs-nav{position:sticky;top:20px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 0}
+.docs-nav a{display:block;padding:8px 18px;font-size:12px;font-weight:600;color:var(--text2);text-decoration:none;border-left:2px solid transparent}
+.docs-nav a:hover{color:var(--text)}
+.docs-nav a.active{color:var(--accent);border-left-color:var(--accent)}
+.docs-nav .nav-group{padding:6px 18px 2px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em}
+.doc-section{margin-bottom:36px}
+.doc-section h2{font-size:16px;font-weight:800;margin-bottom:6px;padding-top:8px}
+.doc-section h3{font-size:13px;font-weight:700;margin:20px 0 8px;color:var(--text)}
+.doc-section p{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:10px}
+.doc-section ul{padding-left:18px;margin-bottom:10px}
+.doc-section li{font-size:13px;color:var(--text2);line-height:1.8}
+.doc-section li code,.doc-section p code{background:var(--card2);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-family:monospace;font-size:12px;color:var(--accent)}
+.endpoint{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.method{display:inline-block;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:800;font-family:monospace}
+.method.post{background:rgba(0,200,150,0.15);color:var(--green)}
+.method.get{background:rgba(99,179,237,0.15);color:#63b3ed}
+.method.patch{background:rgba(246,173,85,0.15);color:var(--yellow)}
+.endpoint-path{font-family:monospace;font-size:13px;color:var(--text)}
+.code-block{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:16px;margin:10px 0;font-family:monospace;font-size:12px;color:var(--text2);overflow-x:auto;white-space:pre;line-height:1.6}
+.code-block .key{color:#63b3ed}
+.code-block .str{color:#68d391}
+.code-block .num{color:var(--yellow)}
+.code-block .bool{color:var(--accent)}
+.code-block .comment{color:var(--text3)}
+.field-table{width:100%;border-collapse:collapse;margin:10px 0}
+.field-table th{text-align:left;font-size:11px;font-weight:700;color:var(--text2);padding:6px 10px;border-bottom:1px solid var(--border)}
+.field-table td{font-size:12px;padding:7px 10px;border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:top}
+.field-table td:first-child{font-family:monospace;color:var(--accent);white-space:nowrap}
+.field-table td:nth-child(2){color:var(--text3);white-space:nowrap}
+.field-table td:nth-child(3){color:var(--text2)}
+.req{color:var(--red) !important}
+.opt{color:var(--text3) !important}
 </style>
 </head>
 <body>
@@ -121,6 +156,7 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
     <button class="tab" onclick="showTab('filings')">Filings</button>
     <button class="tab" onclick="showTab('webhooks')">Webhooks</button>
     <button class="tab" onclick="showTab('settings')">Settings</button>
+    <button class="tab" onclick="showTab('docs')">API Docs</button>
   </div>
 
   <!-- Overview -->
@@ -166,6 +202,230 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
         <tbody id="webhooks-tbody"><tr class="empty-row"><td colspan="5">Loading…</td></tr></tbody>
       </table>
     </div>
+  </div>
+
+  <!-- Docs -->
+  <div class="content" id="tab-docs" style="display:none;max-width:1000px">
+    <div class="docs-layout">
+      <nav class="docs-nav">
+        <div class="nav-group">Getting Started</div>
+        <a href="#auth" onclick="scrollDoc('auth')">Authentication</a>
+        <a href="#flow" onclick="scrollDoc('flow')">Typical Flow</a>
+        <div class="nav-group">Endpoints</div>
+        <a href="#preview" onclick="scrollDoc('preview')">Preview Filing</a>
+        <a href="#submit" onclick="scrollDoc('submit')">Submit Filing</a>
+        <a href="#status" onclick="scrollDoc('status')">Filing Status</a>
+        <a href="#filings" onclick="scrollDoc('filings')">List Filings</a>
+        <a href="#settings-ep" onclick="scrollDoc('settings-ep')">Settings</a>
+        <div class="nav-group">Reference</div>
+        <a href="#webhook-ref" onclick="scrollDoc('webhook-ref')">Webhooks</a>
+        <a href="#form-types" onclick="scrollDoc('form-types')">Form Types</a>
+        <a href="#statuses" onclick="scrollDoc('statuses')">Statuses</a>
+      </nav>
+
+      <div id="docs-main">
+
+        <!-- Auth -->
+        <div class="doc-section" id="doc-auth">
+          <h2>Authentication</h2>
+          <p>All requests require your API key in the <code>X-API-Key</code> header.</p>
+          <div class="code-block"><span class="key">X-API-Key</span>: mtf_live_xxxxxxxxxxxxxxxx</div>
+          <p>The system is currently running in <strong>test mode</strong> — letters are created but not physically mailed. No action needed on your side.</p>
+        </div>
+
+        <!-- Flow -->
+        <div class="doc-section" id="doc-flow">
+          <h2>Typical Flow</h2>
+          <p>The recommended flow for submitting a signed filing:</p>
+          <ul>
+            <li><strong>1.</strong> Call <code>POST /preview-filing</code> with form data → receive <code>pdf_base64</code></li>
+            <li><strong>2.</strong> Show PDF to client for review and signature</li>
+            <li><strong>3.</strong> Call <code>POST /submit-filing</code> with <code>signed_pdf_base64</code> → letter mailed to IRS</li>
+            <li><strong>4.</strong> Receive status update via Webhook (if configured)</li>
+          </ul>
+        </div>
+
+        <!-- Preview -->
+        <div class="doc-section" id="doc-preview">
+          <h2>Preview Filing</h2>
+          <div class="endpoint"><span class="method post">POST</span><span class="endpoint-path">/api/partner/preview-filing</span></div>
+          <p>Generates the tax form as a PDF and returns it as Base64. Use this to show the client a preview before signing.</p>
+          <h3>Request Body</h3>
+          <table class="field-table">
+            <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td>external_id</td><td class="req">required</td><td>Your own ID for this client/filing</td></tr>
+              <tr><td>form_type</td><td class="req">required</td><td>See Form Types below</td></tr>
+              <tr><td>tax_year</td><td class="req">required</td><td>Number, e.g. <code>2024</code></td></tr>
+              <tr><td>company.name</td><td class="req">required</td><td>LLC name</td></tr>
+              <tr><td>company.ein</td><td class="req">required</td><td>EIN, e.g. <code>"12-3456789"</code></td></tr>
+              <tr><td>company.address.city</td><td class="req">required</td><td>Registered city</td></tr>
+              <tr><td>company.address.state</td><td class="req">required</td><td>2-letter state, e.g. <code>"DE"</code></td></tr>
+              <tr><td>company.address.street</td><td class="opt">optional</td><td>Street address</td></tr>
+              <tr><td>company.address.zip</td><td class="opt">optional</td><td>ZIP code</td></tr>
+              <tr><td>foreign_owner</td><td class="opt">required for 5472_1120</td><td>Object with <code>name</code>, <code>country</code></td></tr>
+              <tr><td>transactions</td><td class="opt">optional</td><td>Array of transaction objects for Form 5472</td></tr>
+              <tr><td>partners</td><td class="opt">required for 1065</td><td>Array of partner objects</td></tr>
+              <tr><td>financials</td><td class="opt">optional</td><td>Financial data object</td></tr>
+              <tr><td>extend_form</td><td class="opt">optional</td><td>For 7004: form being extended, default <code>"1120"</code></td></tr>
+            </tbody>
+          </table>
+          <h3>Response</h3>
+          <div class="code-block">{
+  <span class="key">"pdf_url"</span>:    <span class="str">"https://..."</span>,       <span class="comment">// signed URL, valid 24h</span>
+  <span class="key">"pdf_base64"</span>: <span class="str">"JVBERi0x..."</span>,    <span class="comment">// full PDF as Base64</span>
+  <span class="key">"form_type"</span>:  <span class="str">"5472_1120"</span>,
+  <span class="key">"tax_year"</span>:   <span class="num">2024</span>,
+  <span class="key">"external_id"</span>: <span class="str">"client_001"</span>
+}</div>
+        </div>
+
+        <!-- Submit -->
+        <div class="doc-section" id="doc-submit">
+          <h2>Submit Filing</h2>
+          <div class="endpoint"><span class="method post">POST</span><span class="endpoint-path">/api/partner/submit-filing</span></div>
+          <p>Submits the filing to the IRS via physical mail. Two modes:</p>
+          <ul>
+            <li><strong>With <code>signed_pdf_base64</code>:</strong> Upload the signed PDF directly — generation is skipped</li>
+            <li><strong>Without <code>signed_pdf_base64</code>:</strong> We generate the PDF and embed an e-signature block</li>
+          </ul>
+          <h3>Request Body</h3>
+          <table class="field-table">
+            <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td>external_id</td><td class="req">required</td><td>Must match the <code>preview-filing</code> call</td></tr>
+              <tr><td>form_type</td><td class="req">required</td><td>See Form Types below</td></tr>
+              <tr><td>tax_year</td><td class="req">required</td><td>Number</td></tr>
+              <tr><td>company</td><td class="req">required</td><td>Same as preview-filing</td></tr>
+              <tr><td>signer_name</td><td class="req">required</td><td>Full name of the signer</td></tr>
+              <tr><td>signer_title</td><td class="req">required</td><td>Title, e.g. <code>"Managing Member"</code></td></tr>
+              <tr><td>signed_pdf_base64</td><td class="opt">optional</td><td>Pre-signed PDF as Base64 — skips generation</td></tr>
+              <tr><td>ip_address</td><td class="opt">optional</td><td>Client IP for e-signature record</td></tr>
+              <tr><td>foreign_owner</td><td class="opt">required for 5472_1120</td><td>Same as preview-filing</td></tr>
+              <tr><td>transactions</td><td class="opt">optional</td><td>Same as preview-filing</td></tr>
+              <tr><td>partners</td><td class="opt">required for 1065</td><td>Same as preview-filing</td></tr>
+            </tbody>
+          </table>
+          <h3>Response</h3>
+          <div class="code-block">{
+  <span class="key">"filing_id"</span>:         <span class="str">"uuid..."</span>,
+  <span class="key">"status"</span>:            <span class="str">"faxed"</span>,           <span class="comment">// or "submitted"</span>
+  <span class="key">"letter_id"</span>:         <span class="str">"ltr_..."</span>,         <span class="comment">// mail provider ID</span>
+  <span class="key">"tracking_number"</span>:   <span class="str">"9400..."</span>,         <span class="comment">// USPS tracking</span>
+  <span class="key">"expected_delivery"</span>: <span class="str">"2024-04-05"</span>,
+  <span class="key">"pdf_url"</span>:           <span class="str">"https://..."</span>,      <span class="comment">// signed URL, 7 days</span>
+  <span class="key">"external_id"</span>:       <span class="str">"client_001"</span>,
+  <span class="key">"form_type"</span>:         <span class="str">"5472_1120"</span>,
+  <span class="key">"tax_year"</span>:          <span class="num">2024</span>
+}</div>
+          <p>Duplicate submissions (same <code>external_id</code> + <code>form_type</code> + <code>tax_year</code>) are rejected with HTTP 409.</p>
+        </div>
+
+        <!-- Status -->
+        <div class="doc-section" id="doc-status">
+          <h2>Filing Status</h2>
+          <div class="endpoint"><span class="method get">GET</span><span class="endpoint-path">/api/partner/filing-status?filing_id=uuid</span></div>
+          <p>Returns the current status of a single filing.</p>
+          <div class="code-block">{
+  <span class="key">"filing_id"</span>:  <span class="str">"uuid..."</span>,
+  <span class="key">"status"</span>:     <span class="str">"faxed"</span>,
+  <span class="key">"letter_id"</span>:  <span class="str">"ltr_..."</span>,
+  <span class="key">"created_at"</span>: <span class="str">"2024-03-15T10:00:00Z"</span>
+}</div>
+        </div>
+
+        <!-- Filings list -->
+        <div class="doc-section" id="doc-filings">
+          <h2>List Filings</h2>
+          <div class="endpoint"><span class="method get">GET</span><span class="endpoint-path">/api/partner/filings</span></div>
+          <p>Returns all filings for your partner account, newest first (max 200).</p>
+          <div class="code-block">{
+  <span class="key">"filings"</span>: [
+    {
+      <span class="key">"id"</span>:           <span class="str">"uuid..."</span>,
+      <span class="key">"external_id"</span>:  <span class="str">"client_001"</span>,
+      <span class="key">"company_name"</span>: <span class="str">"Marcel's Ventures LLC"</span>,
+      <span class="key">"company_ein"</span>:  <span class="str">"12-3456789"</span>,
+      <span class="key">"form_type"</span>:    <span class="str">"5472_1120"</span>,
+      <span class="key">"tax_year"</span>:     <span class="num">2024</span>,
+      <span class="key">"status"</span>:       <span class="str">"faxed"</span>,
+      <span class="key">"created_at"</span>:   <span class="str">"2024-03-15T10:00:00Z"</span>
+    }
+  ]
+}</div>
+        </div>
+
+        <!-- Settings endpoint -->
+        <div class="doc-section" id="doc-settings-ep">
+          <h2>Settings</h2>
+          <div class="endpoint"><span class="method get">GET</span><span class="endpoint-path">/api/partner/settings</span></div>
+          <p>Returns your partner ID and current webhook URL.</p>
+          <div class="endpoint" style="margin-top:14px"><span class="method patch">PATCH</span><span class="endpoint-path">/api/partner/settings</span></div>
+          <p>Update your webhook URL.</p>
+          <div class="code-block"><span class="comment">// Request body</span>
+{ <span class="key">"webhook_url"</span>: <span class="str">"https://your-system.com/webhook"</span> }
+
+<span class="comment">// Set to null to remove</span>
+{ <span class="key">"webhook_url"</span>: <span class="bool">null</span> }</div>
+        </div>
+
+        <!-- Webhooks -->
+        <div class="doc-section" id="doc-webhook-ref">
+          <h2>Webhooks</h2>
+          <p>Configure a webhook URL in Settings. We send a <code>POST</code> request with <code>Content-Type: application/json</code> and the header <code>X-MyTaxFly-Event</code> on every status change.</p>
+          <h3>Events</h3>
+          <ul>
+            <li><code>filing.submitted</code> — filing created, mail pending</li>
+            <li><code>filing.mailed</code> — letter sent via USPS Certified Mail</li>
+            <li><code>filing.failed</code> — an error occurred</li>
+          </ul>
+          <h3>Payload</h3>
+          <div class="code-block">{
+  <span class="key">"event"</span>:          <span class="str">"filing.mailed"</span>,
+  <span class="key">"filing_id"</span>:      <span class="str">"uuid..."</span>,
+  <span class="key">"external_id"</span>:    <span class="str">"client_001"</span>,
+  <span class="key">"form_type"</span>:      <span class="str">"5472_1120"</span>,
+  <span class="key">"tax_year"</span>:       <span class="num">2024</span>,
+  <span class="key">"status"</span>:         <span class="str">"faxed"</span>,
+  <span class="key">"letter_id"</span>:      <span class="str">"ltr_..."</span>,
+  <span class="key">"tracking_number"</span>: <span class="str">"9400..."</span>,
+  <span class="key">"timestamp"</span>:      <span class="str">"2024-03-15T10:05:00Z"</span>
+}</div>
+          <p>Your endpoint must return HTTP 2xx within 10 seconds. Failed deliveries are logged in the Webhooks tab.</p>
+        </div>
+
+        <!-- Form types -->
+        <div class="doc-section" id="doc-form-types">
+          <h2>Form Types</h2>
+          <table class="field-table">
+            <thead><tr><th>form_type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td>5472_1120</td><td>Form 5472 + Form 1120 — foreign-owned single-member LLC (most common)</td></tr>
+              <tr><td>1065</td><td>Form 1065 — partnership return</td></tr>
+              <tr><td>1120</td><td>Form 1120 — C-Corporation return</td></tr>
+              <tr><td>5472</td><td>Form 5472 standalone</td></tr>
+              <tr><td>7004</td><td>Form 7004 — automatic extension request</td></tr>
+            </tbody>
+          </table>
+          <p>All filings are mailed to the IRS via USPS Certified Mail. LLCs are assumed to have no US principal office (P.O. Box 409101, Ogden UT 84409 for 1065/1120; PIN Unit for 5472+1120).</p>
+        </div>
+
+        <!-- Statuses -->
+        <div class="doc-section" id="doc-statuses">
+          <h2>Filing Statuses</h2>
+          <table class="field-table">
+            <thead><tr><th>Status</th><th>Meaning</th></tr></thead>
+            <tbody>
+              <tr><td>submitted</td><td>Filing recorded, mail not yet confirmed</td></tr>
+              <tr><td>faxed</td><td>Letter successfully sent via USPS Certified Mail</td></tr>
+              <tr><td>failed</td><td>Mail delivery failed — contact support</td></tr>
+              <tr><td>pending</td><td>Processing</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div><!-- /docs-main -->
+    </div><!-- /docs-layout -->
   </div>
 
   <!-- Settings -->
@@ -318,12 +578,17 @@ async function saveWebhookUrl() {
 }
 
 function showTab(name) {
-  ['overview','filings','webhooks','settings'].forEach(t => {
+  ['overview','filings','webhooks','settings','docs'].forEach(t => {
     document.getElementById('tab-' + t).style.display = t === name ? 'block' : 'none';
-    document.querySelectorAll('.tab').forEach((el, i) => {
-      el.classList.toggle('active', ['overview','filings','webhooks','settings'][i] === name);
-    });
   });
+  document.querySelectorAll('.tab').forEach((el, i) => {
+    el.classList.toggle('active', ['overview','filings','webhooks','settings','docs'][i] === name);
+  });
+}
+
+function scrollDoc(id) {
+  const el = document.getElementById('doc-' + id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // Auto-login if key stored
