@@ -43,8 +43,8 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing tax_year (number).' });
   if (!company?.name || !company?.ein)
     return res.status(400).json({ error: 'Missing company.name or company.ein.' });
-  if (!company?.address?.city || !company?.address?.state)
-    return res.status(400).json({ error: 'Missing company.address fields (city, state).' });
+  if (!company?.address?.street || !company?.address?.city || !company?.address?.state || !company?.address?.zip)
+    return res.status(400).json({ error: 'Missing company.address fields (street, city, state, zip). Must be the US registered agent address — required for USPS mailing.' });
   if (form_type === '5472_1120' && (!foreign_owner?.name || !foreign_owner?.country))
     return res.status(400).json({ error: 'Missing foreign_owner.name or foreign_owner.country.' });
   if (form_type === '1065' && !partners?.length)
