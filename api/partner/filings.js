@@ -10,12 +10,13 @@ export default async function handler(req, res) {
 
   const { data, error } = await sb
     .from('filings')
-    .select('id, external_id, form_type, tax_year, company_name, company_ein, signer_name, status, fax_id, created_at')
+    .select('id, external_id, form_type, tax_year, company_name, company_ein, signer_name, status, fax_id, is_test, created_at')
     .eq('partner_id', partner.partner_id)
     .order('created_at', { ascending: false })
     .limit(200);
 
   if (error) return res.status(500).json({ error: error.message });
 
-  return res.status(200).json({ filings: data });
+  const filings = data.map(({ fax_id, ...row }) => ({ ...row, letter_id: fax_id ?? null }));
+  return res.status(200).json({ filings });
 }
