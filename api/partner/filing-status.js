@@ -75,11 +75,12 @@ export default async function handler(req, res) {
 
 function formatFiling(row) {
   const STATUS_MESSAGE = {
-    submitted: 'Filing received and stored. Fax to IRS pending.',
-    faxed:     'Fax sent to IRS. Awaiting confirmation.',
-    accepted:  'IRS has accepted the filing.',
-    rejected:  'IRS rejected the filing. Contact support.',
-    pending:   'Filing is queued for processing.',
+    submitted: 'Einreichung gespeichert. Versand ausstehend.',
+    mailed:    'Brief per USPS Certified Mail ans IRS versendet.',
+    faxed:     'Brief per USPS Certified Mail ans IRS versendet.',
+    accepted:  'IRS hat die Einreichung akzeptiert.',
+    rejected:  'IRS hat die Einreichung abgelehnt. Support kontaktieren.',
+    pending:   'Wird verarbeitet.',
   };
 
   return {
@@ -91,7 +92,7 @@ function formatFiling(row) {
     company_ein:  row.company_ein,
     status:       row.status,
     status_message: STATUS_MESSAGE[row.status] ?? row.status,
-    fax_id:       row.fax_id ?? null,
+    letter_id:    row.fax_id ?? null,
     signer_name:  row.signer_name ?? null,
     signer_title: row.signer_title ?? null,
     submitted_at: row.created_at,
