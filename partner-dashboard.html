@@ -30,6 +30,14 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
 .login-btn{margin-top:16px;width:100%;background:var(--accent);color:#0d0f14;border:none;border-radius:8px;padding:12px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer}
 .login-btn:hover{background:var(--accent2)}
 .login-err{margin-top:12px;font-size:12px;color:var(--red);display:none}
+.qr-wrap{text-align:center;margin:12px 0 8px}
+.qr-wrap svg{width:164px;height:164px;border-radius:8px;background:#fff;padding:8px;display:inline-block}
+.enroll-secret{font-family:monospace;font-size:11px;background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:8px;word-break:break-all;color:var(--text2);margin:6px 0 14px;text-align:center;letter-spacing:1px}
+.back-link{font-size:12px;color:var(--text2);text-align:center;margin-top:12px;cursor:pointer}
+.back-link:hover{color:var(--accent)}
+.mfa-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:5px 12px;border-radius:20px;margin-bottom:14px}
+.mfa-badge.active{background:rgba(82,196,26,0.12);color:#52c41a}
+.mfa-badge.inactive{background:rgba(255,99,71,0.12);color:var(--red)}
 
 /* ── App shell ── */
 #app{display:none}
@@ -155,6 +163,21 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
       <label>2FA Code</label>
       <input type="text" id="login-totp" placeholder="123456" maxlength="6" autocomplete="one-time-code" inputmode="numeric">
       <button class="login-btn" onclick="loginStep2()">Bestätigen</button>
+    </div>
+
+    <!-- Step 3: 2FA Enrollment (erster Login) -->
+    <div id="step-enroll" style="display:none">
+      <div style="font-size:14px;font-weight:700;margin-bottom:6px">2FA einrichten</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:4px">
+        Scanne den QR-Code mit <strong>Google Authenticator</strong> oder <strong>Authy</strong>.
+      </div>
+      <div class="qr-wrap" id="enroll-qr"></div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:2px">Oder manuell eingeben:</div>
+      <div class="enroll-secret" id="enroll-secret"></div>
+      <label>6-stelligen Code zur Bestätigung eingeben</label>
+      <input type="text" id="enroll-code" placeholder="123456" maxlength="6" autocomplete="one-time-code" inputmode="numeric">
+      <button class="login-btn" onclick="verifyEnroll()">2FA aktivieren</button>
+      <div class="back-link" onclick="cancelEnroll()">← Abbrechen &amp; abmelden</div>
     </div>
 
     <div class="login-err" id="login-err"></div>
@@ -520,6 +543,13 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
   <!-- Settings -->
   <div class="content" id="tab-settings" style="display:none">
     <div class="settings-card">
+      <h3>Zwei-Faktor-Authentifizierung (2FA)</h3>
+      <p>TOTP via Google Authenticator oder Authy. Schützt deinen Account auch bei kompromittiertem Passwort.</p>
+      <div id="mfa-status-badge"></div>
+      <button class="save-btn" id="mfa-reset-btn" onclick="resetMfa()" style="background:var(--red);display:none">2FA zurücksetzen</button>
+      <div class="save-msg" id="mfa-save-msg"></div>
+    </div>
+    <div class="settings-card">
       <h3>Webhook URL</h3>
       <p>Bei jedem Statuswechsel senden wir einen POST an diese URL (filing.submitted, filing.mailed, filing.failed).</p>
       <label>Endpunkt URL</label>
@@ -538,9 +568,10 @@ const sb = supabase.createClient(
 );
 
 const BASE = '/api/partner';
-let API_KEY    = '';   // in memory only — never stored
-let SB_SESSION = null;
-let MFA_FACTOR_ID = null;
+let API_KEY        = '';   // in memory only — never stored
+let SB_SESSION     = null;
+let MFA_FACTOR_ID  = null;
+let ENROLL_DATA    = null; // active enrollment session
 
 // ── API helper ────────────────────────────────────────────────────────────────
 async function apiFetch(path, opts = {}) {
@@ -565,13 +596,13 @@ async function loginStep1() {
 
   SB_SESSION = data.session;
 
-  // Check if MFA is required
+  // Check if MFA is required or needs enrollment
   const { data: aal } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
   if (aal?.nextLevel === 'aal2') {
-    // MFA required — get factor
     const { data: factors } = await sb.auth.mfa.listFactors();
-    const totp = factors?.totp?.[0];
+    const totp = factors?.totp?.find(f => f.status === 'verified');
     if (totp) {
+      // Existing verified factor → challenge
       MFA_FACTOR_ID = totp.id;
       document.getElementById('step-pw').style.display  = 'none';
       document.getElementById('step-mfa').style.display = 'block';
@@ -580,7 +611,69 @@ async function loginStep1() {
     }
   }
 
+  // Check if user has no verified TOTP factor yet → enforce enrollment
+  const { data: factors } = await sb.auth.mfa.listFactors();
+  const hasVerified = factors?.totp?.some(f => f.status === 'verified');
+  if (!hasVerified) {
+    await startEnroll();
+    return;
+  }
+
   await afterLogin(data.session);
+}
+
+// ── 2FA Enrollment (erster Login) ────────────────────────────────────────────
+async function startEnroll() {
+  // Cancel any unverified previous enrollment first
+  const { data: existing } = await sb.auth.mfa.listFactors();
+  for (const f of (existing?.totp || [])) {
+    if (f.status !== 'verified') await sb.auth.mfa.unenroll({ factorId: f.id }).catch(() => {});
+  }
+
+  const { data, error } = await sb.auth.mfa.enroll({ factorType: 'totp', issuer: 'MyTaxFly' });
+  if (error) return showErr('Enrollment-Fehler: ' + error.message);
+
+  ENROLL_DATA = data;
+  document.getElementById('enroll-qr').innerHTML     = data.totp.qr_code;
+  document.getElementById('enroll-secret').textContent = data.totp.secret;
+
+  document.getElementById('step-pw').style.display     = 'none';
+  document.getElementById('step-enroll').style.display = 'block';
+  setTimeout(() => document.getElementById('enroll-code').focus(), 100);
+}
+
+async function verifyEnroll() {
+  const code = document.getElementById('enroll-code').value.trim();
+  showErr('');
+  if (!code || code.length < 6) return showErr('Bitte den 6-stelligen Code eingeben.');
+
+  const { data: ch, error: chErr } = await sb.auth.mfa.challenge({ factorId: ENROLL_DATA.id });
+  if (chErr) return showErr('Challenge-Fehler: ' + chErr.message);
+
+  const { data, error } = await sb.auth.mfa.verify({
+    factorId:    ENROLL_DATA.id,
+    challengeId: ch.id,
+    code,
+  });
+  if (error) return showErr('Ungültiger Code. Bitte erneut versuchen.');
+
+  ENROLL_DATA = null;
+  await afterLogin(data.session);
+}
+
+async function cancelEnroll() {
+  if (ENROLL_DATA) {
+    await sb.auth.mfa.unenroll({ factorId: ENROLL_DATA.id }).catch(() => {});
+    ENROLL_DATA = null;
+  }
+  await sb.auth.signOut();
+  API_KEY = ''; SB_SESSION = null;
+  document.getElementById('step-enroll').style.display = 'none';
+  document.getElementById('step-pw').style.display     = 'block';
+  document.getElementById('login-email').value = '';
+  document.getElementById('login-pw').value    = '';
+  document.getElementById('enroll-code').value = '';
+  showErr('');
 }
 
 // ── Login Step 2: TOTP ────────────────────────────────────────────────────────
@@ -631,15 +724,47 @@ function showErr(msg) {
 
 async function logout() {
   await sb.auth.signOut();
-  API_KEY = '';
-  SB_SESSION = null;
-  document.getElementById('app').style.display = 'none';
+  API_KEY = ''; SB_SESSION = null; ENROLL_DATA = null; MFA_FACTOR_ID = null;
+  document.getElementById('app').style.display          = 'none';
   document.getElementById('login-screen').style.display = 'flex';
-  document.getElementById('step-pw').style.display  = 'block';
-  document.getElementById('step-mfa').style.display = 'none';
-  document.getElementById('login-email').value = '';
-  document.getElementById('login-pw').value    = '';
-  document.getElementById('login-totp').value  = '';
+  document.getElementById('step-pw').style.display      = 'block';
+  document.getElementById('step-mfa').style.display     = 'none';
+  document.getElementById('step-enroll').style.display  = 'none';
+  document.getElementById('login-email').value  = '';
+  document.getElementById('login-pw').value     = '';
+  document.getElementById('login-totp').value   = '';
+  document.getElementById('enroll-code').value  = '';
+  document.getElementById('enroll-qr').innerHTML = '';
+  showErr('');
+}
+
+// ── 2FA Status (Settings Tab) ─────────────────────────────────────────────────
+async function loadMfaStatus() {
+  const { data } = await sb.auth.mfa.listFactors().catch(() => ({ data: null }));
+  const active = data?.totp?.filter(f => f.status === 'verified') || [];
+  const badge  = document.getElementById('mfa-status-badge');
+  const btn    = document.getElementById('mfa-reset-btn');
+  if (!badge) return;
+  if (active.length > 0) {
+    badge.innerHTML = '<span class="mfa-badge active">✓ Aktiv</span>';
+    btn.style.display = 'inline-block';
+  } else {
+    badge.innerHTML = '<span class="mfa-badge inactive">✗ Nicht eingerichtet</span>';
+    btn.style.display = 'none';
+  }
+}
+
+async function resetMfa() {
+  if (!confirm('2FA zurücksetzen? Du wirst beim nächsten Login aufgefordert, es neu einzurichten.')) return;
+  const { data } = await sb.auth.mfa.listFactors();
+  for (const f of (data?.totp || [])) {
+    await sb.auth.mfa.unenroll({ factorId: f.id }).catch(() => {});
+  }
+  const msg = document.getElementById('mfa-save-msg');
+  msg.textContent = '2FA zurückgesetzt. Beim nächsten Login neu einrichten.';
+  msg.style.display = 'block';
+  setTimeout(() => msg.style.display = 'none', 5000);
+  loadMfaStatus();
 }
 
 // ── Data loading ──────────────────────────────────────────────────────────────
@@ -758,6 +883,7 @@ function showTab(name) {
   document.querySelectorAll('.tab').forEach((el, i) => {
     el.classList.toggle('active', ['overview','filings','webhooks','settings','docs'][i] === name);
   });
+  if (name === 'settings') loadMfaStatus();
 }
 
 function scrollDoc(id) {
@@ -771,6 +897,9 @@ document.getElementById('login-pw').addEventListener('keydown', e => {
 });
 document.getElementById('login-totp').addEventListener('keydown', e => {
   if (e.key === 'Enter') loginStep2();
+});
+document.getElementById('enroll-code').addEventListener('keydown', e => {
+  if (e.key === 'Enter') verifyEnroll();
 });
 
 // ── Auto-restore session ──────────────────────────────────────────────────────
