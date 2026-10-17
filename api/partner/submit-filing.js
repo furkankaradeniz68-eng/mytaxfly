@@ -31,6 +31,7 @@ export default async function handler(req, res) {
     signer_name, signer_title, ip_address,
     extend_form = '1120', signature_png_base64 = null,
     signed_pdf_base64 = null, // pre-signed PDF upload — skips generation & e-sig overlay
+    test = false,             // true → use LOB_TEST_KEY, mark filing as test
   } = req.body || {};
 
   // ── Validation ────────────────────────────────────────────────────────────
@@ -59,7 +60,7 @@ export default async function handler(req, res) {
     .eq('external_id', external_id)
     .eq('form_type', form_type)
     .eq('tax_year', tax_year)
-    .in('status', ['submitted', 'faxed', 'accepted'])
+    .in('status', ['submitted', 'mailed', 'faxed', 'accepted'])
     .maybeSingle();
 
   if (existing) {
@@ -128,6 +129,7 @@ export default async function handler(req, res) {
       signer_ip:    ip_address || null,
       pdf_path:     filename,
       status:       'submitted',
+      is_test:      test === true,
     })
     .select('id')
     .single();
@@ -162,7 +164,11 @@ export default async function handler(req, res) {
   let lobResult  = null;
   let mailStatus = 'pending';
 
-  if (process.env.LOB_API_KEY) {
+  const lobApiKey = (test && process.env.LOB_TEST_KEY)
+    ? process.env.LOB_TEST_KEY
+    : process.env.LOB_API_KEY;
+
+  if (lobApiKey) {
     try {
       lobResult = await sendMailLob({
         pdfBytes,
@@ -175,9 +181,9 @@ export default async function handler(req, res) {
           address_zip:   company.address?.zip    || '00000',
         },
         description: `${form_type} Tax Year ${tax_year} — EIN ${company.ein}`,
-        apiKey: process.env.LOB_API_KEY,
+        apiKey: lobApiKey,
       });
-      mailStatus = 'faxed'; // "sent" in our status enum
+      mailStatus = 'mailed';
     } catch (err) {
       console.error('Lob mail error (non-fatal):', err.message);
     }
@@ -193,7 +199,7 @@ export default async function handler(req, res) {
     await fireWebhook(sb, {
       partnerId:  partner.partner_id,
       webhookUrl: partner.webhook_url,
-      event:      mailStatus === 'faxed' ? 'filing.mailed' : 'filing.submitted',
+      event:      mailStatus === 'mailed' ? 'filing.mailed' : 'filing.submitted',
       payload: {
         filing_id:       filing.id,
         external_id,
@@ -209,6 +215,7 @@ export default async function handler(req, res) {
   return res.status(201).json({
     filing_id:         filing.id,
     status:            mailStatus,
+    is_test:           test === true,
     letter_id:         lobResult?.id         ?? null,
     tracking_number:   lobResult?.tracking   ?? null,
     expected_delivery: lobResult?.expected_delivery ?? null,
@@ -217,8 +224,8 @@ export default async function handler(req, res) {
     form_type,
     tax_year,
     external_id,
-    message: mailStatus === 'faxed'
-      ? `Form ${form_type} mailed to IRS via USPS Certified Mail (Lob letter_id: ${lobResult?.id}). Tracking: ${lobResult?.tracking ?? 'pending'}.`
+    message: mailStatus === 'mailed'
+      ? `Form ${form_type} mailed to IRS via USPS Certified Mail (letter_id: ${lobResult?.id}). Tracking: ${lobResult?.tracking ?? 'pending'}.`
       : 'Filing stored. LOB_API_KEY not configured — mail not sent.',
   });
 }
