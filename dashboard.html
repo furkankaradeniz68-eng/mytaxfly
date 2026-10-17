@@ -2026,7 +2026,7 @@ let reportPeriodFrom=new Date(_ry,0,1), reportPeriodTo=new Date(_ry,11,31);
 let irsFilingYear = _ry - 1;
 let irsFormType = '5472_1120';
 let irsExtendForm = '1065';
-let mfaFactorId=null, mfaChallengeId=null;
+let mfaFactorId=null, mfaChallengeId=null, _mfaPending=false;
 let advisorMode = false;
 let advisorCurrentClientId = null;
 let isAdvisorUser = false;
@@ -2377,7 +2377,22 @@ async function handleLogin(){
   btn.disabled=false;
   if(error){showError(error.message);btn.querySelector('span').textContent='Sign In →';return;}
 
-  // Auth state change will trigger launchApp
+  // Check if MFA is required for this account
+  const {data:aal}=await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+  if(aal?.nextLevel==='aal2'){
+    const {data:factors}=await sb.auth.mfa.listFactors();
+    const totp=factors?.totp?.find(f=>f.status==='verified');
+    if(totp){
+      const {data:ch,error:chErr}=await sb.auth.mfa.challenge({factorId:totp.id});
+      if(chErr){showError(chErr.message);return;}
+      mfaFactorId=totp.id; mfaChallengeId=ch.id; _mfaPending=true;
+      document.getElementById('form-login').style.display='none';
+      document.getElementById('form-2fa').style.display='block';
+      setTimeout(()=>document.getElementById('totp-code').focus(),100);
+      return;
+    }
+  }
+  // No MFA enrolled — auth state change will trigger launchApp
 }
 
 async function handleVerify2FA(){
@@ -2394,11 +2409,12 @@ async function handleVerify2FA(){
     document.getElementById('totp-code').focus();
     return;
   }
+  _mfaPending=false;
   // 2FA success → auth state change will trigger launchApp
 }
 
 function cancel2FA(){
-  mfaFactorId=null; mfaChallengeId=null;
+  _mfaPending=false; mfaFactorId=null; mfaChallengeId=null;
   document.getElementById('form-2fa').style.display='none';
   document.getElementById('form-login').style.display='block';
   document.getElementById('totp-code').value='';
@@ -3601,12 +3617,14 @@ sb.auth.onAuthStateChange(async (event, session)=>{
   // running, skip re-init to avoid race condition with stale metadata.
   if(event === 'USER_UPDATED') return;
   if(session?.user){
+    if(_mfaPending) return; // MFA challenge in progress — wait for verification
     // IIFE may have already launched the app — only call launchApp once
     if(!_appInitialized){
       _appInitialized = true;
       await launchApp(session.user);
     }
   } else {
+    _mfaPending = false;
     _appInitialized = false;
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('app').style.display = 'none';
