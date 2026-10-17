@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>MyTaxFly Partner Dashboard</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
 <style>
@@ -32,7 +33,7 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);
 /* ── App shell ── */
 #app{display:none}
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 28px;border-bottom:1px solid var(--border);background:var(--card)}
-.topbar-logo{font-size:16px;font-weight:800;color:var(--accent)}
+.topbar-logo img{height:32px;width:auto;display:block}
 .topbar-right{display:flex;align-items:center;gap:12px}
 .topbar-pid{font-size:11px;color:var(--text3);font-family:monospace}
 .logout-btn{background:transparent;border:1px solid var(--border);color:var(--text2);border-radius:6px;padding:6px 12px;font-family:inherit;font-size:12px;cursor:pointer}
@@ -162,7 +163,7 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
 <!-- App -->
 <div id="app">
   <div class="topbar">
-    <div class="topbar-logo">MyTaxFly Partner</div>
+    <div class="topbar-logo"><img src="/logo-icon.png" alt="MyTaxFly"></div>
     <div class="topbar-right">
       <span class="topbar-pid" id="topbar-pid"></span>
       <button class="logout-btn" onclick="logout()">Abmelden</button>
@@ -454,12 +455,12 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
   <div class="content" id="tab-settings" style="display:none">
     <div class="settings-card">
       <h3>API Key</h3>
-      <p>Verwende diesen Key im <code>X-API-Key</code> Header für alle API-Anfragen.</p>
-      <div style="display:flex;align-items:center;gap:10px">
-        <div class="apikey-box" style="flex:1" id="settings-apikey">—</div>
-        <button class="save-btn" style="margin:0;white-space:nowrap" onclick="copyApiKey()">Kopieren</button>
+      <p>Dein API Key wird aus Sicherheitsgründen nicht angezeigt. Verwende den Button um ihn in die Zwischenablage zu kopieren.</p>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:12px">
+        <button class="save-btn" style="margin:0" onclick="copyApiKey()">API Key kopieren</button>
+        <div class="save-msg" id="copy-msg" style="margin:0">Kopiert.</div>
       </div>
-      <div class="save-msg" id="copy-msg">Kopiert.</div>
+      <p style="margin-top:10px;font-size:12px;color:var(--text3)">Verwende diesen Key im <code>X-API-Key</code> Header für alle API-Anfragen.</p>
     </div>
     <div class="settings-card">
       <h3>Webhook URL</h3>
@@ -555,9 +556,6 @@ async function afterLogin(session) {
 
     API_KEY = data.api_key;
     document.getElementById('topbar-pid').textContent = data.partner_id;
-    // Show masked key (last 6 chars only)
-    document.getElementById('settings-apikey').textContent =
-      'mtf_live_...' + API_KEY.slice(-6);
     document.getElementById('webhook-url-input').value = data.webhook_url || '';
 
     document.getElementById('login-screen').style.display = 'none';
