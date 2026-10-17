@@ -289,7 +289,7 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
               <tr><td>company.ein</td><td class="req">erforderlich</td><td>EIN im Format <code>"12-3456789"</code></td></tr>
               <tr><td>company.address.street</td><td class="opt">optional</td><td>Straße</td></tr>
               <tr><td>company.address.city</td><td class="req">erforderlich</td><td>Stadt</td></tr>
-              <tr><td>company.address.state</td><td class="req">erforderlich</td><td>US-Bundesstaat als 2-Buchstaben-Kürzel — <strong>nicht</strong> Länderkürzel. <code>"DE"</code> = Delaware, <code>"WY"</code> = Wyoming, <code>"FL"</code> = Florida usw.</td></tr>
+              <tr><td>company.address.state</td><td class="req">erforderlich</td><td><strong>US-Bundesstaat</strong> (nicht ISO-Ländercode). <code>"DE"</code> = Delaware, <code>"WY"</code> = Wyoming, <code>"FL"</code> = Florida — immer der Gründungsstaat der LLC</td></tr>
               <tr><td>company.address.zip</td><td class="opt">optional</td><td>US-Postleitzahl</td></tr>
               <tr><td>foreign_owner</td><td class="req">erforderlich für 5472_1120</td><td>Objekt — Struktur siehe unten</td></tr>
               <tr><td>transactions</td><td class="opt">optional</td><td>Array — Struktur siehe unten</td></tr>
@@ -360,11 +360,11 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
 
           <h3>foreign_owner (erforderlich für 5472_1120)</h3>
           <div class="code-block">{
-  <span class="key">"name"</span>:        <span class="str">"Max Mustermann"</span>,      <span class="comment">// erforderlich: vollständiger Name</span>
-  <span class="key">"country"</span>:     <span class="str">"DE"</span>,                  <span class="comment">// erforderlich: 2-Buchstaben Ländercode (ISO 3166)</span>
-  <span class="key">"address"</span>:     <span class="str">"Musterstr. 1, Berlin"</span>, <span class="comment">// optional</span>
-  <span class="key">"tin"</span>:         <span class="str">"DE123456789"</span>,         <span class="comment">// optional: ausländische Steuernummer</span>
-  <span class="key">"ownership_pct"</span>: <span class="num">100</span>                  <span class="comment">// optional: Beteiligungsquote in %</span>
+  <span class="key">"name"</span>:          <span class="str">"Max Mustermann"</span>,         <span class="comment">// erforderlich: vollständiger Name</span>
+  <span class="key">"country"</span>:       <span class="str">"DE"</span>,                      <span class="comment">// erforderlich: ISO-Ländercode des Eigentümers — DE = Deutschland, GB = UK, FR = Frankreich</span>
+  <span class="key">"address"</span>:       <span class="str">"Musterstr. 1, Berlin"</span>,   <span class="comment">// optional: Wohnadresse des Eigentümers (ausländisch)</span>
+  <span class="key">"tin"</span>:           <span class="str">"DE123456789"</span>,            <span class="comment">// optional: ausländische Steuernummer</span>
+  <span class="key">"ownership_pct"</span>: <span class="num">100</span>                        <span class="comment">// optional: Beteiligungsquote in %</span>
 }</div>
 
           <h3>transactions (optional, für Form 5472)</h3>
@@ -382,8 +382,8 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
           <div class="code-block">[
   {
     <span class="key">"name"</span>:          <span class="str">"Max Mustermann"</span>,
-    <span class="key">"address"</span>:       <span class="str">"Musterstr. 1, Berlin, DE"</span>,
-    <span class="key">"tin"</span>:           <span class="str">"DE123456789"</span>,        <span class="comment">// optional: Steuernummer</span>
+    <span class="key">"address"</span>:       <span class="str">"Musterstr. 1, Berlin, DE"</span>,  <span class="comment">// Wohnadresse des Partners (ausländisch)</span>
+    <span class="key">"tin"</span>:           <span class="str">"DE123456789"</span>,        <span class="comment">// optional: ausländische Steuernummer</span>
     <span class="key">"ownership_pct"</span>: <span class="num">50</span>,                    <span class="comment">// Beteiligungsquote in %</span>
     <span class="key">"type"</span>:          <span class="str">"general"</span>              <span class="comment">// general | limited | LLC</span>
   }
