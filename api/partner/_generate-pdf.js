@@ -263,9 +263,19 @@ export async function generatePdf({
   async function build1120() {
     const pg = pdfDoc.addPage([W, H]);
     pageHeader(pg, '1120', 'U.S. Corporation Income Tax Return (Pro Forma)', 1, 2);
-    t(pg, `Foreign-Owned Disregarded Entity (DE) - Reg. sec.1.6012-2(g)(2) - Tax year Jan 01, ${taxYear} - Dec 31, ${taxYear}`, ML, H-47, 7, font, GRAY6);
+    // IRS Form 5472 instructions (Rev. Dec 2024): write "Foreign-Owned U.S. DE" across the top of the pro forma 1120
+    const foStamp = 'FOREIGN-OWNED U.S. DE';
+    const foSz = 13;
+    pg.drawText(foStamp, {
+      x: W / 2 - fontB.widthOfTextAtSize(foStamp, foSz) / 2,
+      y: H - 52,
+      size: foSz,
+      font: fontB,
+      color: rgb(0.78, 0, 0),
+    });
+    t(pg, `Reg. sec.1.6012-2(g)(2)  ·  Tax year Jan 01, ${taxYear} – Dec 31, ${taxYear}`, ML, H-62, 6.5, font, GRAY6);
 
-    let y = H - 58;
+    let y = H - 72;
     y = companyBlock(pg, y);
 
     y -= 4;
