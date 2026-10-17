@@ -238,6 +238,7 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
         <div class="nav-group">Endpunkte</div>
         <a href="#preview" onclick="scrollDoc('preview')">Vorschau</a>
         <a href="#submit" onclick="scrollDoc('submit')">Einreichen</a>
+        <a href="#fields" onclick="scrollDoc('fields')">Feld-Strukturen</a>
         <a href="#status" onclick="scrollDoc('status')">Status abfragen</a>
         <a href="#filings" onclick="scrollDoc('filings')">Alle Einreichungen</a>
         <a href="#settings-ep" onclick="scrollDoc('settings-ep')">Einstellungen</a>
@@ -254,52 +255,56 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
           <h2>Authentifizierung</h2>
           <p>Alle Anfragen erfordern deinen API Key im <code>X-API-Key</code> Header.</p>
           <div class="code-block"><span class="key">X-API-Key</span>: mtf_live_xxxxxxxxxxxxxxxx</div>
-          <p>Das System läuft aktuell im <strong>Testmodus</strong> — Briefe werden erstellt, aber nicht physisch versendet. Kein Handlungsbedarf auf deiner Seite.</p>
+          <p>Der API Key wird dir von MyTaxFly bereitgestellt. Halte ihn geheim — er identifiziert deinen Partner-Account eindeutig.</p>
         </div>
 
         <!-- Flow -->
         <div class="doc-section" id="doc-flow">
           <h2>Ablauf</h2>
-          <p>Empfohlener Ablauf für eine unterschriebene Einreichung:</p>
+          <p>Empfohlener Ablauf für eine Einreichung mit Kundenunterschrift:</p>
           <ul>
-            <li><strong>1.</strong> <code>POST /preview-filing</code> mit Formulardaten aufrufen → <code>pdf_base64</code> erhalten</li>
+            <li><strong>1.</strong> <code>POST /preview-filing</code> → PDF als <code>pdf_base64</code> erhalten</li>
             <li><strong>2.</strong> PDF dem Kunden zur Prüfung und Unterschrift zeigen</li>
-            <li><strong>3.</strong> <code>POST /submit-filing</code> mit <code>signed_pdf_base64</code> aufrufen → Brief geht ans IRS</li>
-            <li><strong>4.</strong> Statusänderung per Webhook empfangen (wenn konfiguriert)</li>
+            <li><strong>3.</strong> <code>POST /submit-filing</code> mit <code>signed_pdf_base64</code> → Brief wird physisch per USPS Certified Mail ans IRS versendet</li>
+            <li><strong>4.</strong> Statusänderung per Webhook empfangen (optional)</li>
           </ul>
+          <p style="margin-top:10px">Alternativ: <code>submit-filing</code> ohne <code>signed_pdf_base64</code> — wir generieren das PDF und fügen automatisch einen E-Signatur-Block ein.</p>
+          <h3>Testmodus</h3>
+          <p>Mit <code>"test": true</code> im Request Body wird die Einreichung als Test markiert: ein Lob-Test-Brief wird erstellt (nicht physisch versendet) und die Einreichung erscheint im Dashboard mit dem <strong>TEST</strong>-Badge. Test-Einreichungen werden in den Statistiken nicht mitgezählt.</p>
         </div>
 
         <!-- Preview -->
         <div class="doc-section" id="doc-preview">
           <h2>Vorschau generieren</h2>
           <div class="endpoint"><span class="method post">POST</span><span class="endpoint-path">/api/partner/preview-filing</span></div>
-          <p>Generiert das Steuerformular als PDF und gibt es als Base64 zurück. Damit kannst du dem Kunden eine Vorschau zum Unterschreiben zeigen.</p>
+          <p>Generiert das Steuerformular als PDF. Kein Versand — nur zur Ansicht.</p>
           <h3>Request Body</h3>
           <table class="field-table">
             <thead><tr><th>Feld</th><th>Typ</th><th>Beschreibung</th></tr></thead>
             <tbody>
               <tr><td>external_id</td><td class="req">erforderlich</td><td>Deine eigene ID für diesen Kunden/Einreichung</td></tr>
-              <tr><td>form_type</td><td class="req">erforderlich</td><td>Siehe Formular-Typen unten</td></tr>
+              <tr><td>form_type</td><td class="req">erforderlich</td><td>Siehe Formular-Typen</td></tr>
               <tr><td>tax_year</td><td class="req">erforderlich</td><td>Zahl, z.B. <code>2024</code></td></tr>
               <tr><td>company.name</td><td class="req">erforderlich</td><td>Name der LLC</td></tr>
-              <tr><td>company.ein</td><td class="req">erforderlich</td><td>EIN, z.B. <code>"12-3456789"</code></td></tr>
-              <tr><td>company.address.city</td><td class="req">erforderlich</td><td>Registrierte Stadt</td></tr>
-              <tr><td>company.address.state</td><td class="req">erforderlich</td><td>2-Buchstaben-Staat, z.B. <code>"DE"</code></td></tr>
+              <tr><td>company.ein</td><td class="req">erforderlich</td><td>EIN im Format <code>"12-3456789"</code></td></tr>
               <tr><td>company.address.street</td><td class="opt">optional</td><td>Straße</td></tr>
-              <tr><td>company.address.zip</td><td class="opt">optional</td><td>Postleitzahl</td></tr>
-              <tr><td>foreign_owner</td><td class="opt">erforderlich für 5472_1120</td><td>Objekt mit <code>name</code>, <code>country</code></td></tr>
-              <tr><td>transactions</td><td class="opt">optional</td><td>Array von Transaktionen für Form 5472</td></tr>
-              <tr><td>partners</td><td class="opt">erforderlich für 1065</td><td>Array von Partner-Objekten</td></tr>
-              <tr><td>financials</td><td class="opt">optional</td><td>Finanzdaten-Objekt</td></tr>
-              <tr><td>extend_form</td><td class="opt">optional</td><td>Für 7004: Formular das verlängert wird, Standard <code>"1120"</code></td></tr>
+              <tr><td>company.address.city</td><td class="req">erforderlich</td><td>Stadt</td></tr>
+              <tr><td>company.address.state</td><td class="req">erforderlich</td><td>US-Bundesstaat als 2-Buchstaben-Kürzel — <strong>nicht</strong> Länderkürzel. <code>"DE"</code> = Delaware, <code>"WY"</code> = Wyoming, <code>"FL"</code> = Florida usw.</td></tr>
+              <tr><td>company.address.zip</td><td class="opt">optional</td><td>US-Postleitzahl</td></tr>
+              <tr><td>foreign_owner</td><td class="req">erforderlich für 5472_1120</td><td>Objekt — Struktur siehe unten</td></tr>
+              <tr><td>transactions</td><td class="opt">optional</td><td>Array — Struktur siehe unten</td></tr>
+              <tr><td>partners</td><td class="req">erforderlich für 1065</td><td>Array — Struktur siehe unten</td></tr>
+              <tr><td>financials</td><td class="opt">optional</td><td>Objekt — Struktur siehe unten</td></tr>
+              <tr><td>extend_form</td><td class="opt">optional</td><td>Für 7004: welches Formular verlängert wird. Standard: <code>"1120"</code></td></tr>
             </tbody>
           </table>
           <h3>Response</h3>
           <div class="code-block">{
-  <span class="key">"pdf_url"</span>:    <span class="str">"https://..."</span>,       <span class="comment">// signed URL, valid 24h</span>
-  <span class="key">"pdf_base64"</span>: <span class="str">"JVBERi0x..."</span>,    <span class="comment">// full PDF as Base64</span>
-  <span class="key">"form_type"</span>:  <span class="str">"5472_1120"</span>,
-  <span class="key">"tax_year"</span>:   <span class="num">2024</span>,
+  <span class="key">"pdf_url"</span>:     <span class="str">"https://..."</span>,     <span class="comment">// signed URL, gültig 24h</span>
+  <span class="key">"pdf_base64"</span>:  <span class="str">"JVBERi0x..."</span>,  <span class="comment">// komplettes PDF als Base64</span>
+  <span class="key">"expires_at"</span>:  <span class="str">"2024-03-16T10:00:00Z"</span>,
+  <span class="key">"form_type"</span>:   <span class="str">"5472_1120"</span>,
+  <span class="key">"tax_year"</span>:    <span class="num">2024</span>,
   <span class="key">"external_id"</span>: <span class="str">"client_001"</span>
 }</div>
         </div>
@@ -308,53 +313,106 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
         <div class="doc-section" id="doc-submit">
           <h2>Einreichung absenden</h2>
           <div class="endpoint"><span class="method post">POST</span><span class="endpoint-path">/api/partner/submit-filing</span></div>
-          <p>Reicht das Formular per physischem Brief beim IRS ein. Zwei Modi:</p>
+          <p>Erstellt das PDF und versendet es physisch per <strong>USPS Certified Mail</strong> ans IRS. Du erhältst eine Tracking-Nummer. Zwei Modi:</p>
           <ul>
-            <li><strong>Mit <code>signed_pdf_base64</code>:</strong> Unterschriebenes PDF direkt hochladen — Generierung wird übersprungen</li>
-            <li><strong>Ohne <code>signed_pdf_base64</code>:</strong> Wir generieren das PDF und fügen einen E-Signatur-Block ein</li>
+            <li><strong>Mit <code>signed_pdf_base64</code>:</strong> Bereits unterschriebenes PDF hochladen — wir überspringen die Generierung</li>
+            <li><strong>Ohne <code>signed_pdf_base64</code>:</strong> Wir generieren das PDF aus den Formulardaten und fügen einen E-Signatur-Block ein</li>
           </ul>
           <h3>Request Body</h3>
           <table class="field-table">
             <thead><tr><th>Feld</th><th>Typ</th><th>Beschreibung</th></tr></thead>
             <tbody>
-              <tr><td>external_id</td><td class="req">erforderlich</td><td>Muss mit dem <code>preview-filing</code> Aufruf übereinstimmen</td></tr>
-              <tr><td>form_type</td><td class="req">erforderlich</td><td>Siehe Formular-Typen unten</td></tr>
+              <tr><td>external_id</td><td class="req">erforderlich</td><td>Deine ID — muss bei Vorschau und Einreichung identisch sein</td></tr>
+              <tr><td>form_type</td><td class="req">erforderlich</td><td>Siehe Formular-Typen</td></tr>
               <tr><td>tax_year</td><td class="req">erforderlich</td><td>Zahl</td></tr>
               <tr><td>company</td><td class="req">erforderlich</td><td>Wie bei preview-filing</td></tr>
               <tr><td>signer_name</td><td class="req">erforderlich</td><td>Vollständiger Name des Unterzeichners</td></tr>
               <tr><td>signer_title</td><td class="req">erforderlich</td><td>Titel, z.B. <code>"Managing Member"</code></td></tr>
-              <tr><td>signed_pdf_base64</td><td class="opt">optional</td><td>Unterschriebenes PDF als Base64 — überspringt die Generierung</td></tr>
-              <tr><td>ip_address</td><td class="opt">optional</td><td>IP-Adresse des Kunden für E-Signatur-Nachweis</td></tr>
-              <tr><td>foreign_owner</td><td class="opt">erforderlich für 5472_1120</td><td>Wie bei preview-filing</td></tr>
-              <tr><td>transactions</td><td class="opt">optional</td><td>Wie bei preview-filing</td></tr>
-              <tr><td>partners</td><td class="opt">erforderlich für 1065</td><td>Wie bei preview-filing</td></tr>
+              <tr><td>ip_address</td><td class="opt">optional</td><td>IP-Adresse des Kunden — für E-Signatur-Nachweis empfohlen</td></tr>
+              <tr><td>signed_pdf_base64</td><td class="opt">optional</td><td>Unterschriebenes PDF als Base64-String — überspringt Generierung</td></tr>
+              <tr><td>foreign_owner</td><td class="req">erforderlich für 5472_1120</td><td>Struktur siehe unten</td></tr>
+              <tr><td>transactions</td><td class="opt">optional</td><td>Struktur siehe unten</td></tr>
+              <tr><td>partners</td><td class="req">erforderlich für 1065</td><td>Struktur siehe unten</td></tr>
+              <tr><td>financials</td><td class="opt">optional</td><td>Struktur siehe unten</td></tr>
+              <tr><td>test</td><td class="opt">optional</td><td><code>true</code> = Testmodus: Lob-Test-Brief, kein physischer Versand, <code>is_test: true</code> in Response und Dashboard</td></tr>
             </tbody>
           </table>
           <h3>Response</h3>
           <div class="code-block">{
   <span class="key">"filing_id"</span>:         <span class="str">"uuid..."</span>,
-  <span class="key">"status"</span>:            <span class="str">"faxed"</span>,           <span class="comment">// oder "submitted"</span>
-  <span class="key">"letter_id"</span>:         <span class="str">"ltr_..."</span>,         <span class="comment">// Brief-ID</span>
-  <span class="key">"tracking_number"</span>:   <span class="str">"9400..."</span>,         <span class="comment">// USPS Tracking</span>
+  <span class="key">"status"</span>:            <span class="str">"mailed"</span>,         <span class="comment">// oder "submitted" (wenn LOB nicht konfiguriert)</span>
+  <span class="key">"is_test"</span>:           <span class="bool">false</span>,            <span class="comment">// true wenn test: true übergeben</span>
+  <span class="key">"letter_id"</span>:         <span class="str">"ltr_..."</span>,
+  <span class="key">"tracking_number"</span>:   <span class="str">"9400111899223399401"</span>,
   <span class="key">"expected_delivery"</span>: <span class="str">"2024-04-05"</span>,
-  <span class="key">"pdf_url"</span>:           <span class="str">"https://..."</span>,      <span class="comment">// gültig 7 Tage</span>
+  <span class="key">"pdf_url"</span>:           <span class="str">"https://..."</span>,    <span class="comment">// gültig 7 Tage</span>
   <span class="key">"external_id"</span>:       <span class="str">"client_001"</span>,
   <span class="key">"form_type"</span>:         <span class="str">"5472_1120"</span>,
-  <span class="key">"tax_year"</span>:          <span class="num">2024</span>
+  <span class="key">"tax_year"</span>:          <span class="num">2024</span>,
+  <span class="key">"message"</span>:           <span class="str">"Form 5472_1120 mailed to IRS via USPS Certified Mail..."</span>
 }</div>
           <p>Doppelte Einreichungen (gleiche <code>external_id</code> + <code>form_type</code> + <code>tax_year</code>) werden mit HTTP 409 abgelehnt.</p>
+        </div>
+
+        <!-- Field structures -->
+        <div class="doc-section" id="doc-fields">
+          <h2>Feld-Strukturen</h2>
+
+          <h3>foreign_owner (erforderlich für 5472_1120)</h3>
+          <div class="code-block">{
+  <span class="key">"name"</span>:        <span class="str">"Max Mustermann"</span>,      <span class="comment">// erforderlich: vollständiger Name</span>
+  <span class="key">"country"</span>:     <span class="str">"DE"</span>,                  <span class="comment">// erforderlich: 2-Buchstaben Ländercode (ISO 3166)</span>
+  <span class="key">"address"</span>:     <span class="str">"Musterstr. 1, Berlin"</span>, <span class="comment">// optional</span>
+  <span class="key">"tin"</span>:         <span class="str">"DE123456789"</span>,         <span class="comment">// optional: ausländische Steuernummer</span>
+  <span class="key">"ownership_pct"</span>: <span class="num">100</span>                  <span class="comment">// optional: Beteiligungsquote in %</span>
+}</div>
+
+          <h3>transactions (optional, für Form 5472)</h3>
+          <p>Array von Transaktionen zwischen der LLC und dem Auslandseigentümer im Steuerjahr.</p>
+          <div class="code-block">[
+  {
+    <span class="key">"type"</span>:        <span class="str">"sales"</span>,   <span class="comment">// Art: sales | purchases | loans_to | loans_from | rent | royalties | other</span>
+    <span class="key">"amount"</span>:      <span class="num">5000</span>,      <span class="comment">// Betrag in USD</span>
+    <span class="key">"description"</span>: <span class="str">"..."</span>      <span class="comment">// optional</span>
+  }
+]</div>
+
+          <h3>partners (erforderlich für 1065)</h3>
+          <p>Array aller Partner der LLC.</p>
+          <div class="code-block">[
+  {
+    <span class="key">"name"</span>:          <span class="str">"Max Mustermann"</span>,
+    <span class="key">"address"</span>:       <span class="str">"Musterstr. 1, Berlin, DE"</span>,
+    <span class="key">"tin"</span>:           <span class="str">"DE123456789"</span>,        <span class="comment">// optional: Steuernummer</span>
+    <span class="key">"ownership_pct"</span>: <span class="num">50</span>,                    <span class="comment">// Beteiligungsquote in %</span>
+    <span class="key">"type"</span>:          <span class="str">"general"</span>              <span class="comment">// general | limited | LLC</span>
+  }
+]</div>
+
+          <h3>financials (optional)</h3>
+          <div class="code-block">{
+  <span class="key">"total_income"</span>:     <span class="num">50000</span>,  <span class="comment">// Gesamteinnahmen in USD</span>
+  <span class="key">"total_deductions"</span>: <span class="num">12000</span>,  <span class="comment">// Gesamtabzüge in USD</span>
+  <span class="key">"total_assets"</span>:     <span class="num">80000</span>   <span class="comment">// Gesamtvermögen zum Jahresende in USD</span>
+}</div>
         </div>
 
         <!-- Status -->
         <div class="doc-section" id="doc-status">
           <h2>Status abfragen</h2>
           <div class="endpoint"><span class="method get">GET</span><span class="endpoint-path">/api/partner/filing-status?filing_id=uuid</span></div>
-          <p>Gibt den aktuellen Status einer einzelnen Einreichung zurück.</p>
+          <p>Alternativ: <code>?external_id=client_001&amp;form_type=5472_1120&amp;tax_year=2024</code></p>
           <div class="code-block">{
-  <span class="key">"filing_id"</span>:  <span class="str">"uuid..."</span>,
-  <span class="key">"status"</span>:     <span class="str">"faxed"</span>,
-  <span class="key">"letter_id"</span>:  <span class="str">"ltr_..."</span>,
-  <span class="key">"created_at"</span>: <span class="str">"2024-03-15T10:00:00Z"</span>
+  <span class="key">"filing_id"</span>:      <span class="str">"uuid..."</span>,
+  <span class="key">"external_id"</span>:    <span class="str">"client_001"</span>,
+  <span class="key">"form_type"</span>:      <span class="str">"5472_1120"</span>,
+  <span class="key">"tax_year"</span>:       <span class="num">2024</span>,
+  <span class="key">"company_name"</span>:   <span class="str">"Marcel's Ventures LLC"</span>,
+  <span class="key">"status"</span>:         <span class="str">"mailed"</span>,
+  <span class="key">"status_message"</span>: <span class="str">"Brief per USPS Certified Mail ans IRS versendet."</span>,
+  <span class="key">"fax_id"</span>:         <span class="str">"ltr_..."</span>,          <span class="comment">// Brief-ID (trotz Feldname: physischer Brief)</span>
+  <span class="key">"submitted_at"</span>:   <span class="str">"2024-03-15T10:00:00Z"</span>,
+  <span class="key">"updated_at"</span>:     <span class="str">"2024-03-15T10:05:00Z"</span>
 }</div>
         </div>
 
@@ -372,7 +430,10 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
       <span class="key">"company_ein"</span>:  <span class="str">"12-3456789"</span>,
       <span class="key">"form_type"</span>:    <span class="str">"5472_1120"</span>,
       <span class="key">"tax_year"</span>:     <span class="num">2024</span>,
-      <span class="key">"status"</span>:       <span class="str">"faxed"</span>,
+      <span class="key">"signer_name"</span>:  <span class="str">"Max Mustermann"</span>,
+      <span class="key">"status"</span>:       <span class="str">"mailed"</span>,
+      <span class="key">"is_test"</span>:      <span class="bool">false</span>,
+      <span class="key">"fax_id"</span>:       <span class="str">"ltr_..."</span>,
       <span class="key">"created_at"</span>:   <span class="str">"2024-03-15T10:00:00Z"</span>
     }
   ]
@@ -383,55 +444,57 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
         <div class="doc-section" id="doc-settings-ep">
           <h2>Einstellungen</h2>
           <div class="endpoint"><span class="method get">GET</span><span class="endpoint-path">/api/partner/settings</span></div>
-          <p>Gibt deine Partner-ID und aktuelle Webhook-URL zurück.</p>
+          <p>Gibt Partner-ID und aktuelle Webhook-URL zurück.</p>
           <div class="endpoint" style="margin-top:14px"><span class="method patch">PATCH</span><span class="endpoint-path">/api/partner/settings</span></div>
           <p>Webhook-URL aktualisieren.</p>
-          <div class="code-block"><span class="comment">// Request body</span>
+          <div class="code-block"><span class="comment">// Webhook-URL setzen</span>
 { <span class="key">"webhook_url"</span>: <span class="str">"https://dein-system.com/webhook"</span> }
 
-<span class="comment">// Auf null setzen zum Entfernen</span>
+<span class="comment">// Webhook entfernen</span>
 { <span class="key">"webhook_url"</span>: <span class="bool">null</span> }</div>
         </div>
 
         <!-- Webhooks -->
         <div class="doc-section" id="doc-webhook-ref">
           <h2>Webhooks</h2>
-          <p>Webhook-URL in den Einstellungen hinterlegen. Wir senden bei jeder Statusänderung einen <code>POST</code> mit <code>Content-Type: application/json</code> und dem Header <code>X-MyTaxFly-Event</code>.</p>
+          <p>Webhook-URL in den Einstellungen hinterlegen. Bei jeder Statusänderung senden wir einen <code>POST</code> mit <code>Content-Type: application/json</code> und dem Header <code>X-MyTaxFly-Event</code>.</p>
           <h3>Events</h3>
           <ul>
-            <li><code>filing.submitted</code> — Einreichung erstellt, Brief ausstehend</li>
-            <li><code>filing.mailed</code> — Brief per USPS Certified Mail versendet</li>
-            <li><code>filing.failed</code> — Ein Fehler ist aufgetreten</li>
+            <li><code>filing.submitted</code> — Einreichung erstellt, Versand noch ausstehend</li>
+            <li><code>filing.mailed</code> — Brief erfolgreich per USPS Certified Mail versendet</li>
+            <li><code>filing.failed</code> — Fehler beim Versand</li>
+            <li><code>webhook.test</code> — Testnachricht (ausgelöst über Dashboard)</li>
           </ul>
           <h3>Payload</h3>
           <div class="code-block">{
-  <span class="key">"event"</span>:          <span class="str">"filing.mailed"</span>,
-  <span class="key">"filing_id"</span>:      <span class="str">"uuid..."</span>,
-  <span class="key">"external_id"</span>:    <span class="str">"client_001"</span>,
-  <span class="key">"form_type"</span>:      <span class="str">"5472_1120"</span>,
-  <span class="key">"tax_year"</span>:       <span class="num">2024</span>,
-  <span class="key">"status"</span>:         <span class="str">"faxed"</span>,
-  <span class="key">"letter_id"</span>:      <span class="str">"ltr_..."</span>,
-  <span class="key">"tracking_number"</span>: <span class="str">"9400..."</span>,
-  <span class="key">"timestamp"</span>:      <span class="str">"2024-03-15T10:05:00Z"</span>
+  <span class="key">"event"</span>:           <span class="str">"filing.mailed"</span>,
+  <span class="key">"filing_id"</span>:       <span class="str">"uuid..."</span>,
+  <span class="key">"external_id"</span>:     <span class="str">"client_001"</span>,
+  <span class="key">"form_type"</span>:       <span class="str">"5472_1120"</span>,
+  <span class="key">"tax_year"</span>:        <span class="num">2024</span>,
+  <span class="key">"status"</span>:          <span class="str">"mailed"</span>,
+  <span class="key">"is_test"</span>:         <span class="bool">false</span>,
+  <span class="key">"letter_id"</span>:       <span class="str">"ltr_..."</span>,
+  <span class="key">"tracking_number"</span>:  <span class="str">"9400111899223399401"</span>,
+  <span class="key">"timestamp"</span>:       <span class="str">"2024-03-15T10:05:00Z"</span>
 }</div>
-          <p>Dein Endpunkt muss innerhalb von 10 Sekunden HTTP 2xx zurückgeben. Fehlgeschlagene Zustellungen werden im Webhooks-Tab protokolliert.</p>
+          <p>Dein Endpunkt muss innerhalb von 10 Sekunden HTTP 2xx zurückgeben. Zustellversuche werden im Webhooks-Tab protokolliert.</p>
         </div>
 
         <!-- Form types -->
         <div class="doc-section" id="doc-form-types">
           <h2>Formular-Typen</h2>
           <table class="field-table">
-            <thead><tr><th>form_type</th><th>Beschreibung</th></tr></thead>
+            <thead><tr><th>form_type</th><th>Beschreibung</th><th>IRS-Adresse</th></tr></thead>
             <tbody>
-              <tr><td>5472_1120</td><td>Form 5472 + Form 1120 — foreign-owned single-member LLC (häufigster Fall)</td></tr>
-              <tr><td>1065</td><td>Form 1065 — Partnership Return</td></tr>
-              <tr><td>1120</td><td>Form 1120 — C-Corporation Return</td></tr>
-              <tr><td>5472</td><td>Form 5472 einzeln</td></tr>
-              <tr><td>7004</td><td>Form 7004 — Fristverlängerungsantrag</td></tr>
+              <tr><td>5472_1120</td><td>Form 5472 + Form 1120 — foreign-owned single-member LLC (häufigster Fall)</td><td>PIN Unit, Ogden UT 84201</td></tr>
+              <tr><td>1065</td><td>Form 1065 — Partnership Return</td><td>P.O. Box 409101, Ogden UT 84409</td></tr>
+              <tr><td>1120</td><td>Form 1120 — C-Corporation Return</td><td>P.O. Box 409101, Ogden UT 84409</td></tr>
+              <tr><td>5472</td><td>Form 5472 einzeln</td><td>PIN Unit, Ogden UT 84201</td></tr>
+              <tr><td>7004</td><td>Form 7004 — Fristverlängerungsantrag</td><td>P.O. Box 409101, Ogden UT 84409</td></tr>
             </tbody>
           </table>
-          <p>Alle Einreichungen werden per USPS Certified Mail an das IRS versendet. LLCs werden ohne US-Geschäftssitz angenommen (P.O. Box 409101, Ogden UT 84409 für 1065/1120; PIN Unit für 5472+1120).</p>
+          <p>Alle Einreichungen erfolgen per <strong>USPS Certified Mail</strong> mit Tracking. Die IRS-Adresse wird automatisch anhand des <code>form_type</code> gewählt — kein manueller Eingriff nötig. Wir gehen davon aus, dass die LLC keinen US-Geschäftssitz hat (typisch für ausländische Eigentümer).</p>
         </div>
 
         <!-- Statuses -->
@@ -440,8 +503,10 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
           <table class="field-table">
             <thead><tr><th>Status</th><th>Bedeutung</th></tr></thead>
             <tbody>
-              <tr><td>submitted</td><td>Einreichung gespeichert, Versand noch ausstehend</td></tr>
-              <tr><td>faxed</td><td>Brief erfolgreich per USPS Certified Mail versendet</td></tr>
+              <tr><td>submitted</td><td>Einreichung gespeichert — Versand steht aus</td></tr>
+              <tr><td>mailed</td><td>Brief per USPS Certified Mail ans IRS versendet</td></tr>
+              <tr><td>accepted</td><td>IRS hat die Einreichung akzeptiert</td></tr>
+              <tr><td>rejected</td><td>IRS hat die Einreichung abgelehnt — Support kontaktieren</td></tr>
               <tr><td>failed</td><td>Versand fehlgeschlagen — Support kontaktieren</td></tr>
               <tr><td>pending</td><td>Wird verarbeitet</td></tr>
             </tbody>
