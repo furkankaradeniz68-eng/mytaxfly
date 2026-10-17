@@ -206,6 +206,7 @@ export default async function handler(req, res) {
         form_type,
         tax_year,
         status:          mailStatus,
+        is_test:         test === true,
         letter_id:       lobResult?.id      ?? null,
         tracking_number: lobResult?.tracking ?? null,
       },
