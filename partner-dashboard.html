@@ -310,10 +310,11 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
               <tr><td>tax_year</td><td class="req">erforderlich</td><td>Zahl, z.B. <code>2024</code></td></tr>
               <tr><td>company.name</td><td class="req">erforderlich</td><td>Name der LLC</td></tr>
               <tr><td>company.ein</td><td class="req">erforderlich</td><td>EIN im Format <code>"12-3456789"</code></td></tr>
-              <tr><td>company.address.street</td><td class="opt">optional</td><td>Straße</td></tr>
-              <tr><td>company.address.city</td><td class="req">erforderlich</td><td>Stadt</td></tr>
+              <tr><td colspan="3" style="background:rgba(0,200,150,0.06);font-size:11px;color:var(--text2);padding:6px 10px">⚑ <strong>company.address</strong> = US-Adresse des Registered Agent (z.B. in Delaware oder Wyoming). Diese Adresse wird als Absender auf dem USPS-Brief ans IRS verwendet und muss vollständig und korrekt sein.</td></tr>
+              <tr><td>company.address.street</td><td class="req">erforderlich</td><td>Straße des Registered Agent, z.B. <code>"123 Main St"</code></td></tr>
+              <tr><td>company.address.city</td><td class="req">erforderlich</td><td>Stadt des Registered Agent</td></tr>
               <tr><td>company.address.state</td><td class="req">erforderlich</td><td><strong>US-Bundesstaat</strong> (nicht ISO-Ländercode). <code>"DE"</code> = Delaware, <code>"WY"</code> = Wyoming, <code>"FL"</code> = Florida — immer der Gründungsstaat der LLC</td></tr>
-              <tr><td>company.address.zip</td><td class="opt">optional</td><td>US-Postleitzahl</td></tr>
+              <tr><td>company.address.zip</td><td class="req">erforderlich</td><td>US-Postleitzahl des Registered Agent, z.B. <code>"19801"</code></td></tr>
               <tr><td>foreign_owner</td><td class="req">erforderlich für 5472_1120</td><td>Objekt — Struktur siehe unten</td></tr>
               <tr><td>transactions</td><td class="opt">optional</td><td>Array — Struktur siehe unten</td></tr>
               <tr><td>partners</td><td class="req">erforderlich für 1065</td><td>Array — Struktur siehe unten</td></tr>
@@ -391,12 +392,27 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
 }</div>
 
           <h3>transactions (optional, für Form 5472)</h3>
-          <p>Array von Transaktionen zwischen der LLC und dem Auslandseigentümer im Steuerjahr.</p>
+          <p>Array von Transaktionen zwischen der LLC und dem Auslandseigentümer im Steuerjahr. Jede Transaktion wird einem Form-5472-Part-IV-Feld zugeordnet.</p>
+          <table class="field-table" style="margin-bottom:12px">
+            <thead><tr><th>type</th><th>Form 5472 Zeile</th><th>Richtung</th></tr></thead>
+            <tbody>
+              <tr><td><code>services_received</code></td><td>15</td><td>LLC erhält Leistungen vom Eigentümer</td></tr>
+              <tr><td><code>rent_received</code></td><td>13a</td><td>LLC erhält Miete vom Eigentümer</td></tr>
+              <tr><td><code>royalties_received</code></td><td>13b</td><td>LLC erhält Lizenzgebühren</td></tr>
+              <tr><td><code>loan_to_owner</code></td><td>17</td><td>LLC leiht Geld an Eigentümer</td></tr>
+              <tr><td><code>services_paid</code></td><td>29</td><td>LLC zahlt für Leistungen an Eigentümer</td></tr>
+              <tr><td><code>rent_paid</code></td><td>27a</td><td>LLC zahlt Miete an Eigentümer</td></tr>
+              <tr><td><code>royalties_paid</code></td><td>27b</td><td>LLC zahlt Lizenzgebühren</td></tr>
+              <tr><td><code>loan_from_owner</code></td><td>31</td><td>LLC leiht Geld vom Eigentümer</td></tr>
+              <tr><td><code>capital_contribution</code></td><td>—</td><td>Kapitaleinlage des Eigentümers</td></tr>
+              <tr><td><code>distribution</code></td><td>—</td><td>Ausschüttung an Eigentümer</td></tr>
+            </tbody>
+          </table>
           <div class="code-block">[
   {
-    <span class="key">"type"</span>:        <span class="str">"sales"</span>,   <span class="comment">// Art: sales | purchases | loans_to | loans_from | rent | royalties | other</span>
-    <span class="key">"amount"</span>:      <span class="num">5000</span>,      <span class="comment">// Betrag in USD</span>
-    <span class="key">"description"</span>: <span class="str">"..."</span>      <span class="comment">// optional</span>
+    <span class="key">"type"</span>:   <span class="str">"services_received"</span>,  <span class="comment">// erforderlich: Typ aus Tabelle oben</span>
+    <span class="key">"amount"</span>: <span class="num">5000</span>,                 <span class="comment">// erforderlich: Betrag in USD</span>
+    <span class="key">"note"</span>:   <span class="str">"Software development"</span> <span class="comment">// optional: Beschreibung</span>
   }
 ]</div>
 
@@ -404,19 +420,25 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
           <p>Array aller Partner der LLC.</p>
           <div class="code-block">[
   {
-    <span class="key">"name"</span>:          <span class="str">"Max Mustermann"</span>,
-    <span class="key">"address"</span>:       <span class="str">"Musterstr. 1, Berlin, DE"</span>,  <span class="comment">// Wohnadresse des Partners (ausländisch)</span>
-    <span class="key">"tin"</span>:           <span class="str">"DE123456789"</span>,        <span class="comment">// optional: ausländische Steuernummer</span>
-    <span class="key">"ownership_pct"</span>: <span class="num">50</span>,                    <span class="comment">// Beteiligungsquote in %</span>
-    <span class="key">"type"</span>:          <span class="str">"general"</span>              <span class="comment">// general | limited | LLC</span>
+    <span class="key">"name"</span>:              <span class="str">"Max Mustermann"</span>,         <span class="comment">// erforderlich</span>
+    <span class="key">"country"</span>:           <span class="str">"DE"</span>,                      <span class="comment">// erforderlich: ISO-Ländercode — DE = Deutschland, GB = UK</span>
+    <span class="key">"ownership_percent"</span>: <span class="num">50</span>,                        <span class="comment">// erforderlich: Beteiligungsquote in %</span>
+    <span class="key">"address"</span>:           <span class="str">"Musterstr. 1, Berlin"</span>,   <span class="comment">// optional: Wohnadresse (ausländisch)</span>
+    <span class="key">"tin"</span>:               <span class="str">"DE123456789"</span>             <span class="comment">// optional: ausländische Steuernummer</span>
   }
 ]</div>
 
           <h3>financials (optional)</h3>
+          <p>Alternativ zu <code>transactions</code>: Gesamtsummen statt Einzelbuchungen. Wenn <code>gross_revenue</code> gesetzt ist, werden <code>transactions</code> für die Einnahmen/Ausgaben-Berechnung ignoriert.</p>
           <div class="code-block">{
-  <span class="key">"total_income"</span>:     <span class="num">50000</span>,  <span class="comment">// Gesamteinnahmen in USD</span>
-  <span class="key">"total_deductions"</span>: <span class="num">12000</span>,  <span class="comment">// Gesamtabzüge in USD</span>
-  <span class="key">"total_assets"</span>:     <span class="num">80000</span>   <span class="comment">// Gesamtvermögen zum Jahresende in USD</span>
+  <span class="key">"gross_revenue"</span>: <span class="num">50000</span>,  <span class="comment">// Gesamteinnahmen in USD</span>
+  <span class="key">"expenses"</span>: {
+    <span class="key">"payroll"</span>:      <span class="num">10000</span>,  <span class="comment">// Löhne und Gehälter</span>
+    <span class="key">"rent"</span>:         <span class="num">2000</span>,   <span class="comment">// Miet- / Leasingkosten</span>
+    <span class="key">"software"</span>:     <span class="num">500</span>,    <span class="comment">// Software und Tools</span>
+    <span class="key">"professional"</span>: <span class="num">3000</span>,   <span class="comment">// Beratungs- / Anwaltskosten</span>
+    <span class="key">"other"</span>:        <span class="num">1500</span>    <span class="comment">// Sonstige Ausgaben</span>
+  }
 }</div>
         </div>
 
@@ -433,7 +455,7 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
   <span class="key">"company_name"</span>:   <span class="str">"Marcel's Ventures LLC"</span>,
   <span class="key">"status"</span>:         <span class="str">"mailed"</span>,
   <span class="key">"status_message"</span>: <span class="str">"Brief per USPS Certified Mail ans IRS versendet."</span>,
-  <span class="key">"fax_id"</span>:         <span class="str">"ltr_..."</span>,          <span class="comment">// Brief-ID (trotz Feldname: physischer Brief)</span>
+  <span class="key">"letter_id"</span>:      <span class="str">"ltr_..."</span>,          <span class="comment">// Lob Brief-ID — für Tracking und Nachweis</span>
   <span class="key">"submitted_at"</span>:   <span class="str">"2024-03-15T10:00:00Z"</span>,
   <span class="key">"updated_at"</span>:     <span class="str">"2024-03-15T10:05:00Z"</span>
 }</div>
@@ -510,11 +532,11 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
           <table class="field-table">
             <thead><tr><th>form_type</th><th>Beschreibung</th><th>IRS-Adresse</th></tr></thead>
             <tbody>
-              <tr><td>5472_1120</td><td>Form 5472 + Form 1120 — foreign-owned single-member LLC (häufigster Fall)</td><td>PIN Unit, Ogden UT 84201</td></tr>
-              <tr><td>1065</td><td>Form 1065 — Partnership Return</td><td>P.O. Box 409101, Ogden UT 84409</td></tr>
-              <tr><td>1120</td><td>Form 1120 — C-Corporation Return</td><td>P.O. Box 409101, Ogden UT 84409</td></tr>
-              <tr><td>5472</td><td>Form 5472 einzeln</td><td>PIN Unit, Ogden UT 84201</td></tr>
-              <tr><td>7004</td><td>Form 7004 — Fristverlängerungsantrag</td><td>P.O. Box 409101, Ogden UT 84409</td></tr>
+              <tr><td>5472_1120</td><td>Form 5472 + Pro Forma Form 1120 — foreign-owned single-member LLC / Disregarded Entity (häufigster Fall)</td><td>IRS, 1973 Rulon White Blvd, M/S 6112, Attn: PIN Unit, Ogden UT 84201</td></tr>
+              <tr><td>1065</td><td>Form 1065 — Partnership Return (Multi-Member LLC)</td><td>IRS, P.O. Box 409101, Ogden UT 84409</td></tr>
+              <tr><td>1120</td><td>Form 1120 — C-Corporation Return (kein US-Geschäftssitz)</td><td>IRS, P.O. Box 409101, Ogden UT 84409</td></tr>
+              <tr><td>5472</td><td>Form 5472 einzeln (ohne 1120)</td><td>IRS, 1973 Rulon White Blvd, M/S 6112, Attn: PIN Unit, Ogden UT 84201</td></tr>
+              <tr><td>7004</td><td>Form 7004 — Fristverlängerungsantrag (kein US-Geschäftssitz)</td><td>IRS, P.O. Box 409101, Ogden UT 84409</td></tr>
             </tbody>
           </table>
           <p>Alle Einreichungen erfolgen per <strong>USPS Certified Mail</strong> mit Tracking. Die IRS-Adresse wird automatisch anhand des <code>form_type</code> gewählt — kein manueller Eingriff nötig. Wir gehen davon aus, dass die LLC keinen US-Geschäftssitz hat (typisch für ausländische Eigentümer).</p>
