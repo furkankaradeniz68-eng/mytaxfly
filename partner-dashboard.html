@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>MyTaxFly Partner Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -134,10 +135,27 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
   <div class="login-card">
     <div class="login-logo">MyTaxFly</div>
     <div class="login-sub">Partner Dashboard</div>
-    <label>API Key</label>
-    <input type="password" id="api-key-input" placeholder="mtf_live_..." autocomplete="off">
-    <button class="login-btn" onclick="login()">Anmelden</button>
-    <div class="login-err" id="login-err">Ungültiger oder inaktiver API Key.</div>
+
+    <!-- Step 1: Email + Password -->
+    <div id="step-pw">
+      <label>E-Mail</label>
+      <input type="email" id="login-email" placeholder="partner@example.com" autocomplete="email">
+      <label style="margin-top:14px">Passwort</label>
+      <input type="password" id="login-pw" placeholder="••••••••" autocomplete="current-password">
+      <button class="login-btn" onclick="loginStep1()">Anmelden</button>
+    </div>
+
+    <!-- Step 2: 2FA TOTP -->
+    <div id="step-mfa" style="display:none">
+      <div style="font-size:13px;color:var(--text2);margin-bottom:16px">
+        Bitte den 6-stelligen Code aus deiner Authenticator-App eingeben.
+      </div>
+      <label>2FA Code</label>
+      <input type="text" id="login-totp" placeholder="123456" maxlength="6" autocomplete="one-time-code" inputmode="numeric">
+      <button class="login-btn" onclick="loginStep2()">Bestätigen</button>
+    </div>
+
+    <div class="login-err" id="login-err"></div>
   </div>
 </div>
 
@@ -193,7 +211,11 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
 
   <!-- Webhooks -->
   <div class="content" id="tab-webhooks" style="display:none">
-    <div class="section-title">Webhook Zustellungs-Log</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div class="section-title" style="margin:0">Webhook Zustellungs-Log</div>
+      <button class="save-btn" style="margin:0" onclick="sendTestWebhook()">Test-Webhook senden</button>
+    </div>
+    <div id="webhook-test-msg" style="font-size:12px;color:var(--accent);margin-bottom:12px;display:none"></div>
     <div class="table-wrap">
       <table>
         <thead><tr>
@@ -433,7 +455,11 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
     <div class="settings-card">
       <h3>API Key</h3>
       <p>Verwende diesen Key im <code>X-API-Key</code> Header für alle API-Anfragen.</p>
-      <div class="apikey-box" id="settings-apikey">—</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="apikey-box" style="flex:1" id="settings-apikey">—</div>
+        <button class="save-btn" style="margin:0;white-space:nowrap" onclick="copyApiKey()">Kopieren</button>
+      </div>
+      <div class="save-msg" id="copy-msg">Kopiert.</div>
     </div>
     <div class="settings-card">
       <h3>Webhook URL</h3>
@@ -447,9 +473,18 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
 </div>
 
 <script>
-let API_KEY = localStorage.getItem('mtf_partner_key') || '';
-const BASE = '/api/partner';
+// ── Supabase init ─────────────────────────────────────────────────────────────
+const sb = supabase.createClient(
+  'https://yacwkxstvqvdgiiffwos.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlhY3dreHN0dnF2ZGdpaWZmd29zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3NDY2NTksImV4cCI6MjA5NTMyMjY1OX0.ROhbdhGOEmxVR24CQUfrk-_OB4dKK1GnGDvBYWprBQs'
+);
 
+const BASE = '/api/partner';
+let API_KEY    = '';   // in memory only — never stored
+let SB_SESSION = null;
+let MFA_FACTOR_ID = null;
+
+// ── API helper ────────────────────────────────────────────────────────────────
 async function apiFetch(path, opts = {}) {
   const res = await fetch(BASE + path, {
     ...opts,
@@ -460,32 +495,108 @@ async function apiFetch(path, opts = {}) {
   return json;
 }
 
-async function login() {
-  const key = document.getElementById('api-key-input').value.trim();
-  if (!key) return;
-  API_KEY = key;
+// ── Login Step 1: Email + Passwort ───────────────────────────────────────────
+async function loginStep1() {
+  const email = document.getElementById('login-email').value.trim();
+  const pw    = document.getElementById('login-pw').value;
+  showErr('');
+  if (!email || !pw) return showErr('E-Mail und Passwort eingeben.');
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pw });
+  if (error) return showErr(error.message);
+
+  SB_SESSION = data.session;
+
+  // Check if MFA is required
+  const { data: aal } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (aal?.nextLevel === 'aal2') {
+    // MFA required — get factor
+    const { data: factors } = await sb.auth.mfa.listFactors();
+    const totp = factors?.totp?.[0];
+    if (totp) {
+      MFA_FACTOR_ID = totp.id;
+      document.getElementById('step-pw').style.display  = 'none';
+      document.getElementById('step-mfa').style.display = 'block';
+      setTimeout(() => document.getElementById('login-totp').focus(), 100);
+      return;
+    }
+  }
+
+  await afterLogin(data.session);
+}
+
+// ── Login Step 2: TOTP ────────────────────────────────────────────────────────
+async function loginStep2() {
+  const code = document.getElementById('login-totp').value.trim();
+  showErr('');
+  if (!code) return showErr('Code eingeben.');
+
+  const { data: challenge } = await sb.auth.mfa.challenge({ factorId: MFA_FACTOR_ID });
+  const { data, error } = await sb.auth.mfa.verify({
+    factorId:    MFA_FACTOR_ID,
+    challengeId: challenge.id,
+    code,
+  });
+  if (error) return showErr('Ungültiger Code. Bitte erneut versuchen.');
+
+  SB_SESSION = data.session;
+  await afterLogin(data.session);
+}
+
+// ── After successful login ────────────────────────────────────────────────────
+async function afterLogin(session) {
   try {
-    const s = await apiFetch('/settings');
-    localStorage.setItem('mtf_partner_key', key);
-    document.getElementById('topbar-pid').textContent = s.partner_id;
-    document.getElementById('settings-apikey').textContent = key;
-    document.getElementById('webhook-url-input').value = s.webhook_url || '';
+    // Fetch API key via JWT — key stays in memory
+    const res = await fetch('/api/partner/my-key', {
+      headers: { 'Authorization': `Bearer ${session.access_token}` },
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+
+    API_KEY = data.api_key;
+    document.getElementById('topbar-pid').textContent = data.partner_id;
+    // Show masked key (last 6 chars only)
+    document.getElementById('settings-apikey').textContent =
+      'mtf_live_...' + API_KEY.slice(-6);
+    document.getElementById('webhook-url-input').value = data.webhook_url || '';
+
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app').style.display = 'block';
     loadAll();
-  } catch {
-    document.getElementById('login-err').style.display = 'block';
+  } catch (e) {
+    showErr('Login fehlgeschlagen: ' + e.message);
   }
 }
 
-function logout() {
-  localStorage.removeItem('mtf_partner_key');
-  API_KEY = '';
-  document.getElementById('app').style.display = 'none';
-  document.getElementById('login-screen').style.display = 'flex';
-  document.getElementById('api-key-input').value = '';
+function showErr(msg) {
+  const el = document.getElementById('login-err');
+  el.textContent = msg;
+  el.style.display = msg ? 'block' : 'none';
 }
 
+async function logout() {
+  await sb.auth.signOut();
+  API_KEY = '';
+  SB_SESSION = null;
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('step-pw').style.display  = 'block';
+  document.getElementById('step-mfa').style.display = 'none';
+  document.getElementById('login-email').value = '';
+  document.getElementById('login-pw').value    = '';
+  document.getElementById('login-totp').value  = '';
+}
+
+function copyApiKey() {
+  if (!API_KEY) return;
+  navigator.clipboard.writeText(API_KEY).then(() => {
+    const msg = document.getElementById('copy-msg');
+    msg.style.display = 'block';
+    setTimeout(() => msg.style.display = 'none', 2000);
+  });
+}
+
+// ── Data loading ──────────────────────────────────────────────────────────────
 async function loadAll() {
   await Promise.all([loadFilings(), loadWebhooks()]);
 }
@@ -494,7 +605,7 @@ async function loadFilings() {
   try {
     const { filings } = await apiFetch('/filings');
     renderStats(filings);
-    renderOverview(filings.slice(0, 10));
+    renderOverview(filings.filter(f => !f.is_test).slice(0, 10));
     renderFilings(filings);
   } catch (e) {
     document.getElementById('overview-tbody').innerHTML = `<tr class="empty-row"><td colspan="6">Fehler: ${e.message}</td></tr>`;
@@ -511,19 +622,19 @@ async function loadWebhooks() {
   }
 }
 
+// ── Render ────────────────────────────────────────────────────────────────────
 function renderStats(filings) {
-  document.getElementById('s-total').textContent  = filings.length;
-  document.getElementById('s-mailed').textContent = filings.filter(f => f.status === 'faxed' || f.status === 'mailed').length;
-  document.getElementById('s-pending').textContent= filings.filter(f => f.status === 'submitted' || f.status === 'pending').length;
-  document.getElementById('s-failed').textContent = filings.filter(f => f.status === 'failed' || f.status === 'error').length;
+  const live = filings.filter(f => !f.is_test);
+  document.getElementById('s-total').textContent   = live.length;
+  document.getElementById('s-mailed').textContent  = live.filter(f => f.status === 'mailed' || f.status === 'faxed').length;
+  document.getElementById('s-pending').textContent = live.filter(f => f.status === 'submitted' || f.status === 'pending').length;
+  document.getElementById('s-failed').textContent  = live.filter(f => f.status === 'failed' || f.status === 'error').length;
 }
 
-function statusBadge(s) {
-  return `<span class="badge ${s}">${s}</span>`;
-}
-
+function statusBadge(s) { return `<span class="badge ${s}">${s}</span>`; }
+function testBadge(isTest) { return isTest ? `<span class="badge pending" style="font-size:10px">TEST</span> ` : ''; }
 function fmtDate(d) {
-  return d ? new Date(d).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' }) : '—';
+  return d ? new Date(d).toLocaleDateString('de-DE', { year:'numeric', month:'short', day:'numeric' }) : '—';
 }
 
 function renderOverview(filings) {
@@ -543,7 +654,7 @@ function renderFilings(filings) {
   const tb = document.getElementById('filings-tbody');
   if (!filings.length) { tb.innerHTML = '<tr class="empty-row"><td colspan="9">Noch keine Einreichungen.</td></tr>'; return; }
   tb.innerHTML = filings.map(f => `<tr>
-    <td>${f.company_name || '—'}</td>
+    <td>${testBadge(f.is_test)}${f.company_name || '—'}</td>
     <td class="mono">${f.company_ein || '—'}</td>
     <td class="mono">${f.external_id}</td>
     <td>${f.form_type}</td>
@@ -560,13 +671,14 @@ function renderWebhooks(deliveries) {
   if (!deliveries.length) { tb.innerHTML = '<tr class="empty-row"><td colspan="5">Noch keine Webhook-Zustellungen.</td></tr>'; return; }
   tb.innerHTML = deliveries.map(d => `<tr>
     <td>${d.event}</td>
-    <td><span class="badge ${d.success ? 'badge-ok faxed' : 'badge-fail failed'}">${d.success ? 'OK' : 'Failed'}</span></td>
+    <td><span class="badge ${d.success ? 'faxed' : 'failed'}">${d.success ? 'OK' : 'Fehler'}</span></td>
     <td class="mono">${d.status_code ?? '—'}</td>
     <td class="mono" style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.response_body || '—'}</td>
     <td class="mono">${fmtDate(d.created_at)}</td>
   </tr>`).join('');
 }
 
+// ── Actions ───────────────────────────────────────────────────────────────────
 async function saveWebhookUrl() {
   const url = document.getElementById('webhook-url-input').value.trim();
   try {
@@ -577,6 +689,22 @@ async function saveWebhookUrl() {
   } catch (e) { alert(e.message); }
 }
 
+async function sendTestWebhook() {
+  const msg = document.getElementById('webhook-test-msg');
+  msg.style.display = 'none';
+  try {
+    const data = await apiFetch('/webhook-test', { method: 'POST' });
+    msg.textContent = data.message;
+    msg.style.display = 'block';
+    setTimeout(() => loadWebhooks(), 1000);
+  } catch (e) {
+    msg.textContent = 'Fehler: ' + e.message;
+    msg.style.color = 'var(--red)';
+    msg.style.display = 'block';
+  }
+}
+
+// ── Tab navigation ────────────────────────────────────────────────────────────
 function showTab(name) {
   ['overview','filings','webhooks','settings','docs'].forEach(t => {
     document.getElementById('tab-' + t).style.display = t === name ? 'block' : 'none';
@@ -591,14 +719,17 @@ function scrollDoc(id) {
   if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-// Auto-login if key stored
-if (API_KEY) {
-  document.getElementById('api-key-input').value = API_KEY;
-  login();
-}
+// ── Keyboard shortcuts ────────────────────────────────────────────────────────
+document.getElementById('login-pw').addEventListener('keydown', e => {
+  if (e.key === 'Enter') loginStep1();
+});
+document.getElementById('login-totp').addEventListener('keydown', e => {
+  if (e.key === 'Enter') loginStep2();
+});
 
-document.getElementById('api-key-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') login();
+// ── Auto-restore session ──────────────────────────────────────────────────────
+sb.auth.getSession().then(async ({ data: { session } }) => {
+  if (session) await afterLogin(session);
 });
 </script>
 </body>
