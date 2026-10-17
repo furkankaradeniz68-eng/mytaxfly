@@ -478,7 +478,7 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
       <span class="key">"signer_name"</span>:  <span class="str">"Max Mustermann"</span>,
       <span class="key">"status"</span>:       <span class="str">"mailed"</span>,
       <span class="key">"is_test"</span>:      <span class="bool">false</span>,
-      <span class="key">"fax_id"</span>:       <span class="str">"ltr_..."</span>,
+      <span class="key">"letter_id"</span>:    <span class="str">"ltr_..."</span>,
       <span class="key">"created_at"</span>:   <span class="str">"2024-03-15T10:00:00Z"</span>
     }
   ]
@@ -854,7 +854,7 @@ function renderFilings(filings) {
     <td>${f.tax_year}</td>
     <td>${f.signer_name || '—'}</td>
     <td>${statusBadge(f.status)}</td>
-    <td class="mono">${f.fax_id || '—'}</td>
+    <td class="mono">${f.letter_id || '—'}</td>
     <td class="mono">${fmtDate(f.created_at)}</td>
   </tr>`).join('');
 }
