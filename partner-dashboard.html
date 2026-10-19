@@ -656,7 +656,12 @@ async function startEnroll() {
   if (error) return showErr('Enrollment-Fehler: ' + error.message);
 
   ENROLL_DATA = data;
-  document.getElementById('enroll-qr').innerHTML     = data.totp.qr_code;
+  const qrEl = document.getElementById('enroll-qr');
+  const img = document.createElement('img');
+  img.src = data.totp.qr_code;
+  img.style.cssText = 'width:164px;height:164px;border-radius:8px;background:#fff;padding:8px;display:block';
+  qrEl.innerHTML = '';
+  qrEl.appendChild(img);
   document.getElementById('enroll-secret').textContent = data.totp.secret;
 
   document.getElementById('step-pw').style.display     = 'none';
