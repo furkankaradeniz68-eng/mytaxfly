@@ -680,7 +680,9 @@ async function verifyEnroll() {
   if (error) return showErr('Ungültiger Code. Bitte erneut versuchen.');
 
   ENROLL_DATA = null;
-  await afterLogin(data.session);
+  const session = data?.session ?? (await sb.auth.getSession()).data?.session;
+  if (!session) return showErr('Session konnte nicht geladen werden. Bitte neu anmelden.');
+  await afterLogin(session);
 }
 
 async function cancelEnroll() {
@@ -704,16 +706,20 @@ async function loginStep2() {
   showErr('');
   if (!code) return showErr('Code eingeben.');
 
-  const { data: challenge } = await sb.auth.mfa.challenge({ factorId: MFA_FACTOR_ID });
+  const { data: ch, error: chErr } = await sb.auth.mfa.challenge({ factorId: MFA_FACTOR_ID });
+  if (chErr || !ch) return showErr('Challenge fehlgeschlagen. Bitte neu anmelden.');
+
   const { data, error } = await sb.auth.mfa.verify({
     factorId:    MFA_FACTOR_ID,
-    challengeId: challenge.id,
+    challengeId: ch.id,
     code,
   });
   if (error) return showErr('Ungültiger Code. Bitte erneut versuchen.');
 
-  SB_SESSION = data.session;
-  await afterLogin(data.session);
+  const session = data?.session ?? (await sb.auth.getSession()).data?.session;
+  if (!session) return showErr('Session konnte nicht geladen werden. Bitte neu anmelden.');
+  SB_SESSION = session;
+  await afterLogin(session);
 }
 
 // ── After successful login ────────────────────────────────────────────────────
