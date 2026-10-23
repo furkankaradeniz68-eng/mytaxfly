@@ -5468,7 +5468,8 @@ async function exportFilingPackage() {
   const corpName = llcName || p.llcName || '';
   try {
     const sigData = await _loadSigData();
-    const blob = await buildIRSAcroBlob(p, filtered, taxYear, corpName, '5472_1120', null, sigData);
+    const _activeEnt = entities.find(e => e.id === activeEntityId) || entities[0];
+    const blob = await buildIRSAcroBlob(p, filtered, taxYear, corpName, '5472_1120', null, sigData, _activeEnt?.partners);
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -5560,7 +5561,8 @@ async function previewIRSPdf() {
       const { data: { user } } = await sb.auth.getUser();
       sigDataPreview = user?.user_metadata?.signature_data || localStorage.getItem('mtf_signature') || null;
     } catch(e) { sigDataPreview = localStorage.getItem('mtf_signature') || null; }
-    const blob = await buildIRSAcroBlob(p, filtered, irsFilingYear, llcName || p.llcName || '', irsFormType, irsExtendForm, sigDataPreview);
+    const _activeEntPrev = entities.find(e => e.id === activeEntityId) || entities[0];
+    const blob = await buildIRSAcroBlob(p, filtered, irsFilingYear, llcName || p.llcName || '', irsFormType, irsExtendForm, sigDataPreview, _activeEntPrev?.partners);
     const url  = URL.createObjectURL(blob);
 
     // Show in preview modal
@@ -5586,7 +5588,7 @@ async function previewIRSPdf() {
 }
 
 // Fill actual IRS PDF templates with user data via pdf-lib coordinate drawing
-async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extendForm, sigData) {
+async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extendForm, sigData, entityPartners) {
   const { PDFDocument, rgb, StandardFonts } = PDFLib;
 
   // ── Setup ─────────────────────────────────────────────────
@@ -5851,7 +5853,7 @@ async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extend
 
     // ── Page 1: Parts I – III ──
     const pg = pdfDoc.addPage([W, H]);
-    pageHeader(pg, '5472', 'Information Return of a 25% Foreign-Owned U.S. Corporation (Rev. December 2023)', 1, 2);
+    pageHeader(pg, '5472', 'Information Return of a 25% Foreign-Owned U.S. Corporation (Rev. December 2023)', 1, 3);
     t(pg, `For tax year of the reporting corporation beginning 01/01/${taxYear} and ending 12/31/${taxYear}`, ML, H-47, 7, font, GRAY6);
 
     let y = H - 58;
@@ -5937,14 +5939,15 @@ async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extend
     y = sectionBar(pg, y, '  AMOUNTS RECEIVED BY REPORTING CORPORATION', 'Lines 9 – 22');
     y = lineRow(pg, y, '15', 'Consideration received for technical, managerial, engineering, construction, scientific, or like services', inc > 0 ? irs(inc) : '0');
     y = lineRow(pg, y, '16', 'Commissions received', '0');
-    y = lineRow(pg, y, '17', 'Amounts borrowed — beginning balance / ending balance', '0');
+    y = lineRow(pg, y, '17a', 'Amounts borrowed from related party — beginning of year', '0');
+    y = lineRow(pg, y, '17b', 'Amounts borrowed from related party — end of year', '0');
     y = lineRow(pg, y, '18', 'Interest received', '0');
     y = lineRow(pg, y, '22', 'Total — combine amounts on lines 9 through 21', irs(inc), true);
     y -= 4;
 
     // ── Page 2: Amounts PAID + summary ──
     const pg2 = pdfDoc.addPage([W, H]);
-    pageHeader(pg2, '5472', 'Information Return of a 25% Foreign-Owned U.S. Corporation — Part IV (continued)', 2, 2);
+    pageHeader(pg2, '5472', 'Information Return of a 25% Foreign-Owned U.S. Corporation — Part IV (continued)', 2, 3);
     let y2 = H - 58;
 
     y2 = sectionBar(pg2, y2, '  AMOUNTS PAID OR ACCRUED BY REPORTING CORPORATION', 'Lines 23 – 36');
@@ -5952,6 +5955,8 @@ async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extend
     y2 = lineRow(pg2, y2, '24', 'Purchases of tangible property other than stock in trade', '0');
     y2 = lineRow(pg2, y2, '25', 'Platform contribution transaction payments paid', '0');
     y2 = lineRow(pg2, y2, '27a', 'Rents paid (other than intangible property rights)', '0');
+    y2 = lineRow(pg2, y2, '31a', 'Amounts loaned to related party — beginning of year', '0');
+    y2 = lineRow(pg2, y2, '31b', 'Amounts loaned to related party — end of year', '0');
     y2 = lineRow(pg2, y2, '35', 'Other amounts paid or accrued (see instructions)', exp > 0 ? irs(exp) : '0');
     y2 = lineRow(pg2, y2, '36', 'Total — combine amounts on lines 23 through 35', irs(exp), true);
     y2 -= 14;
@@ -5961,10 +5966,47 @@ async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extend
     box(pg2, ML, y2-50, IW, 50, null, BLACK);
     t(pg2, 'MONETARY TRANSACTION SUMMARY', ML+4, y2-11, 7.5, fontB, GRAY3);
     hline(pg2, y2-14, ML, W-MR, 0.5, rgb(0.6,0.6,0.6));
-    t(pg2, `Total gross payments received (Line 22):`, ML+8, y2-27, 8, font, BLACK);
+    t(pg2, 'Total gross payments received (Line 22):', ML+8, y2-27, 8, font, BLACK);
     tR(pg2, dollar(inc), W-MR-8, y2-27, 8.5, fontB, BLACK);
-    t(pg2, `Total gross payments paid or accrued (Line 36):`, ML+8, y2-40, 8, font, BLACK);
+    t(pg2, 'Total gross payments paid or accrued (Line 36):', ML+8, y2-40, 8, font, BLACK);
     tR(pg2, dollar(exp), W-MR-8, y2-40, 8.5, fontB, BLACK);
+
+    // ── Page 3: Part V — Foreign-Owned U.S. DE (IRS-required) ──
+    const pg3 = pdfDoc.addPage([W, H]);
+    pageHeader(pg3, '5472', 'Information Return of a 25% Foreign-Owned U.S. Corporation — Part V', 3, 3);
+    let y3 = H - 58;
+
+    y3 = sectionBar(pg3, y3, 'PART V — REPORTABLE TRANSACTIONS OF A FOREIGN-OWNED DOMESTIC DISREGARDED ENTITY');
+    t(pg3, 'Required for all foreign-owned U.S. disregarded entities per Reg. sec. 1.6038A-2(b)(7)(x).', ML+4, y3-10, 6.5, font, GRAY3);
+    y3 -= 18;
+
+    y3 = lineRow(pg3, y3, '37', 'Total contributions made to the DE by the foreign person (capital contributions)', '0');
+    y3 = lineRow(pg3, y3, '38', 'Total distributions made from the DE to the foreign person', '0');
+    y3 = lineRow(pg3, y3, '39', 'Gross receipts of the DE from all sources', irs(inc));
+    y3 = lineRow(pg3, y3, '40', 'Total deductions of the DE', irs(exp));
+    y3 = lineRow(pg3, y3, '41', 'Net income (loss) of the DE (line 39 minus line 40)', irs(profit), true);
+    y3 = lineRow(pg3, y3, '42', 'Total assets of the DE at end of year', irs(inc));
+    y3 -= 14;
+
+    // Part V summary box
+    box(pg3, ML, y3-54, IW, 54, LGRAY, null);
+    box(pg3, ML, y3-54, IW, 54, null, BLACK);
+    t(pg3, 'PART V SUMMARY', ML+4, y3-11, 7.5, fontB, GRAY3);
+    hline(pg3, y3-14, ML, W-MR, 0.5, rgb(0.6,0.6,0.6));
+    t(pg3, 'Gross receipts (Line 39):', ML+8, y3-27, 8, font, BLACK);
+    tR(pg3, dollar(inc), W-MR-8, y3-27, 8.5, fontB, BLACK);
+    t(pg3, 'Total deductions (Line 40):', ML+8, y3-40, 8, font, BLACK);
+    tR(pg3, dollar(exp), W-MR-8, y3-40, 8.5, fontB, BLACK);
+    t(pg3, 'Net income / (loss) of the DE (Line 41):', ML+8, y3-53, 8, font, BLACK);
+    tR(pg3, dollar(profit), W-MR-8, y3-53, 8.5, fontB, BLACK);
+    y3 -= 62;
+
+    y3 -= 6;
+    box(pg3, ML, y3-32, IW, 32, rgb(1,0.97,0.91), null);
+    box(pg3, ML, y3-32, IW, 32, null, rgb(0.85,0.65,0.2));
+    t(pg3, '(!)  DISCLAIMER', ML+6, y3-10, 7.5, fontB, rgb(0.5,0.3,0));
+    t(pg3, 'This is a pro forma informational return for a foreign-owned U.S. disregarded entity. The entity has no separate U.S.', ML+6, y3-21, 6.5, font, rgb(0.45,0.28,0));
+    t(pg3, 'federal income tax liability. Form 5472 is filed as an attachment per Reg. sec.1.6038A-1. Consult a licensed CPA before filing.', ML+6, y3-31, 6.5, font, rgb(0.45,0.28,0));
   }
 
   // ══════════════════════════════════════════════════════════
@@ -6004,6 +6046,69 @@ async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extend
     y -= 6;
 
     await sigBlock(pg, y);
+
+    // ── Schedule K-1 per partner ──────────────────────────────
+    const partners = (entityPartners || []).filter(p => p.name?.trim());
+    if (partners.length > 0) {
+      const totalPages = 1 + partners.length;
+      // Rewrite page 1 header with correct total count
+      // (already drawn — add K-1 pages after)
+      const GREEN = rgb(0.07, 0.53, 0.33);
+      partners.forEach((pt, idx) => {
+        const pct  = (pt.ownership || 0) / 100;
+        const allocIncome = profit * pct;
+        const k1pg = pdfDoc.addPage([W, H]);
+
+        // Header
+        k1pg.drawRectangle({ x: 0, y: H - 36, width: W, height: 36, color: GREEN });
+        t(k1pg, 'Schedule K-1', ML, H - 14, 11, fontB, WHITE);
+        t(k1pg, '(Form 1065) — Partner\'s Share of Income, Deductions, Credits, etc.', ML + 92, H - 14, 7.5, font, WHITE);
+        tR(k1pg, `Tax Year ${taxYear}  |  Page ${1 + idx + 1} of ${totalPages}`, W - MR, H - 14, 7, font, rgb(0.7, 0.9, 0.8));
+        t(k1pg, `For calendar year ${taxYear}, or tax year beginning 01/01/${taxYear}, ending 12/31/${taxYear}`, ML, H - 46, 6.5, font, GRAY6);
+
+        let ky = H - 58;
+
+        // Partnership info box
+        ky = sectionBar(k1pg, ky, 'PART I — INFORMATION ABOUT THE PARTNERSHIP');
+        box(k1pg, ML, ky - 44, IW, 44, LGRAY, null);
+        box(k1pg, ML, ky - 44, IW, 44, null, rgb(0.55, 0.55, 0.55));
+        t(k1pg, 'A  Partnership\'s EIN', ML + 4, ky - 8, 6.5, font, GRAY6);
+        t(k1pg, ein || '', ML + 4, ky - 20, 8.5, fontB, BLACK);
+        t(k1pg, 'B  Partnership\'s name, address, city, state, and ZIP code', ML + 4, ky - 30, 6.5, font, GRAY6);
+        t(k1pg, [corpName, street, cityStateZip].filter(Boolean).join('  ·  '), ML + 4, ky - 42, 8, font, BLACK);
+        ky -= 44; ky -= 8;
+
+        // Partner info box
+        ky = sectionBar(k1pg, ky, 'PART II — INFORMATION ABOUT THE PARTNER');
+        box(k1pg, ML, ky - 44, IW, 44, LGRAY, null);
+        box(k1pg, ML, ky - 44, IW, 44, null, rgb(0.55, 0.55, 0.55));
+        t(k1pg, 'E  Partner\'s name', ML + 4, ky - 8, 6.5, font, GRAY6);
+        t(k1pg, pt.name, ML + 4, ky - 20, 8.5, fontB, BLACK);
+        t(k1pg, 'F  Partner\'s share of profit, loss, and capital (%)', ML + 4, ky - 30, 6.5, font, GRAY6);
+        t(k1pg, `${pt.ownership || 0}%  beginning  /  ${pt.ownership || 0}%  ending`, ML + 4, ky - 42, 8, font, BLACK);
+        ky -= 44; ky -= 8;
+
+        // Part III — Income
+        ky = sectionBar(k1pg, ky, 'PART III — PARTNER\'S SHARE OF CURRENT YEAR INCOME, DEDUCTIONS, ETC.');
+        ky = lineRow(k1pg, ky, '1',  'Ordinary business income (loss)', `$${Math.round(allocIncome).toLocaleString('en-US')}`, true);
+        ky = lineRow(k1pg, ky, '2',  'Net rental real estate income (loss)', '0');
+        ky = lineRow(k1pg, ky, '4',  'Guaranteed payments', '0');
+        ky = lineRow(k1pg, ky, '14', 'Self-employment earnings (loss)', `$${Math.round(allocIncome).toLocaleString('en-US')}`);
+        ky -= 14;
+
+        // Allocated income box
+        box(k1pg, ML, ky - 68, IW, 68, LGRAY, null);
+        box(k1pg, ML, ky - 68, IW, 68, null, BLACK);
+        t(k1pg, 'ALLOCATION SUMMARY', ML + 4, ky - 11, 7.5, fontB, GRAY3);
+        hline(k1pg, ky - 14, ML, W - MR, 0.5, rgb(0.6, 0.6, 0.6));
+        t(k1pg, 'Partnership net income (loss):', ML + 8, ky - 27, 8, font, BLACK);
+        tR(k1pg, `$${Math.round(profit).toLocaleString('en-US')}`, W - MR - 8, ky - 27, 8.5, fontB, BLACK);
+        t(k1pg, `Partner ownership (${pt.ownership || 0}%):`, ML + 8, ky - 40, 8, font, BLACK);
+        tR(k1pg, `× ${pt.ownership || 0}%`, W - MR - 8, ky - 40, 8.5, fontB, GRAY3);
+        t(k1pg, 'Allocated income (loss) — Line 1:', ML + 8, ky - 55, 8, fontB, BLACK);
+        tR(k1pg, `$${Math.round(allocIncome).toLocaleString('en-US')}`, W - MR - 8, ky - 55, 9, fontB, GREEN);
+      });
+    }
   }
 
   // ══════════════════════════════════════════════════════════
@@ -6193,7 +6298,8 @@ async function sendToIRS() {
     const taxYear   = irsFilingYear;
     const corpName  = llcName || p.llcName || '';
 
-    const blob = await buildIRSAcroBlob(p, filtered, taxYear, corpName, irsFormType, irsExtendForm, sigData);
+    const _activeEntIRS = entities.find(e => e.id === activeEntityId) || entities[0];
+    const blob = await buildIRSAcroBlob(p, filtered, taxYear, corpName, irsFormType, irsExtendForm, sigData, _activeEntIRS?.partners);
 
     btn.textContent = 'Mailing to IRS…';
 
