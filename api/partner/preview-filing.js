@@ -64,6 +64,23 @@ export default async function handler(req, res) {
   const { data: signedData, error: signErr } = await sb.storage.from('filings').createSignedUrl(filename, 86400);
   if (signErr) return res.status(500).json({ error: 'Failed to generate PDF URL.' });
 
+  // Generate individual K-1 PDFs for partnerships
+  let k1_pdfs = [];
+  if (form_type === '1065' && partners.length > 0) {
+    try {
+      const { generateK1Pdfs } = await import('./_generate-pdf.js');
+      const k1Results = await generateK1Pdfs({ partners, company, financials, transactions, tax_year, preview: true });
+      k1_pdfs = k1Results.map(k1 => ({
+        partner_name:      k1.partner_name,
+        ownership_percent: k1.ownership_percent,
+        allocated_income:  k1.allocated_income,
+        pdf_base64:        Buffer.from(k1.pdf_bytes).toString('base64'),
+      }));
+    } catch (err) {
+      console.error('K-1 preview generation error (non-fatal):', err.message);
+    }
+  }
+
   return res.status(200).json({
     pdf_url:    signedData.signedUrl,
     pdf_base64: Buffer.from(pdfBytes).toString('base64'),
@@ -71,6 +88,7 @@ export default async function handler(req, res) {
     form_type,
     tax_year,
     external_id,
+    k1_pdfs,
   });
 }
 
