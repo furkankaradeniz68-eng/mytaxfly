@@ -405,10 +405,12 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
 
           <h3>foreign_owner (erforderlich für 5472_1120)</h3>
           <div class="code-block">{
-  <span class="key">"name"</span>:          <span class="str">"Max Mustermann"</span>,         <span class="comment">// erforderlich: vollständiger Name</span>
-  <span class="key">"country"</span>:       <span class="str">"DE"</span>,                      <span class="comment">// erforderlich: ISO-Ländercode des Eigentümers — DE = Deutschland, GB = UK, FR = Frankreich</span>
-  <span class="key">"address"</span>:       <span class="str">"Musterstr. 1, Berlin"</span>,   <span class="comment">// optional: Wohnadresse des Eigentümers (ausländisch)</span>
-  <span class="key">"tin"</span>:           <span class="str">"DE123456789"</span>,            <span class="comment">// optional: ausländische Steuernummer</span>
+  <span class="key">"name"</span>:          <span class="str">"Max Mustermann"</span>,         <span class="comment">// erforderlich: vollständiger Name des Eigentümers</span>
+  <span class="key">"country"</span>:       <span class="str">"DE"</span>,                      <span class="comment">// erforderlich: ISO-Ländercode — DE, GB, FR … → Part II Zeile 4c</span>
+  <span class="key">"address"</span>:       <span class="str">"Musterstr. 1, Berlin"</span>,   <span class="comment">// optional: Wohnadresse (ausländisch) → Part II Zeile 4a</span>
+  <span class="key">"us_tin"</span>:        <span class="str">"123-45-6789"</span>,            <span class="comment">// optional: US-Steuernummer / ITIN des Eigentümers → Part II Zeile 4b(1)</span>
+  <span class="key">"ftin"</span>:          <span class="str">"DE123456789"</span>,            <span class="comment">// optional: ausländische Steuernummer (FTIN) → Part II Zeile 4b(3)</span>
+  <span class="key">"ref_id"</span>:        <span class="str">"REF-001"</span>,                <span class="comment">// optional: Reference ID number → Part II Zeile 4b(2)</span>
   <span class="key">"ownership_pct"</span>: <span class="num">100</span>                        <span class="comment">// optional: Beteiligungsquote in %</span>
 }</div>
 
