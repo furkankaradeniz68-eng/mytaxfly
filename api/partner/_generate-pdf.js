@@ -516,9 +516,10 @@ export async function generatePdf({
   async function build1065() {
     const fmtUSD = n => `$${Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2})}`;
     const netIncome = profit;
+    const totalPages = 1 + partners.length; // 1065 page + one K-1 per partner
 
     const pg = pdfDoc.addPage([W, H]);
-    pageHeader(pg, '1065', 'U.S. Return of Partnership Income', 1, 1);
+    pageHeader(pg, '1065', 'U.S. Return of Partnership Income', 1, totalPages);
     t(pg, `For calendar year ${taxYear} - beginning 01/01/${taxYear} and ending 12/31/${taxYear}`, ML, H-47, 7, font, GRAY6);
 
     let y = H - 58;
@@ -549,7 +550,7 @@ export async function generatePdf({
     y = lineRow(pg, y, '22', 'Ordinary business income (loss) — line 8 minus line 21', irs(netIncome), true);
     y -= 6;
 
-    // Partner K-1 summary (added for Partner API — not in basic dashboard version)
+    // K-1 summary table on page 1
     if (partners.length > 0) {
       y -= 4;
       y = sectionBar(pg, y, 'SCHEDULE K-1 SUMMARY — PARTNER ALLOCATIONS');
@@ -563,7 +564,7 @@ export async function generatePdf({
         if (i % 2 === 0) box(pg, ML, y-4, IW, 16, rgb(0.97,0.97,0.97), null);
         const pct = Number(pt.ownership_percent || pt.profit_percent || 0);
         t(pg, pt.name, ML+4, y, 8, font, BLACK);
-        t(pg, pt.country, ML+220, y, 8, font, BLACK);
+        t(pg, pt.country || '', ML+220, y, 8, font, BLACK);
         tR(pg, `${pct}%`, ML+350, y, 8, fontB, BLACK);
         tR(pg, fmtUSD(netIncome * pct / 100), W-MR-4, y, 8, fontB, BLACK);
       });
@@ -572,7 +573,137 @@ export async function generatePdf({
 
     await sigBlock(pg, y);
 
-    if (preview) stampPreview([pg]);
+    // Individual K-1 pages (one per partner, appended to the same PDF)
+    if (partners.length > 0) {
+      const allPages = [pg];
+      partners.forEach((pt, i) => {
+        const k1pg = buildK1Page(pt, i + 2, totalPages, netIncome, fmtUSD);
+        allPages.push(k1pg);
+      });
+      if (preview) stampPreview(allPages);
+    } else {
+      if (preview) stampPreview([pg]);
+    }
+  }
+
+  // Builds one Schedule K-1 page and returns the page object
+  function buildK1Page(pt, pageNum, totalPages, netIncome, fmtUSD) {
+    const pg = pdfDoc.addPage([W, H]);
+    const pct          = Number(pt.ownership_percent || pt.profit_percent || 0);
+    const allocIncome  = netIncome * pct / 100;
+    const partnerType  = pt.partner_type || 'general';
+    const GREEN        = rgb(0.07, 0.53, 0.33);
+
+    // Header
+    box(pg, 0, H-34, W, 34, rgb(0.07,0.53,0.33), null);
+    t(pg, 'Schedule', ML, H-23, 9, font, rgb(0.7,1,0.85));
+    t(pg, 'K-1', ML+46, H-24, 13, fontB, WHITE);
+    t(pg, `(Form 1065)  Partner's Share of Income, Deductions, Credits, etc.`, ML+70, H-23, 8, font, rgb(0.75,1,0.87));
+    tR(pg, `Tax Year ${taxYear}  |  Page ${pageNum} of ${totalPages}`, W-MR, H-23, 7.5, font, rgb(0.7,0.9,0.8));
+    hline(pg, H-34, 0, W, 0.5, GREEN);
+    t(pg, 'Department of the Treasury - Internal Revenue Service', ML, H-44, 6.5, font, GRAY6);
+
+    let y = H - 58;
+
+    // Part I — Partnership info
+    y = sectionBar(pg, y, 'PART I — INFORMATION ABOUT THE PARTNERSHIP');
+    y -= 4;
+    const P1H = 26;
+    box(pg, ML, y - P1H*2, IW, P1H*2, LGRAY, null);
+    box(pg, ML, y - P1H*2, IW, P1H*2, null, rgb(0.55,0.55,0.55));
+    const DX = ML + IW * 0.55;
+    vline(pg, DX, y-P1H*2, y, 0.5, rgb(0.55,0.55,0.55));
+    hline(pg, y-P1H, ML, W-MR, 0.5, rgb(0.55,0.55,0.55));
+
+    t(pg, 'A  Partnership EIN', ML+4, y-8, 6.5, font, GRAY6);
+    t(pg, ein || '(not set)', ML+4, y-20, 8.5, fontB, BLACK);
+    t(pg, 'B  Partnership name', DX+4, y-8, 6.5, font, GRAY6);
+    t(pg, corpName || '(not set)', DX+4, y-20, 8.5, fontB, BLACK);
+
+    t(pg, 'C  IRS Center', ML+4, y-P1H-8, 6.5, font, GRAY6);
+    t(pg, 'Ogden, UT', ML+4, y-P1H-20, 8.5, font, BLACK);
+    t(pg, 'D  Tax year', DX+4, y-P1H-8, 6.5, font, GRAY6);
+    t(pg, `01/01/${taxYear} – 12/31/${taxYear}`, DX+4, y-P1H-20, 8.5, font, BLACK);
+
+    y -= P1H*2 + 10;
+
+    // Part II — Partner info
+    y = sectionBar(pg, y, 'PART II — INFORMATION ABOUT THE PARTNER');
+    y -= 4;
+    const P2H = 26;
+    box(pg, ML, y - P2H*3, IW, P2H*3, LGRAY, null);
+    box(pg, ML, y - P2H*3, IW, P2H*3, null, rgb(0.55,0.55,0.55));
+    hline(pg, y-P2H,   ML, W-MR, 0.5, rgb(0.55,0.55,0.55));
+    hline(pg, y-P2H*2, ML, W-MR, 0.5, rgb(0.55,0.55,0.55));
+    vline(pg, DX, y-P2H*2, y, 0.5, rgb(0.55,0.55,0.55));
+
+    t(pg, 'E  Partner name', ML+4, y-8, 6.5, font, GRAY6);
+    t(pg, pt.name || '(not set)', ML+4, y-20, 9, fontB, BLACK);
+
+    t(pg, 'F  Partner address / country', ML+4, y-P2H-8, 6.5, font, GRAY6);
+    t(pg, pt.address || pt.country || '(see attachment)', ML+4, y-P2H-20, 8.5, font, BLACK);
+    t(pg, 'G  Partner TIN', DX+4, y-P2H-8, 6.5, font, GRAY6);
+    t(pg, pt.tin || 'N/A', DX+4, y-P2H-20, 8.5, font, BLACK);
+
+    t(pg, 'H  Partner type', ML+4, y-P2H*2-8, 6.5, font, GRAY6);
+    t(pg, partnerType === 'limited' ? '[  ] General  [X] Limited' : '[X] General  [  ] Limited', ML+4, y-P2H*2-20, 8.5, font, BLACK);
+    t(pg, 'I  Country of residence', DX+4, y-P2H*2-8, 6.5, font, GRAY6);
+    t(pg, pt.country || '(not set)', DX+4, y-P2H*2-20, 8.5, font, BLACK);
+
+    y -= P2H*3 + 10;
+
+    // Part III — Allocations
+    y = sectionBar(pg, y, 'PART III — PARTNER\'S SHARE OF CURRENT YEAR INCOME, DEDUCTIONS, CREDITS');
+    y -= 4;
+
+    // Profit/loss/capital percentages row
+    box(pg, ML, y-20, IW, 20, rgb(0.97,0.97,0.97), null);
+    box(pg, ML, y-20, IW, 20, null, rgb(0.55,0.55,0.55));
+    const thirdW = IW / 3;
+    vline(pg, ML+thirdW,   y-20, y, 0.5, rgb(0.55,0.55,0.55));
+    vline(pg, ML+thirdW*2, y-20, y, 0.5, rgb(0.55,0.55,0.55));
+    t(pg, 'Profit %', ML+4, y-8, 6.5, font, GRAY6);
+    t(pg, `${pct}%`, ML+4, y-18, 8.5, fontB, BLACK);
+    t(pg, 'Loss %', ML+thirdW+4, y-8, 6.5, font, GRAY6);
+    t(pg, `${pct}%`, ML+thirdW+4, y-18, 8.5, fontB, BLACK);
+    t(pg, 'Capital %', ML+thirdW*2+4, y-8, 6.5, font, GRAY6);
+    t(pg, `${pct}%`, ML+thirdW*2+4, y-18, 8.5, fontB, BLACK);
+    y -= 20; y -= 6;
+
+    y = lineRow(pg, y, '1',  'Ordinary business income (loss)',                          fmtUSD(allocIncome), true);
+    y = lineRow(pg, y, '2',  'Net rental real estate income (loss)',                     '0');
+    y = lineRow(pg, y, '3',  'Other net rental income (loss)',                           '0');
+    y = lineRow(pg, y, '4',  'Guaranteed payments for services',                         '0');
+    y = lineRow(pg, y, '5',  'Interest income',                                          '0');
+    y = lineRow(pg, y, '6',  'Ordinary dividends',                                       '0');
+    y = lineRow(pg, y, '7',  'Royalties',                                                '0');
+    y = lineRow(pg, y, '8',  'Net short-term capital gain (loss)',                       '0');
+    y = lineRow(pg, y, '9',  'Net long-term capital gain (loss)',                        '0');
+    y = lineRow(pg, y, '14', 'Self-employment earnings (loss)',                          fmtUSD(allocIncome));
+    y -= 6;
+
+    // Allocation summary box
+    box(pg, ML, y-52, IW, 52, LGRAY, null);
+    box(pg, ML, y-52, IW, 52, null, GREEN);
+    t(pg, 'ALLOCATION SUMMARY', ML+4, y-10, 7.5, fontB, rgb(0.07,0.53,0.33));
+    hline(pg, y-14, ML, W-MR, 0.5, GREEN);
+    t(pg, 'Partnership net income:', ML+8, y-27, 8, font, BLACK);
+    tR(pg, fmtUSD(netIncome), W-MR-8, y-27, 8.5, fontB, BLACK);
+    t(pg, `Partner's ownership share:`, ML+8, y-40, 8, font, BLACK);
+    tR(pg, `${pct}%`, W-MR-8, y-40, 8.5, fontB, BLACK);
+    t(pg, `Partner's allocated income (Line 1):`, ML+8, y-51, 8, fontB, BLACK);
+    tR(pg, fmtUSD(allocIncome), W-MR-8, y-51, 9, fontB, rgb(0.07,0.53,0.33));
+    y -= 60;
+
+    // Disclaimer
+    y -= 4;
+    box(pg, ML, y-32, IW, 32, rgb(1,0.97,0.91), null);
+    box(pg, ML, y-32, IW, 32, null, rgb(0.85,0.65,0.2));
+    t(pg, '(!)  PRO FORMA — INFORMATIONAL ONLY', ML+6, y-10, 7.5, fontB, rgb(0.5,0.3,0));
+    t(pg, 'This Schedule K-1 is a pro forma document generated for informational purposes. The partner should use this', ML+6, y-21, 6.5, font, rgb(0.45,0.28,0));
+    t(pg, 'document as a basis for reporting their share of partnership income. Consult a licensed CPA before filing.', ML+6, y-31, 6.5, font, rgb(0.45,0.28,0));
+
+    return pg;
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -645,4 +776,205 @@ export async function generatePdf({
   }
 
   return pdfDoc.save();
+}
+
+/**
+ * Generates individual Schedule K-1 PDFs — one per partner.
+ * Returns an array of { partner_name, ownership_percent, allocated_income, pdf_bytes }.
+ */
+export async function generateK1Pdfs({ partners = [], company, financials = {}, transactions = [], tax_year, preview = false }) {
+  if (!partners.length) return [];
+
+  const INCOME_TYPES_SET  = new Set(['services_received', 'rent_received', 'royalties_received', 'loan_to_owner']);
+  const EXPENSE_TYPES_SET = new Set(['services_paid', 'rent_paid', 'royalties_paid', 'loan_from_owner', 'capital_contribution', 'distribution']);
+
+  let inc, exp;
+  if (financials.gross_revenue != null) {
+    inc = Number(financials.gross_revenue);
+    exp = Object.values(financials.expenses || {}).reduce((s, v) => s + Number(v || 0), 0);
+  } else {
+    inc = transactions.filter(t => INCOME_TYPES_SET.has(t.type)).reduce((s, t) => s + Number(t.amount || 0), 0);
+    exp = transactions.filter(t => EXPENSE_TYPES_SET.has(t.type)).reduce((s, t) => s + Number(t.amount || 0), 0);
+  }
+  const netIncome  = inc - exp;
+  const fmtUSD     = n => `$${Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2})}`;
+  const ein        = company.ein || '';
+  const corpName   = company.name || '';
+  const addr       = company.address || {};
+  const street     = addr.street || '';
+  const cityStateZip = [addr.city, addr.state, addr.zip].filter(Boolean).join(', ');
+  const taxYear    = tax_year;
+  const todayStr   = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+
+  const results = [];
+
+  for (const pt of partners) {
+    const doc   = await PDFDocument.create();
+    const font  = await doc.embedFont(StandardFonts.Helvetica);
+    const fontB = await doc.embedFont(StandardFonts.HelveticaBold);
+
+    const W = 612, H = 792, ML = 48, MR = 48, IW = W - ML - MR;
+    const BLACK = rgb(0,0,0), WHITE = rgb(1,1,1);
+    const GRAY3 = rgb(0.3,0.3,0.3), GRAY6 = rgb(0.6,0.6,0.6);
+    const LGRAY = rgb(0.93,0.93,0.93);
+    const GREEN = rgb(0.07, 0.53, 0.33);
+
+    const hline = (pg, y, x0=ML, x1=W-MR, w=0.4, c=rgb(0.7,0.7,0.7)) =>
+      pg.drawLine({start:{x:x0,y},end:{x:x1,y},thickness:w,color:c});
+    const vline = (pg, x, y0, y1, w=0.4, c=rgb(0.7,0.7,0.7)) =>
+      pg.drawLine({start:{x,y:y0},end:{x,y:y1},thickness:w,color:c});
+    const box = (pg, x, y, w, h, fill, stroke) => {
+      if (fill)   pg.drawRectangle({x,y,width:w,height:h,color:fill});
+      if (stroke) pg.drawRectangle({x,y,width:w,height:h,borderColor:stroke,borderWidth:0.5});
+    };
+    const t = (pg, s, x, y, sz=8.5, f=font, c=BLACK) => {
+      if (s == null || s === '') return;
+      pg.drawText(String(s), {x, y, size:sz, font:f, color:c});
+    };
+    const tR = (pg, s, rx, y, sz=8.5, f=font, c=BLACK) => {
+      if (s == null || s === '') return;
+      const str = String(s);
+      pg.drawText(str, {x: rx - f.widthOfTextAtSize(str, sz), y, size:sz, font:f, color:c});
+    };
+    const lineRow = (pg, y, num, label, val, bold=false, indent=0) => {
+      hline(pg, y, ML, W-MR);
+      const f = bold ? fontB : font;
+      if (num) t(pg, num, ML+3, y-11, 7.5, fontB, GRAY3);
+      t(pg, label, ML+22+indent, y-11, 8, f, BLACK);
+      if (val !== null && val !== undefined && val !== '') tR(pg, val, W-MR-4, y-11, 8.5, fontB, BLACK);
+      return y - 15;
+    };
+
+    const pct         = Number(pt.ownership_percent || pt.profit_percent || 0);
+    const allocIncome = netIncome * pct / 100;
+    const partnerType = pt.partner_type || 'general';
+
+    const pg = doc.addPage([W, H]);
+
+    // Header
+    box(pg, 0, H-34, W, 34, GREEN, null);
+    t(pg, 'Schedule', ML, H-23, 9, font, rgb(0.7,1,0.85));
+    t(pg, 'K-1', ML+46, H-24, 13, fontB, WHITE);
+    t(pg, `(Form 1065)  Partner's Share of Income, Deductions, Credits, etc.`, ML+70, H-23, 8, font, rgb(0.75,1,0.87));
+    tR(pg, `Tax Year ${taxYear}  |  Page 1 of 1`, W-MR, H-23, 7.5, font, rgb(0.7,0.9,0.8));
+    hline(pg, H-34, 0, W, 0.5, GREEN);
+    t(pg, 'Department of the Treasury - Internal Revenue Service', ML, H-44, 6.5, font, GRAY6);
+
+    let y = H - 58;
+
+    // Part I
+    y -= 0;
+    box(pg, 0, y-13, W, 13, rgb(0.18,0.18,0.18), null);
+    t(pg, 'PART I — INFORMATION ABOUT THE PARTNERSHIP', ML+4, y-10, 7.5, fontB, WHITE);
+    y -= 13; y -= 4;
+
+    const P1H = 26;
+    const DX  = ML + IW * 0.55;
+    box(pg, ML, y-P1H*2, IW, P1H*2, LGRAY, null);
+    box(pg, ML, y-P1H*2, IW, P1H*2, null, rgb(0.55,0.55,0.55));
+    vline(pg, DX, y-P1H*2, y, 0.5, rgb(0.55,0.55,0.55));
+    hline(pg, y-P1H, ML, W-MR, 0.5, rgb(0.55,0.55,0.55));
+
+    t(pg, 'A  Partnership EIN', ML+4, y-8, 6.5, font, GRAY6);
+    t(pg, ein || '(not set)', ML+4, y-20, 8.5, fontB, BLACK);
+    t(pg, 'B  Partnership name', DX+4, y-8, 6.5, font, GRAY6);
+    t(pg, corpName || '(not set)', DX+4, y-20, 8.5, fontB, BLACK);
+    t(pg, 'C  IRS Center', ML+4, y-P1H-8, 6.5, font, GRAY6);
+    t(pg, 'Ogden, UT', ML+4, y-P1H-20, 8.5, font, BLACK);
+    t(pg, 'D  Tax year', DX+4, y-P1H-8, 6.5, font, GRAY6);
+    t(pg, `01/01/${taxYear} – 12/31/${taxYear}`, DX+4, y-P1H-20, 8.5, font, BLACK);
+
+    y -= P1H*2 + 10;
+
+    // Part II
+    box(pg, 0, y-13, W, 13, rgb(0.18,0.18,0.18), null);
+    t(pg, 'PART II — INFORMATION ABOUT THE PARTNER', ML+4, y-10, 7.5, fontB, WHITE);
+    y -= 13; y -= 4;
+
+    const P2H = 26;
+    box(pg, ML, y-P2H*3, IW, P2H*3, LGRAY, null);
+    box(pg, ML, y-P2H*3, IW, P2H*3, null, rgb(0.55,0.55,0.55));
+    hline(pg, y-P2H,   ML, W-MR, 0.5, rgb(0.55,0.55,0.55));
+    hline(pg, y-P2H*2, ML, W-MR, 0.5, rgb(0.55,0.55,0.55));
+    vline(pg, DX, y-P2H*2, y, 0.5, rgb(0.55,0.55,0.55));
+
+    t(pg, 'E  Partner name', ML+4, y-8, 6.5, font, GRAY6);
+    t(pg, pt.name || '(not set)', ML+4, y-20, 9, fontB, BLACK);
+    t(pg, 'F  Partner address / country', ML+4, y-P2H-8, 6.5, font, GRAY6);
+    t(pg, pt.address || pt.country || '(see attachment)', ML+4, y-P2H-20, 8.5, font, BLACK);
+    t(pg, 'G  Partner TIN', DX+4, y-P2H-8, 6.5, font, GRAY6);
+    t(pg, pt.tin || 'N/A', DX+4, y-P2H-20, 8.5, font, BLACK);
+    t(pg, 'H  Partner type', ML+4, y-P2H*2-8, 6.5, font, GRAY6);
+    t(pg, partnerType === 'limited' ? '[  ] General  [X] Limited' : '[X] General  [  ] Limited', ML+4, y-P2H*2-20, 8.5, font, BLACK);
+    t(pg, 'I  Country of residence', DX+4, y-P2H*2-8, 6.5, font, GRAY6);
+    t(pg, pt.country || '(not set)', DX+4, y-P2H*2-20, 8.5, font, BLACK);
+
+    y -= P2H*3 + 10;
+
+    // Part III
+    box(pg, 0, y-13, W, 13, rgb(0.18,0.18,0.18), null);
+    t(pg, 'PART III — PARTNER\'S SHARE OF CURRENT YEAR INCOME, DEDUCTIONS, CREDITS', ML+4, y-10, 7.5, fontB, WHITE);
+    y -= 13; y -= 4;
+
+    const thirdW = IW / 3;
+    box(pg, ML, y-20, IW, 20, rgb(0.97,0.97,0.97), null);
+    box(pg, ML, y-20, IW, 20, null, rgb(0.55,0.55,0.55));
+    vline(pg, ML+thirdW,   y-20, y, 0.5, rgb(0.55,0.55,0.55));
+    vline(pg, ML+thirdW*2, y-20, y, 0.5, rgb(0.55,0.55,0.55));
+    t(pg, 'Profit %', ML+4, y-8, 6.5, font, GRAY6);           t(pg, `${pct}%`, ML+4, y-18, 8.5, fontB, BLACK);
+    t(pg, 'Loss %', ML+thirdW+4, y-8, 6.5, font, GRAY6);       t(pg, `${pct}%`, ML+thirdW+4, y-18, 8.5, fontB, BLACK);
+    t(pg, 'Capital %', ML+thirdW*2+4, y-8, 6.5, font, GRAY6);  t(pg, `${pct}%`, ML+thirdW*2+4, y-18, 8.5, fontB, BLACK);
+    y -= 20; y -= 6;
+
+    y = lineRow(pg, y, '1',  'Ordinary business income (loss)',           fmtUSD(allocIncome), true);
+    y = lineRow(pg, y, '2',  'Net rental real estate income (loss)',      '0');
+    y = lineRow(pg, y, '3',  'Other net rental income (loss)',            '0');
+    y = lineRow(pg, y, '4',  'Guaranteed payments for services',          '0');
+    y = lineRow(pg, y, '5',  'Interest income',                           '0');
+    y = lineRow(pg, y, '6',  'Ordinary dividends',                        '0');
+    y = lineRow(pg, y, '7',  'Royalties',                                 '0');
+    y = lineRow(pg, y, '8',  'Net short-term capital gain (loss)',         '0');
+    y = lineRow(pg, y, '9',  'Net long-term capital gain (loss)',          '0');
+    y = lineRow(pg, y, '14', 'Self-employment earnings (loss)',            fmtUSD(allocIncome));
+    y -= 6;
+
+    // Allocation summary
+    box(pg, ML, y-52, IW, 52, LGRAY, null);
+    box(pg, ML, y-52, IW, 52, null, GREEN);
+    t(pg, 'ALLOCATION SUMMARY', ML+4, y-10, 7.5, fontB, GREEN);
+    hline(pg, y-14, ML, W-MR, 0.5, GREEN);
+    t(pg, 'Partnership net income:', ML+8, y-27, 8, font, BLACK);
+    tR(pg, fmtUSD(netIncome), W-MR-8, y-27, 8.5, fontB, BLACK);
+    t(pg, `Partner's ownership share:`, ML+8, y-40, 8, font, BLACK);
+    tR(pg, `${pct}%`, W-MR-8, y-40, 8.5, fontB, BLACK);
+    t(pg, `Partner's allocated income (Line 1):`, ML+8, y-51, 8, fontB, BLACK);
+    tR(pg, fmtUSD(allocIncome), W-MR-8, y-51, 9, fontB, GREEN);
+    y -= 60;
+
+    // Disclaimer
+    y -= 4;
+    box(pg, ML, y-32, IW, 32, rgb(1,0.97,0.91), null);
+    box(pg, ML, y-32, IW, 32, null, rgb(0.85,0.65,0.2));
+    t(pg, '(!)  PRO FORMA — INFORMATIONAL ONLY', ML+6, y-10, 7.5, fontB, rgb(0.5,0.3,0));
+    t(pg, 'This Schedule K-1 is a pro forma document generated for informational purposes. The partner should use this', ML+6, y-21, 6.5, font, rgb(0.45,0.28,0));
+    t(pg, 'document as a basis for reporting their share of partnership income. Consult a licensed CPA before filing.', ML+6, y-31, 6.5, font, rgb(0.45,0.28,0));
+
+    if (preview) {
+      pg.drawText('UNSIGNED PREVIEW', {
+        x:60, y:320, size:56, font:fontB,
+        color:rgb(0.87,0.87,0.87), opacity:0.22,
+        rotate:{type:'degrees',angle:45},
+      });
+    }
+
+    const pdfBytes = await doc.save();
+    results.push({
+      partner_name:      pt.name,
+      ownership_percent: pct,
+      allocated_income:  Math.round(allocIncome * 100) / 100,
+      pdf_bytes:         pdfBytes,
+    });
+  }
+
+  return results;
 }
