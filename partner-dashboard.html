@@ -315,11 +315,16 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
               <tr><td>company.address.city</td><td class="req">erforderlich</td><td>Stadt des Registered Agent</td></tr>
               <tr><td>company.address.state</td><td class="req">erforderlich</td><td><strong>US-Bundesstaat</strong> (nicht ISO-Ländercode). <code>"DE"</code> = Delaware, <code>"WY"</code> = Wyoming, <code>"FL"</code> = Florida — immer der Gründungsstaat der LLC</td></tr>
               <tr><td>company.address.zip</td><td class="req">erforderlich</td><td>US-Postleitzahl des Registered Agent, z.B. <code>"19801"</code></td></tr>
+              <tr><td>company.total_assets</td><td class="opt">optional</td><td>Gesamtvermögen der LLC am Jahresende in USD (erscheint in Part I und Part V Zeile 42)</td></tr>
+              <tr><td>company.naics_code</td><td class="opt">optional</td><td>NAICS-Branchencode, z.B. <code>"541511"</code> (erscheint in Part I)</td></tr>
+              <tr><td>company.business_activity</td><td class="opt">optional</td><td>Tätigkeitsbeschreibung, z.B. <code>"Software Development"</code> (erscheint in Part I)</td></tr>
+              <tr><td>company.incorporated_date</td><td class="opt">optional</td><td>Gründungsdatum im Format <code>"2023-01-15"</code> (erscheint in Part I)</td></tr>
               <tr><td>foreign_owner</td><td class="req">erforderlich für 5472_1120</td><td>Objekt — Struktur siehe unten</td></tr>
               <tr><td>transactions</td><td class="opt">optional</td><td>Array — Struktur siehe unten</td></tr>
               <tr><td>partners</td><td class="req">erforderlich für 1065</td><td>Array — Struktur siehe unten</td></tr>
               <tr><td>financials</td><td class="opt">optional</td><td>Objekt — Struktur siehe unten</td></tr>
               <tr><td>extend_form</td><td class="opt">optional</td><td>Für 7004: welches Formular verlängert wird. Standard: <code>"1120"</code></td></tr>
+              <tr><td>watermark</td><td class="opt">optional</td><td>Standard: <code>true</code> — PDF enthält "UNSIGNED PREVIEW"-Stempel. Mit <code>false</code> wird ein sauberes PDF ohne Stempel generiert (für Print-and-Sign-Workflow)</td></tr>
             </tbody>
           </table>
           <h3>Response</h3>
@@ -413,23 +418,30 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
           <table class="field-table" style="margin-bottom:12px">
             <thead><tr><th>type</th><th>Form 5472 Zeile</th><th>Richtung</th></tr></thead>
             <tbody>
-              <tr><td><code>services_received</code></td><td>15</td><td>LLC erhält Leistungen vom Eigentümer</td></tr>
-              <tr><td><code>rent_received</code></td><td>13a</td><td>LLC erhält Miete vom Eigentümer</td></tr>
+              <tr><td><code>services_received</code></td><td>15</td><td>LLC erbringt Leistungen an den Eigentümer und erhält dafür Vergütung</td></tr>
+              <tr><td><code>rent_received</code></td><td>13a</td><td>LLC erhält Miete</td></tr>
               <tr><td><code>royalties_received</code></td><td>13b</td><td>LLC erhält Lizenzgebühren</td></tr>
-              <tr><td><code>loan_to_owner</code></td><td>17</td><td>LLC leiht Geld an Eigentümer</td></tr>
+              <tr><td><code>loan_from_owner</code></td><td>17a / 17b</td><td>LLC leiht Geld vom Eigentümer — Anfangs- und Endbestand (<code>amount_beginning</code> / <code>amount_ending</code>)</td></tr>
               <tr><td><code>services_paid</code></td><td>29</td><td>LLC zahlt für Leistungen an Eigentümer</td></tr>
               <tr><td><code>rent_paid</code></td><td>27a</td><td>LLC zahlt Miete an Eigentümer</td></tr>
-              <tr><td><code>royalties_paid</code></td><td>27b</td><td>LLC zahlt Lizenzgebühren</td></tr>
-              <tr><td><code>loan_from_owner</code></td><td>31</td><td>LLC leiht Geld vom Eigentümer</td></tr>
-              <tr><td><code>capital_contribution</code></td><td>—</td><td>Kapitaleinlage des Eigentümers</td></tr>
-              <tr><td><code>distribution</code></td><td>—</td><td>Ausschüttung an Eigentümer</td></tr>
+              <tr><td><code>royalties_paid</code></td><td>27b</td><td>LLC zahlt Lizenzgebühren an Eigentümer</td></tr>
+              <tr><td><code>loan_to_owner</code></td><td>31a / 31b</td><td>LLC leiht Geld an Eigentümer — Anfangs- und Endbestand (<code>amount_beginning</code> / <code>amount_ending</code>)</td></tr>
+              <tr><td><code>capital_contribution</code></td><td>Part V Zeile 37</td><td>Kapitaleinlage des Eigentümers (IRS-Pflichtfeld für foreign-owned DEs)</td></tr>
+              <tr><td><code>distribution</code></td><td>Part V Zeile 38</td><td>Ausschüttung an Eigentümer (IRS-Pflichtfeld für foreign-owned DEs)</td></tr>
             </tbody>
           </table>
+          <p style="font-size:12px;color:#888;margin-bottom:8px">Form 5472 wird als <strong>3-seitiges PDF</strong> generiert: Seite 1 (Part I–III + Part IV Einnahmen), Seite 2 (Part IV Ausgaben + Transaktionsübersicht), Seite 3 (Part V — Pflichtangaben für foreign-owned DEs gemäß Reg. sec. 1.6038A-2(b)(7)(x)).</p>
           <div class="code-block">[
   {
     <span class="key">"type"</span>:   <span class="str">"services_received"</span>,  <span class="comment">// erforderlich: Typ aus Tabelle oben</span>
     <span class="key">"amount"</span>: <span class="num">5000</span>,                 <span class="comment">// erforderlich: Betrag in USD</span>
     <span class="key">"note"</span>:   <span class="str">"Software development"</span> <span class="comment">// optional: Beschreibung</span>
+  },
+  {
+    <span class="key">"type"</span>:             <span class="str">"loan_from_owner"</span>,  <span class="comment">// Darlehen: amount_beginning + amount_ending statt amount</span>
+    <span class="key">"amount_beginning"</span>: <span class="num">10000</span>,              <span class="comment">// Darlehensstand Jahresbeginn → Zeile 17a</span>
+    <span class="key">"amount_ending"</span>:    <span class="num">8000</span>,               <span class="comment">// Darlehensstand Jahresende → Zeile 17b</span>
+    <span class="key">"note"</span>:             <span class="str">"Owner loan"</span>
   }
 ]</div>
 
