@@ -24,7 +24,6 @@ export default async function handler(req, res) {
     company, foreign_owner, transactions = [],
     partners = [], financials = {},
     extend_form = '1120', signature_png_base64 = null,
-    watermark = true,
   } = req.body || {};
 
   const VALID_FORM_TYPES = ['5472_1120', '1065', '1120', '5472', '7004'];
@@ -45,7 +44,7 @@ export default async function handler(req, res) {
   let pdfBytes;
   try {
     const { generatePdf } = await import('./_generate-pdf.js');
-    pdfBytes = await generatePdf({ form_type, company, foreign_owner, transactions, partners, financials, tax_year, preview: watermark !== false, extend_form, signature_png_base64 });
+    pdfBytes = await generatePdf({ form_type, company, foreign_owner, transactions, partners, financials, tax_year, preview: false, extend_form, signature_png_base64 });
   } catch (err) {
     console.error('PDF generation error:', err);
     return res.status(500).json({ error: 'PDF generation failed: ' + err.message });
