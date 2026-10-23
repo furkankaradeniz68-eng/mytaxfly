@@ -213,6 +213,33 @@ export default async function handler(req, res) {
     });
   }
 
+  // ── Generate individual K-1 PDFs for partnerships ────────────────────────
+  let k1_pdfs = [];
+  if (form_type === '1065' && partners.length > 0) {
+    try {
+      const { generateK1Pdfs } = await import('./_generate-pdf.js');
+      const k1Results = await generateK1Pdfs({ partners, company, financials, transactions, tax_year });
+
+      for (const k1 of k1Results) {
+        const safeName = k1.partner_name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        const k1Path   = `${partner.partner_id}/${external_id}/${tax_year}_k1_${safeName}_${Date.now()}.pdf`;
+        await sb.storage.from('filings').upload(k1Path, Buffer.from(k1.pdf_bytes), {
+          contentType: 'application/pdf', upsert: true,
+        });
+        const { data: k1Signed } = await sb.storage.from('filings').createSignedUrl(k1Path, 7 * 86400);
+        k1_pdfs.push({
+          partner_name:      k1.partner_name,
+          ownership_percent: k1.ownership_percent,
+          allocated_income:  k1.allocated_income,
+          pdf_url:           k1Signed?.signedUrl ?? null,
+          pdf_base64:        Buffer.from(k1.pdf_bytes).toString('base64'),
+        });
+      }
+    } catch (err) {
+      console.error('K-1 generation error (non-fatal):', err.message);
+    }
+  }
+
   return res.status(201).json({
     filing_id:         filing.id,
     status:            mailStatus,
@@ -225,6 +252,7 @@ export default async function handler(req, res) {
     form_type,
     tax_year,
     external_id,
+    k1_pdfs,
     message: mailStatus === 'mailed'
       ? `Form ${form_type} mailed to IRS via USPS Certified Mail (letter_id: ${lobResult?.id}). Tracking: ${lobResult?.tracking ?? 'pending'}.`
       : 'Filing stored. LOB_API_KEY not configured — mail not sent.',
