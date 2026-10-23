@@ -325,11 +325,19 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
           <h3>Response</h3>
           <div class="code-block">{
   <span class="key">"pdf_url"</span>:     <span class="str">"https://..."</span>,     <span class="comment">// signed URL, gültig 24h</span>
-  <span class="key">"pdf_base64"</span>:  <span class="str">"JVBERi0x..."</span>,  <span class="comment">// komplettes PDF als Base64</span>
+  <span class="key">"pdf_base64"</span>:  <span class="str">"JVBERi0x..."</span>,    <span class="comment">// komplettes PDF als Base64</span>
   <span class="key">"expires_at"</span>:  <span class="str">"2024-03-16T10:00:00Z"</span>,
   <span class="key">"form_type"</span>:   <span class="str">"5472_1120"</span>,
   <span class="key">"tax_year"</span>:    <span class="num">2024</span>,
-  <span class="key">"external_id"</span>: <span class="str">"client_001"</span>
+  <span class="key">"external_id"</span>: <span class="str">"client_001"</span>,
+  <span class="key">"k1_pdfs"</span>: [   <span class="comment">// nur bei form_type "1065"</span>
+    {
+      <span class="key">"partner_name"</span>:      <span class="str">"Max Mustermann"</span>,
+      <span class="key">"ownership_percent"</span>: <span class="num">50</span>,
+      <span class="key">"allocated_income"</span>:  <span class="num">25000.00</span>,
+      <span class="key">"pdf_base64"</span>:        <span class="str">"JVBERi0x..."</span>   <span class="comment">// mit PREVIEW-Wasserzeichen</span>
+    }
+  ]
 }</div>
         </div>
 
@@ -373,7 +381,16 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
   <span class="key">"external_id"</span>:       <span class="str">"client_001"</span>,
   <span class="key">"form_type"</span>:         <span class="str">"5472_1120"</span>,
   <span class="key">"tax_year"</span>:          <span class="num">2024</span>,
-  <span class="key">"message"</span>:           <span class="str">"Form 5472_1120 mailed to IRS via USPS Certified Mail..."</span>
+  <span class="key">"k1_pdfs"</span>: [          <span class="comment">// nur bei form_type "1065" — ein K-1 pro Partner</span>
+    {
+      <span class="key">"partner_name"</span>:      <span class="str">"Max Mustermann"</span>,
+      <span class="key">"ownership_percent"</span>: <span class="num">50</span>,
+      <span class="key">"allocated_income"</span>:  <span class="num">25000.00</span>,
+      <span class="key">"pdf_url"</span>:           <span class="str">"https://..."</span>,  <span class="comment">// gültig 7 Tage — zur Weitergabe an den Gesellschafter</span>
+      <span class="key">"pdf_base64"</span>:        <span class="str">"JVBERi0x..."</span>
+    }
+  ],
+  <span class="key">"message"</span>:           <span class="str">"Form 1065 mailed to IRS via USPS Certified Mail..."</span>
 }</div>
           <p>Doppelte Einreichungen (gleiche <code>external_id</code> + <code>form_type</code> + <code>tax_year</code>) werden mit HTTP 409 abgelehnt.</p>
         </div>
@@ -417,14 +434,15 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
 ]</div>
 
           <h3>partners (erforderlich für 1065)</h3>
-          <p>Array aller Partner der LLC.</p>
+          <p>Array aller Partner der LLC. Die API generiert automatisch ein <strong>Schedule K-1</strong> pro Partner — als zusätzliche Seiten im 1065-PDF (für das IRS) und als separate PDFs im Response-Feld <code>k1_pdfs</code> (zur Weitergabe an jeden Gesellschafter).</p>
           <div class="code-block">[
   {
-    <span class="key">"name"</span>:              <span class="str">"Max Mustermann"</span>,         <span class="comment">// erforderlich</span>
-    <span class="key">"country"</span>:           <span class="str">"DE"</span>,                      <span class="comment">// erforderlich: ISO-Ländercode — DE = Deutschland, GB = UK</span>
-    <span class="key">"ownership_percent"</span>: <span class="num">50</span>,                        <span class="comment">// erforderlich: Beteiligungsquote in %</span>
-    <span class="key">"address"</span>:           <span class="str">"Musterstr. 1, Berlin"</span>,   <span class="comment">// optional: Wohnadresse (ausländisch)</span>
-    <span class="key">"tin"</span>:               <span class="str">"DE123456789"</span>             <span class="comment">// optional: ausländische Steuernummer</span>
+    <span class="key">"name"</span>:              <span class="str">"Max Mustermann"</span>,          <span class="comment">// erforderlich</span>
+    <span class="key">"country"</span>:           <span class="str">"DE"</span>,                       <span class="comment">// erforderlich: ISO-Ländercode — DE = Deutschland, GB = UK</span>
+    <span class="key">"ownership_percent"</span>: <span class="num">50</span>,                         <span class="comment">// erforderlich: Beteiligungsquote in % (alle Partner zusammen = 100)</span>
+    <span class="key">"address"</span>:           <span class="str">"Musterstr. 1, 10115 Berlin"</span>, <span class="comment">// optional: Wohnadresse des Partners (erscheint auf K-1)</span>
+    <span class="key">"tin"</span>:               <span class="str">"DE123456789"</span>,             <span class="comment">// optional: ausländische Steuernummer (FTIN/SSN/ITIN)</span>
+    <span class="key">"partner_type"</span>:      <span class="str">"general"</span>                  <span class="comment">// optional: "general" (Standard) oder "limited"</span>
   }
 ]</div>
 
