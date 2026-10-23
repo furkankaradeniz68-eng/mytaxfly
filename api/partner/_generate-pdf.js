@@ -15,13 +15,15 @@ const INCOME_TYPES  = new Set(['services_received', 'rent_received',  'royalties
 const EXPENSE_TYPES = new Set(['services_paid',     'rent_paid',      'royalties_paid',     'loan_from_owner', 'capital_contribution', 'distribution']);
 
 // Maps Partner API transaction types → Form 5472 Part IV line numbers
+// Line 17 = amounts RECEIVED (borrowed FROM owner) — Part IV received section
+// Line 31 = amounts PAID (loaned TO owner) — Part IV paid section
 const TX_LINE_MAP = {
   services_received:  '15',
-  loan_to_owner:      '17',
+  loan_from_owner:    '17',   // LLC borrowed FROM owner → received section
   rent_received:      '13a',
   royalties_received: '13b',
   services_paid:      '29',
-  loan_from_owner:    '31',
+  loan_to_owner:      '31',   // LLC loaned TO owner → paid section
   rent_paid:          '27a',
   royalties_paid:     '27b',
 };
@@ -29,12 +31,14 @@ const LINE_LABELS = {
   '13a': 'Rents received',
   '13b': 'Royalties received',
   '15':  'Consideration received for services',
-  '17':  'Amounts loaned to foreign shareholder — ending balance',
+  '17a': 'Amounts borrowed from related party — beginning of year',
+  '17b': 'Amounts borrowed from related party — end of year',
   '22':  'Total — combine amounts on lines 9 through 21',
   '27a': 'Rents paid',
   '27b': 'Royalties paid',
   '29':  'Consideration paid for services',
-  '31':  'Amounts borrowed from foreign shareholder — ending balance',
+  '31a': 'Amounts loaned to related party — beginning of year',
+  '31b': 'Amounts loaned to related party — end of year',
   '35':  'Other amounts paid or accrued',
   '36':  'Total — combine amounts on lines 23 through 35',
 };
@@ -353,23 +357,39 @@ export async function generatePdf({
   //  FORM 5472
   // ══════════════════════════════════════════════════════════════════════════
   async function build5472() {
-    // Aggregate amounts per Part IV line from individual transactions
+    const fmtUSD = n => `$${Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2})}`;
+
+    // Extract loan balances (17a/17b and 31a/31b need beginning + ending separately)
+    const loanFromTxs = transactions.filter(t => t.type === 'loan_from_owner');
+    const loanToTxs   = transactions.filter(t => t.type === 'loan_to_owner');
+    const loanFromBeg = loanFromTxs.reduce((s, t) => s + Number(t.amount_beginning || 0), 0);
+    const loanFromEnd = loanFromTxs.reduce((s, t) => s + Number(t.amount_ending ?? t.amount ?? 0), 0);
+    const loanToBeg   = loanToTxs.reduce((s, t) => s + Number(t.amount_beginning || 0), 0);
+    const loanToEnd   = loanToTxs.reduce((s, t) => s + Number(t.amount_ending ?? t.amount ?? 0), 0);
+
+    // capital_contribution / distribution → Part V (no Part IV line)
+    const capitalContrib  = transactions.filter(t => t.type === 'capital_contribution').reduce((s, t) => s + Number(t.amount || 0), 0);
+    const distributions   = transactions.filter(t => t.type === 'distribution').reduce((s, t) => s + Number(t.amount || 0), 0);
+
+    // Aggregate amounts per Part IV line (exclude loans — handled separately above)
     const lineAmounts = {};
     transactions.forEach(tx => {
+      if (tx.type === 'loan_from_owner' || tx.type === 'loan_to_owner') return;
       const line = TX_LINE_MAP[tx.type];
       if (line) lineAmounts[line] = (lineAmounts[line] || 0) + Number(tx.amount || 0);
     });
+
     // Fall back to aggregate inc/exp if no transaction-level data
     const totalReceived = lineAmounts['22'] ||
-      Object.entries(lineAmounts).filter(([k]) => ['13a','13b','15','17','18','19','20','21'].includes(k)).reduce((s,[,v]) => s+v, 0) ||
+      Object.entries(lineAmounts).filter(([k]) => ['13a','13b','15','18','19','20','21'].includes(k)).reduce((s,[,v]) => s+v, 0) + loanFromEnd ||
       inc;
     const totalPaid = lineAmounts['36'] ||
-      Object.entries(lineAmounts).filter(([k]) => ['23','24','25','26','27a','27b','28','29','30','31','32','33','34','35'].includes(k)).reduce((s,[,v]) => s+v, 0) ||
+      Object.entries(lineAmounts).filter(([k]) => ['23','24','25','26','27a','27b','28','29','30','32','33','34','35'].includes(k)).reduce((s,[,v]) => s+v, 0) + loanToEnd ||
       exp;
 
     // ── Page 1: Parts I – III + Part IV received ──────────────────────────
     const pg = pdfDoc.addPage([W, H]);
-    pageHeader(pg, '5472', 'Information Return of a 25% Foreign-Owned U.S. Corporation (Rev. December 2023)', 1, 2);
+    pageHeader(pg, '5472', 'Information Return of a 25% Foreign-Owned U.S. Corporation (Rev. December 2023)', 1, 3);
     t(pg, `For tax year of the reporting corporation beginning 01/01/${taxYear} and ending 12/31/${taxYear}`, ML, H-47, 7, font, GRAY6);
 
     let y = H - 58;
@@ -395,11 +415,11 @@ export async function generatePdf({
     cell(1, 0, '1a  Name of reporting corporation',                                corpName, true);
     cell(1, 1, '1b  Employer identification number (EIN)',                         ein, true);
     cell(2, 0, '    Number, street, and room or suite no.',                        street);
-    cell(2, 1, '1c  Total assets',                                                 dollar(inc));
+    cell(2, 1, '1c  Total assets',                                                 dollar(company.total_assets ?? inc));
     cell(3, 0, '    City or town, state, and ZIP code',                            cityStateZip);
-    cell(3, 1, '1d  Principal business activity',                                  company.business_activity || 'Professional Services');
+    cell(3, 1, '1d/1e  Business activity' + (company.naics_code ? `  (NAICS: ${company.naics_code})` : ''), company.business_activity || 'Professional Services');
     cell(4, 0, '1f  Total gross payments made or received on this Form 5472',      dollar(totalReceived + totalPaid));
-    cell(4, 1, '1g  Total number of Forms 5472 filed for the tax year',            '1');
+    cell(4, 1, company.incorporated_date ? `1m  Date incorporated: ${company.incorporated_date}` : '1g  Total number of Forms 5472 filed for the tax year', company.incorporated_date || '1');
 
     y = gridTop - GH*4 - 26;
     box(pg, ML, y-22, IW, 22, rgb(0.97,0.97,0.97), null);
@@ -445,26 +465,32 @@ export async function generatePdf({
 
     // AMOUNTS RECEIVED — show per-type lines when data is available
     y = sectionBar(pg, y, '  AMOUNTS RECEIVED BY REPORTING CORPORATION', 'Lines 9 – 22');
-    const receivedLines = ['13a','13b','15','17','18'];
+    const receivedLines = ['13a','13b','15','18'];
     receivedLines.forEach(line => {
       const amt = lineAmounts[line] || (line === '15' && !Object.keys(lineAmounts).length ? inc : 0);
       y = lineRow(pg, y, line, LINE_LABELS[line] || `Line ${line}`, amt > 0 ? irs(amt) : '0');
     });
-    y = lineRow(pg, y, '22', LINE_LABELS['22'], irs(totalReceived), true);
+    // Lines 17a/17b — amounts borrowed from related party (beginning + ending balance)
+    y = lineRow(pg, y, '17a', LINE_LABELS['17a'], loanFromBeg > 0 ? irs(loanFromBeg) : '0');
+    y = lineRow(pg, y, '17b', LINE_LABELS['17b'], loanFromEnd > 0 ? irs(loanFromEnd) : '0');
+    y = lineRow(pg, y, '22',  LINE_LABELS['22'],  irs(totalReceived), true);
     y -= 4;
 
     // ── Page 2: Amounts PAID + transaction detail ──────────────────────────
     const pg2 = pdfDoc.addPage([W, H]);
-    pageHeader(pg2, '5472', 'Information Return of a 25% Foreign-Owned U.S. Corporation — Part IV (continued)', 2, 2);
+    pageHeader(pg2, '5472', 'Information Return of a 25% Foreign-Owned U.S. Corporation — Part IV (continued)', 2, 3);
     let y2 = H - 58;
 
     y2 = sectionBar(pg2, y2, '  AMOUNTS PAID OR ACCRUED BY REPORTING CORPORATION', 'Lines 23 – 36');
-    const paidLines = ['27a','27b','29','31','35'];
+    const paidLines = ['27a','27b','29','35'];
     paidLines.forEach(line => {
       const amt = lineAmounts[line] || (line === '35' && !Object.keys(lineAmounts).length ? exp : 0);
       y2 = lineRow(pg2, y2, line, LINE_LABELS[line] || `Line ${line}`, amt > 0 ? irs(amt) : '0');
     });
-    y2 = lineRow(pg2, y2, '36', LINE_LABELS['36'], irs(totalPaid), true);
+    // Lines 31a/31b — amounts loaned to related party (beginning + ending balance)
+    y2 = lineRow(pg2, y2, '31a', LINE_LABELS['31a'], loanToBeg > 0 ? irs(loanToBeg) : '0');
+    y2 = lineRow(pg2, y2, '31b', LINE_LABELS['31b'], loanToEnd > 0 ? irs(loanToEnd) : '0');
+    y2 = lineRow(pg2, y2, '36',  LINE_LABELS['36'],  irs(totalPaid), true);
     y2 -= 14;
 
     // Net summary box
@@ -472,22 +498,21 @@ export async function generatePdf({
     box(pg2, ML, y2-50, IW, 50, null, BLACK);
     t(pg2, 'MONETARY TRANSACTION SUMMARY', ML+4, y2-11, 7.5, fontB, GRAY3);
     hline(pg2, y2-14, ML, W-MR, 0.5, rgb(0.6,0.6,0.6));
-    t(pg2, 'Total gross payments received (Line 22):',          ML+8, y2-27, 8, font, BLACK);
-    tR(pg2, dollar(totalReceived),                              W-MR-8, y2-27, 8.5, fontB, BLACK);
+    t(pg2, 'Total gross payments received (Line 22):',       ML+8, y2-27, 8, font, BLACK);
+    tR(pg2, dollar(totalReceived),                           W-MR-8, y2-27, 8.5, fontB, BLACK);
     t(pg2, 'Total gross payments paid or accrued (Line 36):', ML+8, y2-40, 8, font, BLACK);
-    tR(pg2, dollar(totalPaid),                                  W-MR-8, y2-40, 8.5, fontB, BLACK);
+    tR(pg2, dollar(totalPaid),                               W-MR-8, y2-40, 8.5, fontB, BLACK);
     y2 -= 60;
 
     // Individual transaction detail (if transactions provided)
     if (transactions.length > 0) {
       y2 -= 10;
       y2 = sectionBar(pg2, y2, 'TRANSACTION DETAIL');
-      const fmtUSD = n => `$${Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2})}`;
       const TX_LABELS = {
-        capital_contribution: 'Capital contributed by foreign shareholder',
-        distribution:         'Amount distributed to foreign shareholder',
-        loan_from_owner:      'Loan received from foreign shareholder',
-        loan_to_owner:        'Loan made to foreign shareholder',
+        capital_contribution: 'Capital contributed by foreign shareholder → Part V, Line 37',
+        distribution:         'Distribution to foreign shareholder → Part V, Line 38',
+        loan_from_owner:      'Amounts borrowed from related party (Lines 17a/17b)',
+        loan_to_owner:        'Amounts loaned to related party (Lines 31a/31b)',
         services_paid:        'Consideration paid for services',
         services_received:    'Consideration received for services',
         rent_paid:            'Rent paid to related party',
@@ -503,11 +528,54 @@ export async function generatePdf({
         if (i % 2 === 0) box(pg2, ML, y2-4, IW, 18, rgb(0.97,0.97,0.97), null);
         t(pg2, TX_LABELS[tx.type]||tx.type, ML+4, y2+2, 8, font, BLACK);
         if (tx.note) t(pg2, `(${tx.note})`, ML+4, y2-8, 7, font, GRAY6);
-        tR(pg2, fmtUSD(tx.amount), W-MR-4, y2+2, 8.5, fontB, BLACK);
+        const displayAmt = tx.type === 'loan_from_owner' || tx.type === 'loan_to_owner'
+          ? `Beg: ${fmtUSD(tx.amount_beginning || 0)}  /  End: ${fmtUSD(tx.amount_ending ?? tx.amount ?? 0)}`
+          : fmtUSD(tx.amount);
+        tR(pg2, displayAmt, W-MR-4, y2+2, tx.type.startsWith('loan') ? 7 : 8.5, fontB, BLACK);
       });
     }
 
-    if (preview) stampPreview([pg, pg2]);
+    // ── Page 3: Part V — Foreign-Owned U.S. DE (IRS-required) ────────────────
+    const pg3 = pdfDoc.addPage([W, H]);
+    pageHeader(pg3, '5472', 'Information Return of a 25% Foreign-Owned U.S. Corporation — Part V', 3, 3);
+    let y3 = H - 58;
+
+    y3 = sectionBar(pg3, y3, 'PART V — REPORTABLE TRANSACTIONS OF A FOREIGN-OWNED DOMESTIC DISREGARDED ENTITY');
+    t(pg3, 'Required for all foreign-owned U.S. disregarded entities per Reg. sec. 1.6038A-2(b)(7)(x).', ML+4, y3-10, 6.5, font, GRAY3);
+    y3 -= 18;
+
+    y3 = lineRow(pg3, y3, '37', 'Total contributions made to the DE by the foreign person (capital contributions)', capitalContrib > 0 ? irs(capitalContrib) : '0');
+    y3 = lineRow(pg3, y3, '38', 'Total distributions made from the DE to the foreign person',                       distributions  > 0 ? irs(distributions)  : '0');
+    y3 = lineRow(pg3, y3, '39', 'Gross receipts of the DE from all sources',                                        irs(inc));
+    y3 = lineRow(pg3, y3, '40', 'Total deductions of the DE',                                                       irs(exp));
+    y3 = lineRow(pg3, y3, '41', 'Net income (loss) of the DE (line 39 minus line 40)',                              irs(profit), true);
+    y3 = lineRow(pg3, y3, '42', 'Total assets of the DE at end of year',                                            irs(company.total_assets ?? inc));
+    y3 -= 14;
+
+    // Part V summary box
+    box(pg3, ML, y3-68, IW, 68, LGRAY, null);
+    box(pg3, ML, y3-68, IW, 68, null, BLACK);
+    t(pg3, 'PART V SUMMARY', ML+4, y3-11, 7.5, fontB, GRAY3);
+    hline(pg3, y3-14, ML, W-MR, 0.5, rgb(0.6,0.6,0.6));
+    t(pg3, 'Capital contributions from foreign owner (Line 37):', ML+8, y3-27, 8, font, BLACK);
+    tR(pg3, dollar(capitalContrib), W-MR-8, y3-27, 8.5, fontB, BLACK);
+    t(pg3, 'Distributions to foreign owner (Line 38):', ML+8, y3-40, 8, font, BLACK);
+    tR(pg3, dollar(distributions), W-MR-8, y3-40, 8.5, fontB, BLACK);
+    t(pg3, 'Net income / (loss) of the DE (Line 41):', ML+8, y3-53, 8, font, BLACK);
+    tR(pg3, dollar(profit), W-MR-8, y3-53, 8.5, fontB, BLACK);
+    t(pg3, 'Total assets at year-end (Line 42):', ML+8, y3-66, 8, font, BLACK);
+    tR(pg3, dollar(company.total_assets ?? inc), W-MR-8, y3-66, 8.5, fontB, BLACK);
+    y3 -= 76;
+
+    // Disclaimer
+    y3 -= 6;
+    box(pg3, ML, y3-32, IW, 32, rgb(1,0.97,0.91), null);
+    box(pg3, ML, y3-32, IW, 32, null, rgb(0.85,0.65,0.2));
+    t(pg3, '(!)  DISCLAIMER', ML+6, y3-10, 7.5, fontB, rgb(0.5,0.3,0));
+    t(pg3, 'This is a pro forma informational return for a foreign-owned U.S. disregarded entity. The entity has no separate U.S.', ML+6, y3-21, 6.5, font, rgb(0.45,0.28,0));
+    t(pg3, 'federal income tax liability. Form 5472 is filed as an attachment per Reg. sec.1.6038A-1. Consult a licensed CPA before filing.', ML+6, y3-31, 6.5, font, rgb(0.45,0.28,0));
+
+    if (preview) stampPreview([pg, pg2, pg3]);
   }
 
   // ══════════════════════════════════════════════════════════════════════════
