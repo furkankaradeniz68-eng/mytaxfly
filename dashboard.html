@@ -2148,16 +2148,16 @@ function buildDeadlineBar() {
   }
   const fmtDate = d => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
-  const smDue   = nextDeadline(4, 15);   // April 15
-  const mmDue   = nextDeadline(3, 15);   // March 15
-  const extDue  = nextDeadline(10, 15);  // October 15
+  const smDue    = nextDeadline(4, 15);   // April 15   — 5472 + 1120 (SMLLC)
+  const mmDue    = nextDeadline(3, 15);   // March 15   — Form 1065
+  const smExtDue = nextDeadline(10, 15);  // October 15 — SMLLC extension via Form 7004
+  const mmExtDue = nextDeadline(9, 15);   // September 15 — 1065 extension via Form 7004
 
   const dot = `<span style="color:rgba(0,200,150,0.4);margin:0 4px">|</span>`;
   bar.innerHTML =
     `<span style="font-weight:700;color:var(--accent);white-space:nowrap">IRS Deadlines</span>${dot}` +
-    `<span style="color:var(--text2);white-space:nowrap">Single-Member LLC: <strong style="color:var(--text)">${fmtDate(smDue)}</strong></span>${dot}` +
-    `<span style="color:var(--text2);white-space:nowrap">Multi-Member LLC: <strong style="color:var(--text)">${fmtDate(mmDue)}</strong></span>${dot}` +
-    `<span style="color:var(--text2);white-space:nowrap">Extension: <strong style="color:var(--text)">${fmtDate(extDue)}</strong></span>`;
+    `<span style="color:var(--text2);white-space:nowrap">Single-Member LLC: <strong style="color:var(--text)">${fmtDate(smDue)}</strong> <span style="font-size:11px;color:var(--text3)">(ext. ${fmtDate(smExtDue)})</span></span>${dot}` +
+    `<span style="color:var(--text2);white-space:nowrap">Multi-Member LLC: <strong style="color:var(--text)">${fmtDate(mmDue)}</strong> <span style="font-size:11px;color:var(--text3)">(ext. ${fmtDate(mmExtDue)})</span></span>`;
 }
 
 function buildPeriodMenu(){
