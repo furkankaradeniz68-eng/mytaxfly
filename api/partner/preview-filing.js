@@ -23,8 +23,11 @@ export default async function handler(req, res) {
     external_id, form_type, tax_year,
     company, foreign_owner, transactions = [],
     partners = [], financials = {},
-    extend_form = '1120', signature_png_base64 = null,
+    extend_form: extend_form_raw = null, signature_png_base64 = null,
   } = req.body || {};
+
+  // Auto-detect extension form: 1065 filers must use Code 09, not Code 12 (1120)
+  const extend_form = extend_form_raw || (form_type === '1065' ? '1065' : '1120');
 
   const VALID_FORM_TYPES = ['5472_1120', '1065', '1120', '5472', '7004'];
   if (!external_id) return res.status(400).json({ error: 'Missing external_id.' });
