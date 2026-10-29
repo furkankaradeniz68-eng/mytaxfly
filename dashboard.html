@@ -1301,7 +1301,29 @@ src="https://www.facebook.com/tr?id=898464922187303&ev=PageView&noscript=1"/></n
         <span class="period-count" id="period-count"></span>
       </div>
       <!-- IRS Deadline Bar -->
-      <div id="irs-deadline-bar" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;background:rgba(0,200,150,0.07);border:1px solid rgba(0,200,150,0.18);border-radius:10px;padding:9px 16px;margin-bottom:20px;font-size:12px"></div>
+      <div id="irs-deadline-bar" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;background:rgba(0,200,150,0.07);border:1px solid rgba(0,200,150,0.18);border-radius:10px;padding:9px 16px;margin-bottom:12px;font-size:12px"></div>
+
+      <!-- Annual Report Reminder -->
+      <div id="annual-report-card" style="background:rgba(99,102,241,0.05);border:1px solid rgba(99,102,241,0.2);border-radius:10px;margin-bottom:20px;overflow:hidden">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 16px;cursor:pointer" onclick="toggleAnnualCard()">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:13px">🏛️</span>
+            <span style="font-weight:700;font-size:12px;color:rgba(99,102,241,0.9)">Annual Report</span>
+            <span style="font-size:11px;color:var(--text3)">— Required state filing (not IRS)</span>
+          </div>
+          <span id="annual-card-chevron" style="font-size:11px;color:var(--text3);transition:transform 0.2s">▼</span>
+        </div>
+        <div id="annual-card-body" style="display:none;padding:0 16px 14px">
+          <p style="font-size:12px;color:var(--text2);margin:0 0 10px;line-height:1.6">
+            Every US LLC must file an <strong>Annual Report</strong> (or equivalent) with the <strong>Secretary of State</strong> of its registered state — every year, regardless of IRS filings. Fees and deadlines vary by state.
+          </p>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:10px" id="annual-state-grid"></div>
+          <p style="font-size:11px;color:var(--text3);margin:8px 0 0">
+            State not listed? →
+            <a href="https://www.sos.ca.gov" target="_blank" rel="noopener" style="color:rgba(99,102,241,0.8);text-decoration:none" onclick="event.stopPropagation();window.open('https://www.google.com/search?q='+encodeURIComponent((entities.find(e=>e.id===activeEntityId)||entities[0])?.name+' annual report secretary of state LLC'),'_blank');return false">Search your state's SOS website ↗</a>
+          </p>
+        </div>
+      </div>
 
       <div class="stats-grid">
         <div class="stat-card"><div class="stat-label" id="t-stat-revenue">Revenue</div><div class="stat-value green" id="stat-income">$0</div><div class="stat-change">This month</div></div>
@@ -2158,6 +2180,40 @@ function buildDeadlineBar() {
     `<span style="font-weight:700;color:var(--accent);white-space:nowrap">IRS Deadlines</span>${dot}` +
     `<span style="color:var(--text2);white-space:nowrap">Single-Member LLC: <strong style="color:var(--text)">${fmtDate(smDue)}</strong> <span style="font-size:11px;color:var(--text3)">(ext. ${fmtDate(smExtDue)})</span></span>${dot}` +
     `<span style="color:var(--text2);white-space:nowrap">Multi-Member LLC: <strong style="color:var(--text)">${fmtDate(mmDue)}</strong> <span style="font-size:11px;color:var(--text3)">(ext. ${fmtDate(mmExtDue)})</span></span>`;
+}
+
+function buildAnnualReportCard() {
+  const grid = document.getElementById('annual-state-grid');
+  if (!grid) return;
+  const states = [
+    { state: 'Delaware',    abbr: 'DE', deadline: 'Jun 1',       fee: '$300',    url: 'https://icis.corp.delaware.gov/ecorp/entitysearch/namesearch.aspx' },
+    { state: 'Wyoming',     abbr: 'WY', deadline: 'Anniversary', fee: '$60 min', url: 'https://wyobiz.wyo.gov/Business/FilingSearch.aspx' },
+    { state: 'Florida',     abbr: 'FL', deadline: 'May 1',       fee: '$138.75', url: 'https://dos.fl.gov/sunbiz/manage-business/efile/annual-report/' },
+    { state: 'Texas',       abbr: 'TX', deadline: 'May 15',      fee: '$0',      url: 'https://www.sos.state.tx.us/corp/Annual_Report_FAQs.shtml' },
+    { state: 'New Mexico',  abbr: 'NM', deadline: '—',           fee: '$0',      url: 'https://portal.sos.state.nm.us/BFS/online/CorporationAndLLC.aspx', noReport: true },
+    { state: 'Nevada',      abbr: 'NV', deadline: 'Anniversary', fee: '$350',    url: 'https://esos.nv.gov/EntitySearch/OnlineEntitySearch' },
+  ];
+  grid.innerHTML = states.map(s => `
+    <a href="${s.url}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="display:block;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:9px 12px;text-decoration:none;transition:border-color 0.15s" onmouseover="this.style.borderColor='rgba(99,102,241,0.5)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <span style="font-weight:700;font-size:12px;color:var(--text)">${s.state}</span>
+        <span style="font-size:10px;background:rgba(99,102,241,0.1);color:rgba(99,102,241,0.85);padding:1px 6px;border-radius:4px">${s.abbr}</span>
+      </div>
+      ${s.noReport
+        ? `<div style="font-size:11px;color:var(--accent)">No Annual Report required ✓</div>`
+        : `<div style="font-size:11px;color:var(--text2)">Deadline: <strong style="color:var(--text)">${s.deadline}</strong></div>
+           <div style="font-size:11px;color:var(--text2)">Fee: <strong style="color:var(--text)">${s.fee}</strong></div>`}
+      <div style="font-size:10px;color:rgba(99,102,241,0.7);margin-top:4px">File at Secretary of State ↗</div>
+    </a>`).join('');
+}
+
+function toggleAnnualCard() {
+  const body = document.getElementById('annual-card-body');
+  const chevron = document.getElementById('annual-card-chevron');
+  if (!body) return;
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'block';
+  if (chevron) chevron.style.transform = open ? '' : 'rotate(180deg)';
 }
 
 function buildPeriodMenu(){
@@ -3548,6 +3604,7 @@ async function launchApp(user){
     buildPeriodMenu();
     buildReportPeriodPills();
     buildDeadlineBar();
+    buildAnnualReportCard();
     const [pFrom,pTo]=getPeriodRange('month');
     periodFrom=pFrom; periodTo=pTo;
     document.querySelectorAll('.stat-change').forEach(el=>{if(!el.id)el.textContent='This Month';});
