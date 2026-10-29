@@ -41,24 +41,79 @@ export default async function handler(req, res) {
       return res.status(200).json({ received: true });
     }
 
+    // Resolve the real subscription ID — never fall back to the session ID (cs_live_...)
+    let subscriptionId = obj.subscription ?? null;
+    if (!subscriptionId) {
+      // Subscription may not be attached yet on the session object — fetch it
+      try {
+        const expanded = await stripe.checkout.sessions.retrieve(obj.id, { expand: ['subscription'] });
+        subscriptionId = expanded.subscription?.id ?? expanded.subscription ?? null;
+      } catch (e) {
+        console.warn('⚠️ Could not expand subscription from session:', e.message);
+      }
+    }
+    // Only store a real sub_ ID — ignore session IDs
+    if (subscriptionId && !String(subscriptionId).startsWith('sub_')) {
+      console.warn(`⚠️ Unexpected subscription value "${subscriptionId}" — clearing`);
+      subscriptionId = null;
+    }
+
+    // Resolve customer ID (should always be set, but guard anyway)
+    const customerId = obj.customer ?? null;
+
     // Get price ID via 3 methods (each is a fallback for the previous)
     const priceId = obj.line_items?.data?.[0]?.price?.id
       ?? await getFirstPriceId(stripe, obj.id)
-      ?? await getPriceFromSubscription(stripe, obj.subscription);
+      ?? await getPriceFromSubscription(stripe, subscriptionId);
     const plan = getPlanFromPriceId(priceId) || getPlanFromAmount(obj.amount_total);
     console.log(`💳 priceId=${priceId} → plan=${plan} (amount=${obj.amount_total})`);
 
-    const { error: upsertErr } = await sb.from('subscriptions').upsert({
+    const row = {
       email,
-      stripe_customer_id:      obj.customer,
-      stripe_subscription_id:  obj.subscription || obj.id,
+      status:     'active',
       plan,
-      status:                  'active',
-      updated_at:              new Date().toISOString()
-    }, { onConflict: 'email' });
+      updated_at: new Date().toISOString(),
+    };
+    if (customerId)     row.stripe_customer_id     = customerId;
+    if (subscriptionId) row.stripe_subscription_id = subscriptionId;
 
+    const { error: upsertErr } = await sb.from('subscriptions').upsert(row, { onConflict: 'email' });
     if (upsertErr) console.error('❌ Supabase upsert error:', upsertErr.message);
-    else console.log(`✅ Subscription activated: ${email} → ${plan}`);
+    else console.log(`✅ Subscription activated: ${email} → ${plan} (sub=${subscriptionId ?? 'pending'}, cus=${customerId ?? 'pending'})`);
+  }
+
+  // ── invoice.paid  (reliable fallback — always has customer + subscription) ──
+  // Fires on every successful payment. Use it to backfill missing IDs.
+  if (event.type === 'invoice.paid') {
+    const customerId     = obj.customer;
+    const subscriptionId = obj.subscription;
+    if (!customerId || !subscriptionId) return res.status(200).json({ received: true });
+
+    const priceId = obj.lines?.data?.[0]?.price?.id ?? null;
+    const plan    = getPlanFromPriceId(priceId) || null;
+    const update  = {
+      stripe_customer_id:     customerId,
+      stripe_subscription_id: subscriptionId,
+      status:                 'active',
+      updated_at:             new Date().toISOString(),
+    };
+    if (plan) update.plan = plan;
+
+    // Update by customer_id first; if not found, try email from invoice
+    const { data: existing } = await sb.from('subscriptions')
+      .select('id').eq('stripe_customer_id', customerId).maybeSingle();
+
+    if (existing) {
+      await sb.from('subscriptions').update(update).eq('stripe_customer_id', customerId);
+      console.log(`🔁 invoice.paid backfill: cus=${customerId} sub=${subscriptionId}`);
+    } else {
+      // Try to find by subscription_id (could be stored as cs_live_... previously)
+      const email = (obj.customer_email || '').toLowerCase();
+      if (email) {
+        await sb.from('subscriptions').update(update).eq('email', email);
+        console.log(`🔁 invoice.paid backfill by email: ${email} → cus=${customerId} sub=${subscriptionId}`);
+      }
+    }
   }
 
   // ── customer.subscription.updated  (plan change / renewal) ────────────────
