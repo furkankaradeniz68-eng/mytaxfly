@@ -763,8 +763,34 @@ export async function generatePdf({
     tR(pg, fmtUSD(allocIncome), W-MR-8, y-51, 9, fontB, rgb(0.07,0.53,0.33));
     y -= 60;
 
-    // Disclaimer
+    // Item L — Partner's Capital Account Analysis (IRS-required, Tax Basis Method, mandatory since 2020)
     y -= 4;
+    y = sectionBar(pg, y, 'ITEM L — PARTNER\'S CAPITAL ACCOUNT ANALYSIS (Tax Basis Method)');
+    y -= 4;
+    const capitalContrib = pt.capital_contribution || 0;
+    const capitalWithdraw = pt.distributions || pt.distribution || 0;
+    const beginCapital    = pt.capital_beginning || 0;
+    const endCapital      = beginCapital + capitalContrib + allocIncome - capitalWithdraw;
+
+    box(pg, ML, y-88, IW, 88, LGRAY, null);
+    box(pg, ML, y-88, IW, 88, null, rgb(0.55,0.55,0.55));
+    const lh = 88 / 5;
+    [
+      ['Beginning capital account',       fmtUSD(beginCapital)],
+      ['Capital contributed during year', fmtUSD(capitalContrib)],
+      ['Current year net income (loss)',  fmtUSD(allocIncome)],
+      ['Withdrawals & distributions',     capitalWithdraw > 0 ? `(${fmtUSD(capitalWithdraw)})` : '0'],
+      ['Ending capital account',          fmtUSD(endCapital)],
+    ].forEach(([label, val], i) => {
+      const cy = y - i * lh;
+      if (i > 0) hline(pg, cy, ML, W-MR, 0.3, rgb(0.7,0.7,0.7));
+      const isBold = i === 4;
+      t(pg, label, ML+4, cy-lh+5, 7.5, isBold ? fontB : font, BLACK);
+      tR(pg, val, W-MR-4, cy-lh+5, 8, isBold ? fontB : font, isBold ? rgb(0.07,0.53,0.33) : BLACK);
+    });
+    y -= 88 + 6;
+
+    // Disclaimer
     box(pg, ML, y-32, IW, 32, rgb(1,0.97,0.91), null);
     box(pg, ML, y-32, IW, 32, null, rgb(0.85,0.65,0.2));
     t(pg, '(!)  PRO FORMA — INFORMATIONAL ONLY', ML+6, y-10, 7.5, fontB, rgb(0.5,0.3,0));
@@ -1019,8 +1045,34 @@ export async function generateK1Pdfs({ partners = [], company, financials = {}, 
     tR(pg, fmtUSD(allocIncome), W-MR-8, y-51, 9, fontB, GREEN);
     y -= 60;
 
-    // Disclaimer
+    // Item L — Partner's Capital Account Analysis (IRS-required, Tax Basis Method)
     y -= 4;
+    box(pg, 0, y-13, W, 13, rgb(0.18,0.18,0.18), null);
+    t(pg, "ITEM L — PARTNER'S CAPITAL ACCOUNT ANALYSIS (Tax Basis Method)", ML+4, y-10, 7.5, fontB, WHITE);
+    y -= 13; y -= 4;
+    const k1CapContrib   = pt.capital_contribution || 0;
+    const k1CapWithdraw  = pt.distributions || pt.distribution || 0;
+    const k1BeginCapital = pt.capital_beginning || 0;
+    const k1EndCapital   = k1BeginCapital + k1CapContrib + allocIncome - k1CapWithdraw;
+    box(pg, ML, y-88, IW, 88, LGRAY, null);
+    box(pg, ML, y-88, IW, 88, null, rgb(0.55,0.55,0.55));
+    const lh2 = 88 / 5;
+    [
+      ['Beginning capital account',       fmtUSD(k1BeginCapital)],
+      ['Capital contributed during year', fmtUSD(k1CapContrib)],
+      ['Current year net income (loss)',  fmtUSD(allocIncome)],
+      ['Withdrawals & distributions',     k1CapWithdraw > 0 ? `(${fmtUSD(k1CapWithdraw)})` : '0'],
+      ['Ending capital account',          fmtUSD(k1EndCapital)],
+    ].forEach(([label, val], i) => {
+      const cy = y - i * lh2;
+      if (i > 0) hline(pg, cy, ML, W-MR, 0.3, rgb(0.7,0.7,0.7));
+      const isBold = i === 4;
+      t(pg, label, ML+4, cy-lh2+5, 7.5, isBold ? fontB : font, BLACK);
+      tR(pg, val, W-MR-4, cy-lh2+5, 8, isBold ? fontB : font, isBold ? GREEN : BLACK);
+    });
+    y -= 88 + 6;
+
+    // Disclaimer
     box(pg, ML, y-32, IW, 32, rgb(1,0.97,0.91), null);
     box(pg, ML, y-32, IW, 32, null, rgb(0.85,0.65,0.2));
     t(pg, '(!)  PRO FORMA — INFORMATIONAL ONLY', ML+6, y-10, 7.5, fontB, rgb(0.5,0.3,0));
