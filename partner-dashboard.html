@@ -323,7 +323,7 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
               <tr><td>transactions</td><td class="opt">optional</td><td>Array — Struktur siehe unten</td></tr>
               <tr><td>partners</td><td class="req">erforderlich für 1065</td><td>Array — Struktur siehe unten</td></tr>
               <tr><td>financials</td><td class="opt">optional</td><td>Objekt — Struktur siehe unten</td></tr>
-              <tr><td>extend_form</td><td class="opt">optional</td><td>Für 7004: welches Formular verlängert wird. Standard: <code>"1120"</code></td></tr>
+              <tr><td>extend_form</td><td class="opt">optional</td><td>Für 7004: welches Formular verlängert wird. <strong>Wird automatisch erkannt</strong> — <code>"1065"</code> für Partnerships, <code>"1120"</code> für SMLLCs. Nur angeben, wenn du den Wert überschreiben möchtest.</td></tr>
             </tbody>
           </table>
           <h3>Response</h3>
@@ -447,17 +447,25 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
 ]</div>
 
           <h3>partners (erforderlich für 1065)</h3>
-          <p>Array aller Partner der LLC. Die API generiert automatisch ein <strong>Schedule K-1</strong> pro Partner — als zusätzliche Seiten im 1065-PDF (für das IRS) und als separate PDFs im Response-Feld <code>k1_pdfs</code> (zur Weitergabe an jeden Gesellschafter).</p>
+          <p>Array aller Partner der LLC. Die API generiert automatisch ein <strong>Schedule K-1</strong> pro Partner — als zusätzliche Seiten im 1065-PDF (für das IRS) und als separate PDFs im Response-Feld <code>k1_pdfs</code> (zur Weitergabe an jeden Gesellschafter). Jedes K-1 enthält seit 2020 IRS-Pflichtfeld <strong>Item L</strong> (Capital Account Analysis, Tax Basis Method).</p>
           <div class="code-block">[
   {
-    <span class="key">"name"</span>:              <span class="str">"Max Mustermann"</span>,          <span class="comment">// erforderlich</span>
-    <span class="key">"country"</span>:           <span class="str">"DE"</span>,                       <span class="comment">// erforderlich: ISO-Ländercode — DE = Deutschland, GB = UK</span>
-    <span class="key">"ownership_percent"</span>: <span class="num">50</span>,                         <span class="comment">// erforderlich: Beteiligungsquote in % (alle Partner zusammen = 100)</span>
-    <span class="key">"address"</span>:           <span class="str">"Musterstr. 1, 10115 Berlin"</span>, <span class="comment">// optional: Wohnadresse des Partners (erscheint auf K-1)</span>
-    <span class="key">"tin"</span>:               <span class="str">"DE123456789"</span>,             <span class="comment">// optional: ausländische Steuernummer (FTIN/SSN/ITIN)</span>
-    <span class="key">"partner_type"</span>:      <span class="str">"general"</span>                  <span class="comment">// optional: "general" (Standard) oder "limited"</span>
+    <span class="key">"name"</span>:                <span class="str">"Max Mustermann"</span>,          <span class="comment">// erforderlich</span>
+    <span class="key">"country"</span>:             <span class="str">"DE"</span>,                       <span class="comment">// erforderlich: ISO-Ländercode — DE = Deutschland, GB = UK</span>
+    <span class="key">"ownership_percent"</span>:   <span class="num">50</span>,                         <span class="comment">// erforderlich: Beteiligungsquote in % (alle Partner zusammen = 100)</span>
+    <span class="key">"address"</span>:             <span class="str">"Musterstr. 1, 10115 Berlin"</span>, <span class="comment">// optional: Wohnadresse des Partners (erscheint auf K-1)</span>
+    <span class="key">"tin"</span>:                 <span class="str">"DE123456789"</span>,             <span class="comment">// optional: ausländische Steuernummer (FTIN/SSN/ITIN)</span>
+    <span class="key">"partner_type"</span>:        <span class="str">"general"</span>,                 <span class="comment">// optional: "general" (Standard) oder "limited"</span>
+    <span class="key">"capital_beginning"</span>:   <span class="num">0</span>,                          <span class="comment">// optional: Kapitalkontostand Jahresbeginn (Item L) — Standard: 0</span>
+    <span class="key">"capital_contribution"</span>:<span class="num">5000</span>,                       <span class="comment">// optional: Kapitaleinlagen im Jahr (Item L) — Standard: 0</span>
+    <span class="key">"distributions"</span>:       <span class="num">2000</span>                        <span class="comment">// optional: Entnahmen / Ausschüttungen im Jahr (Item L) — Standard: 0</span>
   }
 ]</div>
+          <p class="note" style="font-size:0.85em;color:#666;margin-top:6px;">
+            <strong>Item L — Capital Account Analysis</strong> wird automatisch berechnet:<br>
+            <code>Ending capital = capital_beginning + capital_contribution + allocated_income − distributions</code><br>
+            Alle drei Felder sind optional und standardmäßig 0. Das Ending Capital wird immer ausgegeben.
+          </p>
 
           <h3>financials (optional)</h3>
           <p>Alternativ zu <code>transactions</code>: Gesamtsummen statt Einzelbuchungen. Wenn <code>gross_revenue</code> gesetzt ist, werden <code>transactions</code> für die Einnahmen/Ausgaben-Berechnung ignoriert.</p>
