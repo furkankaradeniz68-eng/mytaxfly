@@ -6107,6 +6107,32 @@ async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extend
         tR(k1pg, `× ${pt.ownership || 0}%`, W - MR - 8, ky - 40, 8.5, fontB, GRAY3);
         t(k1pg, 'Allocated income (loss) — Line 1:', ML + 8, ky - 55, 8, fontB, BLACK);
         tR(k1pg, `$${Math.round(allocIncome).toLocaleString('en-US')}`, W - MR - 8, ky - 55, 9, fontB, GREEN);
+        ky -= 75;
+
+        // Item L — Partner's Capital Account Analysis (IRS-required, Tax Basis Method, mandatory since 2020)
+        ky = sectionBar(k1pg, ky, "ITEM L — PARTNER'S CAPITAL ACCOUNT ANALYSIS (Tax Basis Method)");
+        ky -= 4;
+        const k1CapContrib   = 0;
+        const k1CapWithdraw  = 0;
+        const k1BeginCapital = 0;
+        const k1EndCapital   = k1BeginCapital + k1CapContrib + allocIncome - k1CapWithdraw;
+        const k1lh = 88 / 5;
+        box(k1pg, ML, ky - 88, IW, 88, LGRAY, null);
+        box(k1pg, ML, ky - 88, IW, 88, null, rgb(0.55,0.55,0.55));
+        [
+          ['Beginning capital account',       `$${Math.round(k1BeginCapital).toLocaleString('en-US')}`],
+          ['Capital contributed during year',  `$${Math.round(k1CapContrib).toLocaleString('en-US')}`],
+          ['Current year net income (loss)',   `$${Math.round(allocIncome).toLocaleString('en-US')}`],
+          ['Withdrawals & distributions',      k1CapWithdraw > 0 ? `($${Math.round(k1CapWithdraw).toLocaleString('en-US')})` : '0'],
+          ['Ending capital account',           `$${Math.round(k1EndCapital).toLocaleString('en-US')}`],
+        ].forEach(([label, val], i) => {
+          const cy = ky - i * k1lh;
+          if (i > 0) hline(k1pg, cy, ML, W - MR, 0.3, rgb(0.7,0.7,0.7));
+          const f = i === 4 ? fontB : font;
+          t(k1pg, label, ML + 4, cy - k1lh + 5, 7.5, f, BLACK);
+          tR(k1pg, val, W - MR - 4, cy - k1lh + 5, 8, f, i === 4 ? GREEN : BLACK);
+        });
+        ky -= 88 + 6;
       });
     }
   }
