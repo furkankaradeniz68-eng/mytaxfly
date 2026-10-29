@@ -29,10 +29,13 @@ export default async function handler(req, res) {
     company, foreign_owner, transactions = [],
     partners = [], financials = {},
     signer_name, signer_title, ip_address,
-    extend_form = '1120', signature_png_base64 = null,
+    extend_form: extend_form_raw = null, signature_png_base64 = null,
     signed_pdf_base64 = null, // pre-signed PDF upload — skips generation & e-sig overlay
     test = false,             // true → use LOB_TEST_KEY, mark filing as test
   } = req.body || {};
+
+  // Auto-detect extension form: 1065 filers must use Code 09, not Code 12 (1120)
+  const extend_form = extend_form_raw || (form_type === '1065' ? '1065' : '1120');
 
   // ── Validation ────────────────────────────────────────────────────────────
   const VALID_FORM_TYPES = ['5472_1120', '1065', '1120', '5472', '7004'];
