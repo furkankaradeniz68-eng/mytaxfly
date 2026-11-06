@@ -54,6 +54,9 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing partners array for form_type 1065.' });
   if (!signer_name) return res.status(400).json({ error: 'Missing signer_name.' });
   if (!signer_title) return res.status(400).json({ error: 'Missing signer_title.' });
+  const { validateFilingNumbers } = await import('./_validate-filing.js');
+  const numbersError = validateFilingNumbers({ form_type, tax_year, company, foreign_owner, transactions, partners, financials, signer_name });
+  if (numbersError) return res.status(400).json({ error: numbersError });
 
   // ── Duplicate check ───────────────────────────────────────────────────────
   const { data: existing } = await sb
