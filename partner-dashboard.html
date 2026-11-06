@@ -309,13 +309,14 @@ tbody td{padding:11px 16px;font-size:12px;color:var(--text)}
               <tr><td>form_type</td><td class="req">erforderlich</td><td>Siehe Formular-Typen</td></tr>
               <tr><td>tax_year</td><td class="req">erforderlich</td><td>Zahl, z.B. <code>2024</code></td></tr>
               <tr><td>company.name</td><td class="req">erforderlich</td><td>Name der LLC</td></tr>
-              <tr><td>company.ein</td><td class="req">erforderlich</td><td>EIN im Format <code>"12-3456789"</code></td></tr>
+              <tr><td>company.ein</td><td class="req">erforderlich</td><td>EIN im Format <code>"12-3456789"</code> (oder <code>"Applied for"</code>, solange die EIN beantragt ist). Andere Werte ergeben <code>400</code>.</td></tr>
+              <tr><td>company.initial_return</td><td class="opt">optional</td><td><code>true</code>/<code>false</code>: markiert die Erstanmeldung (1120 Feld E, 5472 Zeile 1j, 1065 Feld G). Ohne Angabe wird es automatisch gesetzt, wenn das Jahr von <code>company.incorporated_date</code> gleich <code>tax_year</code> ist.</td></tr>
               <tr><td colspan="3" style="background:rgba(0,200,150,0.06);font-size:11px;color:var(--text2);padding:6px 10px">⚑ <strong>company.address</strong> = US-Adresse des Registered Agent (z.B. in Delaware oder Wyoming). Diese Adresse wird als Absender auf dem USPS-Brief ans IRS verwendet und muss vollständig und korrekt sein.</td></tr>
               <tr><td>company.address.street</td><td class="req">erforderlich</td><td>Straße des Registered Agent, z.B. <code>"123 Main St"</code></td></tr>
               <tr><td>company.address.city</td><td class="req">erforderlich</td><td>Stadt des Registered Agent</td></tr>
               <tr><td>company.address.state</td><td class="req">erforderlich</td><td><strong>US-Bundesstaat</strong> (nicht ISO-Ländercode). <code>"DE"</code> = Delaware, <code>"WY"</code> = Wyoming, <code>"FL"</code> = Florida — immer der Gründungsstaat der LLC</td></tr>
               <tr><td>company.address.zip</td><td class="req">erforderlich</td><td>US-Postleitzahl des Registered Agent, z.B. <code>"19801"</code></td></tr>
-              <tr><td>company.total_assets</td><td class="opt">optional</td><td>Gesamtvermögen der LLC am Jahresende in USD (erscheint in Part I und Part V Zeile 42)</td></tr>
+              <tr><td>company.total_assets</td><td class="opt">optional</td><td>Gesamtvermögen der LLC am Jahresende in USD (erscheint in Part I und Part V Zeile 42). <strong>Ohne Angabe bleibt das Feld im Formular leer.</strong> Bitte für 5472_1120 und 1065 immer angeben.</td></tr>
               <tr><td>company.naics_code</td><td class="opt">optional</td><td>NAICS-Branchencode, z.B. <code>"541511"</code> (erscheint in Part I)</td></tr>
               <tr><td>company.business_activity</td><td class="opt">optional</td><td>Tätigkeitsbeschreibung, z.B. <code>"Software Development"</code> (erscheint in Part I)</td></tr>
               <tr><td>company.incorporated_date</td><td class="opt">optional</td><td>Gründungsdatum im Format <code>"2023-01-15"</code> (erscheint in Part I)</td></tr>
