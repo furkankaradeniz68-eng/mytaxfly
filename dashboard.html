@@ -1693,7 +1693,24 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <div style="font-size:13px;font-weight:700;margin-bottom:3px">Tax Year to File</div>
           <div style="font-size:12px;color:var(--text3);line-height:1.5">All transactions from Jan 1 – Dec 31 of the selected year will be included in your filing package.</div>
         </div>
-        <select id="irs-year-select" onchange="irsFilingYear=parseInt(this.value)" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-family:'Montserrat',sans-serif;font-size:15px;font-weight:700;color:var(--text);cursor:pointer;flex-shrink:0;min-width:90px"></select>
+        <select id="irs-year-select" onchange="irsFilingYear=parseInt(this.value);syncIRSInitialCheckbox()"style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-family:'Montserrat',sans-serif;font-size:15px;font-weight:700;color:var(--text);cursor:pointer;flex-shrink:0;min-width:90px"></select>
+      </div>
+
+      <label id="irs-initial-row" style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:16px;display:flex;align-items:flex-start;gap:12px;cursor:pointer">
+        <input id="irs-initial-return" type="checkbox" onchange="setIRSInitialReturn(this.checked)" style="width:18px;height:18px;margin-top:1px;accent-color:var(--accent);flex-shrink:0">
+        <span>
+          <span style="display:block;font-size:13px;font-weight:700;margin-bottom:3px">Initial return (first filing for this LLC)</span>
+          <span id="irs-initial-hint" style="display:block;font-size:12px;color:var(--text3);line-height:1.5"></span>
+        </span>
+      </label>
+
+      <div id="irs-assets-row" style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+        <div style="flex:1;min-width:220px">
+          <label for="irs-total-assets" style="display:block;font-size:13px;font-weight:700;margin-bottom:3px">Total assets on December 31 (USD)</label>
+          <div style="font-size:12px;color:var(--text3);line-height:1.5">Cash, bank balances, receivables and equipment of the LLC at year end. Required for this tax year. Enter 0 if the LLC had none.</div>
+          <div id="irs-assets-error" style="display:none;font-size:12px;color:var(--warn);margin-top:4px">Please enter a valid amount of 0 or more, e.g. 12,500.</div>
+        </div>
+        <input class="f-input" id="irs-total-assets" type="text" inputmode="decimal" placeholder="e.g. 12,500" onchange="setIRSTotalAssets(this.value)" style="width:150px;margin:0;text-align:right">
       </div>
 
       <!-- Step buttons: Preview then Send -->
@@ -3922,9 +3939,158 @@ function detectCurrency(str) {
   return {code:'USD', symbol:'$'};
 }
 
+// Returns NaN for anything that is not an unambiguous amount, so typos never become a booked figure.
 function parseAmountStr(str) {
-  const v = parseFloat(str.replace(/[^0-9.]/g, '')) || 0;
-  return v;
+  const raw = String(str ?? '').trim();
+  const m = raw.replace(/^\((.*)\)$/, '-$1').match(/^([-−+]?)\s*([A-Za-z]{0,3}\$|[€£¥]|[A-Za-z]{3})?\s*([-−+]?)\s*(\d[\d.,'\s]*|[.,]\d+)\s*([A-Za-z]{3}|[€£¥$])?$/);
+  if (!m) return NaN;
+  const code = m[2] || m[5] || '';
+  if (/[A-Za-z]/.test(code) && !/^(USD|US\$)$/i.test(code) && detectCurrency(raw).code === 'USD') return NaN;
+
+  const n = m[4].replace(/['\s]/g, '');
+  const lastComma = n.lastIndexOf(','), lastDot = n.lastIndexOf('.');
+  let plain = null;
+  if (lastComma >= 0 && lastDot >= 0) {
+    const [groupSep, decimalSep] = lastComma > lastDot ? ['.', ','] : [',', '.'];
+    if (new RegExp(`^[1-9]\\d{0,2}(\\${groupSep}\\d{3})+\\${decimalSep}\\d{1,2}$`).test(n)) {
+      plain = n.split(groupSep).join('').replace(decimalSep, '.');
+    }
+  } else if (lastComma >= 0 || lastDot >= 0) {
+    const sep = lastComma >= 0 ? ',' : '.';
+    if (new RegExp(`^[1-9]\\d{0,2}(\\${sep}\\d{3})+$`).test(n)) plain = n.split(sep).join('');
+    else if (new RegExp(`^\\d*\\${sep}\\d{1,2}$`).test(n)) plain = n.replace(sep, '.');
+  } else if (/^\d+$/.test(n)) {
+    plain = n;
+  }
+  if (plain === null) return NaN;
+  const value = parseFloat(plain);
+  return /[-−]/.test(m[1] + m[3]) ? -value : value;
+}
+
+function normalizeEIN(value) {
+  const m = String(value || '').trim().match(/^(\d{2})-?(\d{7})$/);
+  return m ? `${m[1]}-${m[2]}` : null;
+}
+
+function checkFilingEin(p) {
+  if (!p.ein) { alert('Please complete your LLC profile first (EIN is required).'); return false; }
+  if (!normalizeEIN(p.ein)) { alert(`The EIN "${p.ein}" is not valid. It must have 9 digits, e.g. 12-3456789. Please correct it in your LLC profile.`); return false; }
+  return true;
+}
+
+// Returns an error message, or null when every share is valid and the total is 100%.
+function validatePartnerShares(partners) {
+  let total = 0;
+  for (const pt of partners) {
+    const share = parseFloat(pt.ownership);
+    if (!(share > 0 && share <= 100)) return `Ownership of ${pt.name || 'each partner'} must be greater than 0% and at most 100%.`;
+    total += share;
+  }
+  if (Math.abs(total - 100) > 0.01) return `Partner ownership must total exactly 100% (currently ${+total.toFixed(2)}%).`;
+  return null;
+}
+
+// The standard PDF fonts only cover WinAnsi and throw on anything else, e.g. "Ş" or "ł".
+function toPdfText(value) {
+  const extra = { 'ı':'i', 'İ':'I', 'ł':'l', 'Ł':'L', 'đ':'d', 'Đ':'D', 'ħ':'h', 'Ħ':'H' };
+  return String(value).replace(/[^\x09\x0A\x0D\x20-\x7E\xA0-\xFF€–—‘’“”•…]/g, ch => {
+    const plain = extra[ch] ?? ch.normalize('NFKD').replace(/[̀-ͯ]/g, '');
+    return /^[\x20-\x7E]+$/.test(plain) ? plain : '?';
+  });
+}
+
+// Blocks IRS mailing when required identity data is missing or the sender address cannot be parsed.
+function checkFilingProfile(p) {
+  const missing = [];
+  const unprintable = [p.address, p.city, p.shName, p.shAddress, p.activity].some(v => v && toPdfText(v).includes('?') && !String(v).includes('?'));
+  if (unprintable) missing.push('LLC and shareholder details written in Latin letters');
+  if (!p.address) missing.push('LLC street address');
+  if (!/,\s*[A-Za-z]{2}\s+\d{5}(-\d{4})?\s*$/.test(p.city || '')) missing.push('LLC city in the format "City, ST 12345"');
+  if (irsFormType !== '7004' && getTotalAssets(p, irsFilingYear) === null) missing.push(`total assets at the end of ${irsFilingYear}`);
+  if (irsFormType === '5472_1120') {
+    if (!p.shName) missing.push('foreign shareholder name');
+    if (!p.shAddress) missing.push('foreign shareholder address');
+    if (!p.shRes && !p.shCountry) missing.push('foreign shareholder country');
+  }
+  if (missing.length) alert(`Please complete your LLC profile before filing:\n• ${missing.join('\n• ')}`);
+  return !missing.length;
+}
+
+function checkFilingPartners() {
+  if (irsFormType !== '1065') return true;
+  const partners = (entities.find(e => e.id === activeEntityId) || entities[0])?.partners?.filter(pt => pt.name?.trim()) || [];
+  const error = partners.length ? validatePartnerShares(partners) : null;
+  if (error) alert(error);
+  return !error;
+}
+
+function initialReturnKey(year) { return `${activeEntityId || 'default'}:${year}`; }
+
+function autoInitialReturn(p, year) { return String(p.incDate || '').startsWith(`${year}-`); }
+
+function isInitialReturn(p, year) {
+  const override = p.initialReturnOverrides?.[initialReturnKey(year)];
+  return typeof override === 'boolean' ? override : autoInitialReturn(p, year);
+}
+
+function syncIRSInitialCheckbox() {
+  const p = getTaxProfile();
+  const box = document.getElementById('irs-initial-return');
+  if (box) box.checked = isInitialReturn(p, irsFilingYear);
+  const assetsInput = document.getElementById('irs-total-assets');
+  if (assetsInput) {
+    assetsInput.value = getTotalAssets(p, irsFilingYear) ?? '';
+    document.getElementById('irs-assets-error').style.display = 'none';
+  }
+  const hint = document.getElementById('irs-initial-hint');
+  if (hint) {
+    const overridden = typeof p.initialReturnOverrides?.[initialReturnKey(irsFilingYear)] === 'boolean';
+    hint.textContent = overridden
+      ? 'Set manually for this tax year.'
+      : (p.incDate ? 'Set automatically from your date of incorporation.' : 'Add your date of incorporation to detect this automatically.');
+  }
+}
+
+function setIRSInitialReturn(checked) {
+  const p = getTaxProfile();
+  const overrides = { ...p.initialReturnOverrides };
+  const key = initialReturnKey(irsFilingYear);
+  if (checked === autoInitialReturn(p, irsFilingYear)) delete overrides[key];
+  else overrides[key] = checked;
+  p.initialReturnOverrides = overrides;
+  storeTaxProfile(p);
+  syncIRSInitialCheckbox();
+}
+
+function storeTaxProfile(p) {
+  localStorage.setItem(TAX_PROFILE_KEY, JSON.stringify(p));
+  sb.auth.updateUser({ data: { tax_profile: p } }).catch(e => console.warn('Tax profile cloud save failed:', e.message));
+}
+
+function getTotalAssets(p, year) {
+  const value = p.totalAssetsByYear?.[initialReturnKey(year)];
+  return typeof value === 'number' ? value : null;
+}
+
+function totalAssetsText(p, year, empty = '') {
+  const value = getTotalAssets(p, year);
+  return value === null ? empty : '$' + Math.round(value).toLocaleString('en-US');
+}
+
+function setIRSTotalAssets(raw) {
+  const errorEl = document.getElementById('irs-assets-error');
+  const text = raw.trim();
+  const value = parseAmountStr(text);
+  const invalid = text !== '' && !(value >= 0);
+  errorEl.style.display = invalid ? 'block' : 'none';
+  if (invalid) return;
+  const p = getTaxProfile();
+  const byYear = { ...p.totalAssetsByYear };
+  const key = initialReturnKey(irsFilingYear);
+  if (text === '') delete byYear[key];
+  else byYear[key] = value;
+  p.totalAssetsByYear = byYear;
+  storeTaxProfile(p);
 }
 
 let _historicalRateCache = {};
@@ -3965,7 +4131,9 @@ function handleAmountInput(val) {
     if (!hint) return;
     const cur = detectCurrency(val);
     const amt = parseAmountStr(val);
-    if (!amt || cur.code === 'USD') { hint.textContent = ''; return; }
+    if (val.trim() && isNaN(amt)) { hint.textContent = 'Invalid amount. Use a format like 1,234.56 or 1.234,56.'; return; }
+    if (!amt) { hint.textContent = ''; return; }
+    if (cur.code === 'USD') { hint.textContent = /[.,]/.test(val) ? `Recognized as $${amt.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}` : ''; return; }
     hint.textContent = 'Fetching live rate...';
     const rate = await getUSDRate(cur.code);
     if (!rate) { hint.textContent = 'Could not fetch rate — enter USD amount manually.'; return; }
@@ -3980,7 +4148,7 @@ async function convertToUSD(amountStr, txDate) {
   if (!amt) return {usdAmount: 0, note: null};
   if (cur.code === 'USD') return {usdAmount: amt, note: null};
   const rate = await getUSDRate(cur.code, txDate);
-  if (!rate) return {usdAmount: amt, note: `Original: ${cur.symbol}${amt} (rate unavailable)`};
+  if (!rate) return {usdAmount: amt, rateUnavailable: true, currencyCode: cur.code, note: `Original: ${cur.symbol}${amt} (rate unavailable)`};
   const usd = parseFloat((amt / rate).toFixed(2));
   const rateDate = txDate || new Date().toISOString().split('T')[0];
   const rateDateFmt = new Date(rateDate+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
@@ -3995,7 +4163,7 @@ async function submitManual(){
   const notes=document.getElementById('m-notes').value.trim();
   if(!vendor){alert('Please enter a vendor or description.');return;}
   const _parsedAmt = parseAmountStr(amountRaw);
-  if(!_parsedAmt || _parsedAmt <= 0){alert('Please enter a valid amount greater than $0.');return;}
+  if(!_parsedAmt || _parsedAmt <= 0){alert('Please enter a valid amount greater than 0, e.g. 1,234.56 or 1.234,56.');return;}
   if(_parsedAmt > 10000000){
     if(!confirm(`The amount ${amountRaw} is over $10,000,000. Is this correct?`)) return;
   }
@@ -4010,6 +4178,11 @@ async function submitManual(){
   const res=document.getElementById('manual-result');
   res.innerHTML='<div class="loading"><div class="spinner"></div> AI is categorizing your transaction...</div>';
   const conv = await convertToUSD(amountRaw, date);
+  if (conv.rateUnavailable) {
+    res.innerHTML = '';
+    alert(`No exchange rate found for ${conv.currencyCode}. Please check the currency or enter the amount in USD.`);
+    return;
+  }
   const amount = conv.usdAmount;
   const convNote = conv.note ? (notes ? notes + ' · ' + conv.note : conv.note) : notes;
   const prompt=`Categorize this US LLC transaction. Respond ONLY with JSON:
@@ -4494,6 +4667,7 @@ async function importBankTransactions(previewId){
   if(!txs) return;
 
   const btn = document.getElementById('bs-btn-'+previewId);
+  const btnLabel = btn?.textContent;
   if(btn){ btn.disabled=true; btn.textContent='Importing…'; }
 
   const selected = txs.map((t,i)=>{
@@ -4507,10 +4681,16 @@ async function importBankTransactions(previewId){
     return {
       ...t,
       vendor:   vendorEl ? vendorEl.value.trim() : t.vendor,
-      amount:   amtEl    ? Math.abs(parseFloat(amtEl.value)||t.amount) : t.amount,
+      amount:   amtEl    ? Math.abs(parseFloat(amtEl.value)) : t.amount,
       category: catEl    ? catEl.value : t.category,
     };
   }).filter(Boolean);
+
+  if(selected.some(t=>!(t.amount>0))){
+    alert('Every selected row needs a valid amount greater than 0. Please correct or deselect the affected rows.');
+    if(btn){ btn.disabled=false; btn.textContent=btnLabel; }
+    return;
+  }
 
   let ok=0, fail=0;
   for(const t of selected){
@@ -4808,12 +4988,16 @@ function parseCSV(text){
   const lines=text.trim().split(/\r?\n/);
   const headers=lines[0].split(',').map(h=>h.replace(/"/g,'').trim().toLowerCase());
   const rows=lines.slice(1).filter(l=>l.trim()).map(line=>{
-    const vals=[];let cur='',inQ=false;
-    for(const c of line){if(c==='"'){inQ=!inQ;}else if(c===','&&!inQ){vals.push(cur.trim());cur='';}else{cur+=c;}}
-    vals.push(cur.trim());
-    return vals;
+    return splitCSVLine(line);
   });
   return{headers,rows};
+}
+
+function splitCSVLine(line){
+  const vals=[];let cur='',inQ=false;
+  for(const c of line){if(c==='"'){inQ=!inQ;}else if(c===','&&!inQ){vals.push(cur.trim());cur='';}else{cur+=c;}}
+  vals.push(cur.trim());
+  return vals;
 }
 
 function detectColumns(headers){
@@ -4891,15 +5075,16 @@ async function importCSVRows(rows){
     if(rawDate){try{const d=new Date(rawDate);if(!isNaN(d))date=d.toISOString().slice(0,10);}catch(e){}}
     let amount=0,type='expense';
     if(amtCol>=0){
-      const v=parseFloat(r[amtCol].replace(/[$,\s]/g,''));
+      const v=parseAmountStr(r[amtCol]);
       if(!isNaN(v)){amount=Math.abs(v);type=v>=0?'income':'expense';}
     } else {
-      const d=debitCol>=0?parseFloat(r[debitCol].replace(/[$,\s]/g,'')||0):0;
-      const c=creditCol>=0?parseFloat(r[creditCol].replace(/[$,\s]/g,'')||0):0;
+      const d=debitCol>=0&&r[debitCol]?parseAmountStr(r[debitCol]):0;
+      const c=creditCol>=0&&r[creditCol]?parseAmountStr(r[creditCol]):0;
       if(c>0){amount=c;type='income';}else{amount=Math.abs(d)||0;type='expense';}
     }
     return{desc,date,amount,type};
   }).filter(r=>r.amount>0);
+  const skippedRows=rows.length-parsed.length;
 
   // Batch AI categorize — send up to 30 at once
   const BATCH=30;
@@ -4939,7 +5124,7 @@ ${batch.map((r,j)=>`${j+1}. ${r.type.toUpperCase()} ${fmt(r.amount)} — ${r.des
     <div class="success-banner" style="opacity:1;transform:none">
       <div class="success-icon">✓</div>
       <div><div class="success-title">${imported} transactions imported successfully</div>
-      <div class="success-sub">${errors>0?`${errors} rows skipped · `:''}AI categorized all transactions · <span style="cursor:pointer;text-decoration:underline;color:var(--accent)" onclick="showPage('dashboard',document.querySelectorAll('.nav-item')[0])">View Dashboard →</span></div></div>
+      <div class="success-sub">${errors+skippedRows>0?`${errors+skippedRows} rows skipped (no valid amount or import error) · `:''}AI categorized all transactions · <span style="cursor:pointer;text-decoration:underline;color:var(--accent)" onclick="showPage('dashboard',document.querySelectorAll('.nav-item')[0])">View Dashboard →</span></div></div>
     </div>
   </div>`;
 }
@@ -4990,8 +5175,16 @@ async function saveTaxProfile() {
     ein: g('tp-ein'), address: g('tp-address'), city: g('tp-city'),
     incDate: g('tp-inc-date'), activity: g('tp-activity'), country: g('tp-country'),
     shName: g('tp-sh-name'), shAddress: g('tp-sh-address'),
-    shCountry: g('tp-sh-country'), shFtin: g('tp-sh-ftin'), shRes: g('tp-sh-res')
+    shCountry: g('tp-sh-country'), shFtin: g('tp-sh-ftin'), shRes: g('tp-sh-res'),
+    initialReturnOverrides: getTaxProfile().initialReturnOverrides,
+    totalAssetsByYear: getTaxProfile().totalAssetsByYear
   };
+  if (p.ein) {
+    const ein = normalizeEIN(p.ein);
+    if (!ein) { alert('The EIN must have 9 digits, e.g. 12-3456789.'); return; }
+    p.ein = ein;
+    document.getElementById('tp-ein').value = ein;
+  }
   // Write to localStorage (fast, synchronous)
   localStorage.setItem(TAX_PROFILE_KEY, JSON.stringify(p));
   // Write to Supabase user_metadata (cloud sync, non-blocking)
@@ -5016,7 +5209,7 @@ function exportTaxForms(formType) {
   if (formType === '1120') { exportForm1120(); return; }
   if (formType === '5472') { exportForm5472(); return; }
   const p = getTaxProfile();
-  if (!p.ein) { alert('Please complete your LLC profile first (EIN is required).'); return; }
+  if (!checkFilingEin(p)) return;
   const filtered = getReportFilteredTx();
   const taxYear = reportPeriodFrom ? reportPeriodFrom.getFullYear() : new Date().getFullYear() - 1;
   const inc = filtered.filter(t => t.type === 'income').reduce((s, t) => s + (parseFloat(t.amount)||0), 0);
@@ -5061,11 +5254,11 @@ td{padding:6px 10px;border-bottom:1px solid #eee;font-size:11px}.amount{text-ali
 <div class="section-title">Part I — Reporting Corporation</div>
 <table><tbody>
 <tr><td class="field-label" style="width:220px">1a Name of Reporting Corporation</td><td><div class="field">${llcName}</div></td><td class="field-label" style="width:160px">1b Employer ID (EIN)</td><td><div class="field">${p.ein}</div></td></tr>
-<tr><td class="field-label">Street Address</td><td><div class="field">${p.address || '___________________________'}</div></td><td class="field-label">1c Total Assets</td><td><div class="field">${fmt(inc)}</div></td></tr>
+<tr><td class="field-label">Street Address</td><td><div class="field">${p.address || '___________________________'}</div></td><td class="field-label">1c Total Assets</td><td><div class="field">${totalAssetsText(p, taxYear, '___________')}</div></td></tr>
 <tr><td class="field-label">City, State, ZIP</td><td><div class="field">${p.city || '___________________________'}</div></td><td></td><td></td></tr>
 <tr><td class="field-label">1d Principal Business Activity</td><td><div class="field">${p.activity || '___________________________'}</div></td><td class="field-label">1l Country of Incorporation</td><td><div class="field">${p.country || 'United States'}</div></td></tr>
 <tr><td class="field-label">1f Total Gross Payments</td><td><div class="field">${fmtIRS(inc + exp)}</div></td><td class="field-label">1m Date of Incorporation</td><td><div class="field">${p.incDate || '___________'}</div></td></tr>
-<tr><td class="field-label">1g Total # of Forms 5472</td><td><div class="field">1</div></td><td class="field-label">1j Initial Year Filing?</td><td><div class="field">☐ Check if yes</div></td></tr>
+<tr><td class="field-label">1g Total # of Forms 5472</td><td><div class="field">1</div></td><td class="field-label">1j Initial Year Filing?</td><td><div class="field">${isInitialReturn(p, taxYear) ? '☒' : '☐'} Check if yes</div></td></tr>
 </tbody></table>
 <div style="font-size:11px;color:#555;margin:6px 0 2px"><strong>Check 3:</strong> ☑ This is a foreign-owned domestic disregarded entity (foreign-owned U.S. DE) treated as a corporation for purposes of section 6038A.</div>
 </div>
@@ -5101,8 +5294,8 @@ ${filtered.filter(t => t.type === 'expense').map((t, i) => `<tr><td>${i === 0 ? 
 <table><tbody>
 <tr><td class="field-label" style="width:180px">Name</td><td><div class="field">${llcName}</div></td><td class="field-label" style="width:160px">B Employer ID (EIN)</td><td><div class="field">${p.ein}</div></td></tr>
 <tr><td class="field-label">Address</td><td><div class="field">${p.address || '___________________________'}</div></td><td class="field-label">C Date Incorporated</td><td><div class="field">${p.incDate || '___________'}</div></td></tr>
-<tr><td class="field-label">City / State / ZIP</td><td><div class="field">${p.city || '___________________________'}</div></td><td class="field-label">D Total Assets</td><td><div class="field">${fmt(inc)}</div></td></tr>
-<tr><td class="field-label">E Check if Initial Return</td><td><div class="field">☐ Initial return</div></td><td class="field-label">Tax Year</td><td><div class="field">${taxYear}</div></td></tr>
+<tr><td class="field-label">City / State / ZIP</td><td><div class="field">${p.city || '___________________________'}</div></td><td class="field-label">D Total Assets</td><td><div class="field">${totalAssetsText(p, taxYear, '___________')}</div></td></tr>
+<tr><td class="field-label">E Check if Initial Return</td><td><div class="field">${isInitialReturn(p, taxYear) ? '☒' : '☐'} Initial return</div></td><td class="field-label">Tax Year</td><td><div class="field">${taxYear}</div></td></tr>
 </tbody></table>
 </div>
 
@@ -5194,12 +5387,12 @@ function buildForm1120HTML(p, filtered, taxYear, sigData, breakBefore=false) {
       <tr>
         <td style="width:50%;padding:3px 8px 3px 0;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">A — Name of Corporation</div><div style="font-size:13px;font-weight:800">${corpName}</div></td>
         <td style="width:25%;padding:3px 8px;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">B — EIN</div><div style="font-size:12px;font-weight:700;font-family:monospace">${p.ein}</div></td>
-        <td style="width:25%;padding:3px 0 3px 8px;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">D — Total Assets</div><div style="font-size:12px;font-weight:700">${fmt(inc)}</div></td>
+        <td style="width:25%;padding:3px 0 3px 8px;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">D — Total Assets</div><div style="font-size:12px;font-weight:700">${totalAssetsText(p, taxYear, '___________')}</div></td>
       </tr>
       <tr>
         <td style="padding:3px 8px 3px 0;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">Address</div><div style="font-size:11px">${p.address||''} ${p.city||''}</div></td>
         <td style="padding:3px 8px;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">C — Date Incorporated</div><div style="font-size:11px">${p.incDate||''}</div></td>
-        <td style="padding:3px 0 3px 8px;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">Tax Year</div><div style="font-size:11px">Jan 1 – Dec 31, ${taxYear}</div></td>
+        <td style="padding:3px 0 3px 8px;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">Tax Year</div><div style="font-size:11px">Jan 1 – Dec 31, ${taxYear}</div><div style="font-size:9px;color:#888;margin-top:4px">E(1) — ${isInitialReturn(p, taxYear) ? '☒' : '☐'} Initial return</div></td>
       </tr>
     </table>
     <div style="margin-top:8px;font-size:10px;color:#555">☑ PRO FORMA — attached to Form 5472 per Reg. §1.6038A-2(a). Do not file separately.</div>
@@ -5298,12 +5491,12 @@ function buildForm5472HTML(p, filtered, taxYear, sigData, breakBefore=false) {
       <tr>
         <td style="width:50%;padding:3px 8px 3px 0;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">1a — Name of Reporting Corporation</div><div style="font-size:13px;font-weight:800">${corpName}</div></td>
         <td style="width:25%;padding:3px 8px;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">1b — EIN</div><div style="font-size:12px;font-weight:700;font-family:monospace">${p.ein}</div></td>
-        <td style="width:25%;padding:3px 0 3px 8px;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">1c — Total Assets</div><div style="font-size:12px;font-weight:700">\$${inc.toLocaleString()}</div></td>
+        <td style="width:25%;padding:3px 0 3px 8px;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">1c — Total Assets</div><div style="font-size:12px;font-weight:700">${totalAssetsText(p, taxYear, '___________')}</div></td>
       </tr>
       <tr>
         <td style="padding:3px 8px 3px 0;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">Address</div><div style="font-size:11px">${p.address||''} ${p.city||''}</div></td>
         <td style="padding:3px 8px;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">1d — Business Activity</div><div style="font-size:11px">${p.activity||'Consulting / Services'}</div></td>
-        <td style="padding:3px 0 3px 8px;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">1m — Date Incorporated</div><div style="font-size:11px">${p.incDate||''}</div></td>
+        <td style="padding:3px 0 3px 8px;vertical-align:top"><div style="font-size:9px;color:#888;margin-bottom:2px">1m — Date Incorporated</div><div style="font-size:11px">${p.incDate||''}</div><div style="font-size:9px;color:#888;margin-top:4px">1j — ${isInitialReturn(p, taxYear) ? '☒' : '☐'} Initial year filing</div></td>
       </tr>
     </table>
     <div style="margin-top:8px;font-size:10px;color:#555">☑ (3) Foreign-owned domestic disregarded entity (DE) treated as corporation per §6038A · Total gross payments: <strong>\$${(inc+exp).toLocaleString()}</strong></div>
@@ -5396,7 +5589,7 @@ async function _loadSigData() {
 
 async function exportForm1120() {
   const p = getTaxProfile();
-  if (!p.ein) { alert('Please complete your LLC profile first (EIN is required).'); return; }
+  if (!checkFilingEin(p)) return;
   const filtered = getReportFilteredTx();
   const taxYear = reportPeriodFrom ? reportPeriodFrom.getFullYear() : new Date().getFullYear() - 1;
   const corpName = llcName || p.llcName || '';
@@ -5414,7 +5607,7 @@ async function exportForm1120() {
 
 async function exportForm5472() {
   const p = getTaxProfile();
-  if (!p.ein) { alert('Please complete your LLC profile first (EIN is required).'); return; }
+  if (!checkFilingEin(p)) return;
   const filtered = getReportFilteredTx();
   const taxYear = reportPeriodFrom ? reportPeriodFrom.getFullYear() : new Date().getFullYear() - 1;
   const corpName = llcName || p.llcName || '';
@@ -5529,7 +5722,7 @@ async function buildFilingPackageBlob(p, filtered, taxYear, corpName, sigData, o
 
 async function exportFilingPackage() {
   const p = getTaxProfile();
-  if (!p.ein) { alert('Please complete your LLC profile first (EIN is required).'); return; }
+  if (!checkFilingEin(p)) return;
   const filtered = getReportFilteredTx();
   const taxYear = reportPeriodFrom ? reportPeriodFrom.getFullYear() : new Date().getFullYear() - 1;
   const corpName = llcName || p.llcName || '';
@@ -5548,7 +5741,7 @@ async function exportFilingPackage() {
 
 function openSendToAdvisorModal() {
   const p = getTaxProfile();
-  if (!p.ein) { alert('Please complete your LLC profile first (EIN is required).'); return; }
+  if (!checkFilingEin(p)) return;
   const modal = document.getElementById('send-advisor-modal');
   modal.style.display = 'flex';
   const saved = localStorage.getItem('MTF_ADVISOR_EMAIL') || '';
@@ -5611,7 +5804,7 @@ async function sendToAdvisor() {
 
 async function previewIRSPdf() {
   const p = getTaxProfile();
-  if (!p.ein) { alert('Please complete your LLC profile first (EIN is required).'); return; }
+  if (!checkFilingEin(p) || !checkFilingProfile(p) || !checkFilingPartners()) return;
   const btn = document.getElementById('irs-preview-btn');
   const submitBtn = document.getElementById('irs-submit-page-btn');
   const lbl = document.getElementById('irs-send-label');
@@ -5659,9 +5852,9 @@ async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extend
   const { PDFDocument, rgb, StandardFonts } = PDFLib;
 
   // ── Setup ─────────────────────────────────────────────────
-  const addr        = p.address || {};
-  const street      = addr.street || '';
-  const cityStateZip= [addr.city, addr.state, addr.zip].filter(Boolean).join(', ');
+  const street      = p.address || '';
+  const cityStateZip= p.city || '';
+  const signerName  = p.ownerName || p.shName || corpName || '';
   const ein         = p.ein || '';
   const todayStr    = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
 
@@ -5669,13 +5862,16 @@ async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extend
   const inc    = filtered.filter(t => t.type === 'income') .reduce((s,t) => s+(parseFloat(t.amount)||0), 0);
   const exp    = filtered.filter(t => t.type === 'expense').reduce((s,t) => s+(parseFloat(t.amount)||0), 0);
   const profit = inc - exp;
+  const initialMark = isInitialReturn(p, taxYear) ? '[X]' : '[  ]';
   const cats   = {};
   filtered.filter(t => t.type === 'expense').forEach(t => { cats[t.category||'Other'] = (cats[t.category||'Other']||0)+(parseFloat(t.amount)||0); });
-  const advAmt   = Object.entries(cats).filter(([k]) => /advertis|marketing/i.test(k)).reduce((s,[,v]) => s+v, 0);
+  const advAmt  = Object.entries(cats).filter(([k]) => /advertis|marketing/i.test(k)).reduce((s,[,v]) => s+v, 0);
   const otherDed = Math.max(0, exp - advAmt);
 
   function irs(n)    { return Math.round(Math.abs(n)).toLocaleString('en-US'); }
   function dollar(n) { return '$ ' + irs(n); }
+  const totalAssets  = getTotalAssets(p, taxYear);
+  const assetsDollar = totalAssets === null ? '' : dollar(totalAssets);
 
   // ── Document & fonts ─────────────────────────────────────
   const pdfDoc = await PDFDocument.create();
@@ -5698,11 +5894,11 @@ async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extend
   };
   const t = (pg, s, x, y, sz=8.5, f=font, c=BLACK) => {
     if (s == null || s === '') return;
-    pg.drawText(String(s), {x, y, size:sz, font:f, color:c});
+    pg.drawText(toPdfText(s), {x, y, size:sz, font:f, color:c});
   };
   const tR = (pg, s, rx, y, sz=8.5, f=font, c=BLACK) => {
     if (s == null || s === '') return;
-    const str = String(s);
+    const str = toPdfText(s);
     pg.drawText(str, {x: rx - f.widthOfTextAtSize(str, sz), y, size:sz, font:f, color:c});
   };
 
@@ -5763,7 +5959,7 @@ async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extend
     t(pg, 'Employer Identification Number',   rx, startY-9,  6.5, font, GRAY6);
     t(pg, ein||'(not set)',                   rx, startY-21, 9,   fontB, BLACK);
     t(pg, 'Total Assets',                     rx, startY-34, 6.5, font, GRAY6);
-    t(pg, dollar(inc),                        rx, startY-46, 8.5, font, BLACK);
+    t(pg, assetsDollar,                       rx, startY-46, 8.5, font, BLACK);
     t(pg, 'Tax period',                       rx, startY-59, 6.5, font, GRAY6);
     t(pg, `01/01/${taxYear} - 12/31/${taxYear}`, rx, startY-71, 8, font, BLACK);
 
@@ -5807,7 +6003,7 @@ async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extend
     // Row 2: Printed name | Phone
     t(pg, 'Print / Type name', ML+4, y-8, 6.5, font, GRAY6);
     hline(pg, y-22, ML+4, ML+260, 0.7, BLACK);
-    t(pg, p.ownerName||corpName||'', ML+7, y-21, 8.5, font, BLACK);
+    t(pg, signerName, ML+7, y-21, 8.5, font, BLACK);
 
     t(pg, 'Phone number', ML+270, y-8, 6.5, font, GRAY6);
     hline(pg, y-22, ML+270, W-MR-4, 0.7, BLACK);
@@ -5842,6 +6038,7 @@ async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extend
     y -= 4;
     box(pg, ML, y-13, IW, 13, rgb(0.97,0.97,0.97), null);
     t(pg, '[X]  Foreign-owned U.S. disregarded entity (Reg. sec.1.6012-2(g)(2))', ML+6, y-10, 7.5, font, BLACK);
+    tR(pg, `E(1)  ${initialMark}  Initial return`, W-MR-6, y-10, 7.5, font, BLACK);
     y -= 13; y -= 4;
 
     // INCOME
@@ -5916,12 +6113,13 @@ async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extend
   //  FORM 5472
   // ══════════════════════════════════════════════════════════
   async function build5472() {
-    const owner = p.foreignOwner || p.foreign_owner || {};
+    const ownerNameAddress = toPdfText([p.shName, p.shAddress].filter(Boolean).join(', '));
+    const fitSize = (s, f, sz, maxW) => Math.min(sz, sz * maxW / f.widthOfTextAtSize(s, sz));
 
     // ── Page 1: Parts I – III ──
     const pg = pdfDoc.addPage([W, H]);
     pageHeader(pg, '5472', 'Information Return of a 25% Foreign-Owned U.S. Corporation (Rev. December 2023)', 1, 3);
-    t(pg, `For tax year of the reporting corporation beginning 01/01/${taxYear} and ending 12/31/${taxYear}`, ML, H-47, 7, font, GRAY6);
+    t(pg, `For tax year of the reporting corporation beginning 01/01/${taxYear} and ending 12/31/${taxYear}`, ML, H-54, 7, font, GRAY6);
 
     let y = H - 58;
 
@@ -5932,12 +6130,12 @@ async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extend
     // 3-row info grid
     const GH = 26, DX = ML + IW*0.62;
     const gridTop = y;
-    box(pg, ML, gridTop - GH*4 - 26, IW, GH*4+26, LGRAY, null);
-    box(pg, ML, gridTop - GH*4 - 26, IW, GH*4+26, null, rgb(0.55,0.55,0.55));
-    vline(pg, DX, gridTop-GH*4-26, gridTop);
+    box(pg, ML, gridTop - GH*4, IW, GH*4, LGRAY, null);
+    box(pg, ML, gridTop - GH*4, IW, GH*4, null, rgb(0.55,0.55,0.55));
+    vline(pg, DX, gridTop-GH*4, gridTop);
 
     const cell = (row, col, label, val, boldVal=false) => {
-      const cy = gridTop - row*GH;
+      const cy = gridTop - (row-1)*GH;
       const cx = col === 0 ? ML : DX;
       const cw = col === 0 ? DX - ML : W-MR - DX;
       if (row > 0) hline(pg, cy, cx, cx+cw, 0.5, rgb(0.55,0.55,0.55));
@@ -5948,17 +6146,18 @@ async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extend
     cell(1, 0, '1a  Name of reporting corporation',              corpName||'', true);
     cell(1, 1, '1b  Employer identification number (EIN)',       ein||'', true);
     cell(2, 0, '    Number, street, and room or suite no.',      street||'');
-    cell(2, 1, '1c  Total assets',                               dollar(inc));
+    cell(2, 1, '1c  Total assets',                               assetsDollar);
     cell(3, 0, '    City or town, state, and ZIP code',          cityStateZip||'');
-    cell(3, 1, '1d  Principal business activity',                'Professional Services');
+    cell(3, 1, '1d  Principal business activity',                p.activity||'');
     cell(4, 0, '1f  Total gross payments made or received on this Form 5472', dollar(inc+exp));
     cell(4, 1, '1g  Total number of Forms 5472 filed for the tax year', '1');
 
     // DE checkbox row
-    y = gridTop - GH*4 - 26;
+    y = gridTop - GH*4;
     box(pg, ML, y-22, IW, 22, rgb(0.97,0.97,0.97), null);
     box(pg, ML, y-22, IW, 22, null, rgb(0.55,0.55,0.55));
-    t(pg, '3  [X]  This is a foreign-owned domestic disregarded entity (DE) treated as a corporation for purposes of section 6038A.', ML+4, y-15, 7.5, font, BLACK);
+    t(pg, `1j  ${initialMark}  Check here if this is the initial year for which the U.S. reporting corporation is filing Form 5472.`, ML+4, y-9, 7.5, font, BLACK);
+    t(pg, '3  [X]  This is a foreign-owned domestic disregarded entity (DE) treated as a corporation for purposes of section 6038A.', ML+4, y-18, 7.5, font, BLACK);
     y -= 22; y -= 10;
 
     // PART II
@@ -5970,22 +6169,21 @@ async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extend
     box(pg, ML, y - P2H*3, IW, P2H*3, null, rgb(0.55,0.55,0.55));
 
     t(pg, '4a  Name and address of direct 25% foreign shareholder', ML+4, y-8, 6.5, font, GRAY6);
-    t(pg, owner.name||'(see attachment)', ML+4, y-20, 8.5, font, BLACK);
+    t(pg, ownerNameAddress, ML+4, y-20, fitSize(ownerNameAddress, font, 8.5, IW-8), font, BLACK);
     hline(pg, y-P2H, ML, W-MR, 0.5, rgb(0.55,0.55,0.55));
 
     const thirdW = IW/3;
     vline(pg, ML+thirdW,   y-P2H*3, y-P2H);
     vline(pg, ML+thirdW*2, y-P2H*3, y-P2H);
     t(pg, '4b(1)  U.S. identifying number, if any', ML+4, y-P2H-8, 6.5, font, GRAY6);
-    t(pg, owner.us_tin||'N/A',                       ML+4, y-P2H-20, 8.5, font, BLACK);
+    t(pg, 'N/A',                                     ML+4, y-P2H-20, 8.5, font, BLACK);
     t(pg, '4b(2)  Reference ID number',              ML+thirdW+4, y-P2H-8, 6.5, font, GRAY6);
-    t(pg, owner.ref_id||'',                          ML+thirdW+4, y-P2H-20, 8.5, font, BLACK);
     t(pg, '4b(3)  FTIN, if any',                    ML+thirdW*2+4, y-P2H-8, 6.5, font, GRAY6);
-    t(pg, owner.ftin||'',                            ML+thirdW*2+4, y-P2H-20, 8.5, font, BLACK);
+    t(pg, p.shFtin||'',                              ML+thirdW*2+4, y-P2H-20, 8.5, font, BLACK);
     hline(pg, y-P2H*2, ML, W-MR, 0.5, rgb(0.55,0.55,0.55));
 
     t(pg, '4c  Country under whose laws the shareholder files as a resident', ML+4, y-P2H*2-8, 6.5, font, GRAY6);
-    t(pg, owner.country||'',                         ML+4, y-P2H*2-20, 8.5, font, BLACK);
+    t(pg, p.shRes||p.shCountry||'',                  ML+4, y-P2H*2-20, 8.5, font, BLACK);
     y -= P2H*3; y -= 10;
 
     // PART III
@@ -5994,7 +6192,10 @@ async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extend
     box(pg, ML, y-22, IW, 22, LGRAY, null);
     box(pg, ML, y-22, IW, 22, null, rgb(0.55,0.55,0.55));
     t(pg, '8a  Name and address of related party (same as 25% foreign shareholder for single-member LLC)', ML+4, y-8, 6.5, font, GRAY6);
-    t(pg, (owner.name||'(same as Part II)') + '  --  Check: [X] Foreign person  [ ] U.S. person', ML+4, y-19, 7.5, font, BLACK);
+    const relatedPartyCheck = 'Check: [X] Foreign person  [ ] U.S. person';
+    const relatedPartyCheckW = font.widthOfTextAtSize(relatedPartyCheck, 7.5);
+    t(pg, ownerNameAddress, ML+4, y-19, fitSize(ownerNameAddress, font, 7.5, IW-relatedPartyCheckW-20), font, BLACK);
+    tR(pg, relatedPartyCheck, W-MR-4, y-19, 7.5, font, BLACK);
     y -= 22; y -= 10;
 
     // PART IV (starts on same page)
@@ -6052,7 +6253,7 @@ async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extend
     y3 = lineRow(pg3, y3, '39', 'Gross receipts of the DE from all sources', irs(inc));
     y3 = lineRow(pg3, y3, '40', 'Total deductions of the DE', irs(exp));
     y3 = lineRow(pg3, y3, '41', 'Net income (loss) of the DE (line 39 minus line 40)', irs(profit), true);
-    y3 = lineRow(pg3, y3, '42', 'Total assets of the DE at end of year', irs(inc));
+    y3 = lineRow(pg3, y3, '42', 'Total assets of the DE at end of year', totalAssets === null ? '' : irs(totalAssets));
     y3 -= 14;
 
     // Part V summary box
@@ -6082,11 +6283,14 @@ async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extend
   async function build1065() {
     const pg = pdfDoc.addPage([W, H]);
     pageHeader(pg, '1065', 'U.S. Return of Partnership Income', 1, 1);
-    t(pg, `For calendar year ${taxYear} - beginning 01/01/${taxYear} and ending 12/31/${taxYear}`, ML, H-47, 7, font, GRAY6);
+    t(pg, `For calendar year ${taxYear} - beginning 01/01/${taxYear} and ending 12/31/${taxYear}`, ML, H-54, 7, font, GRAY6);
 
     let y = H - 58;
     y = companyBlock(pg, y);
-    y -= 8;
+    y -= 4;
+    box(pg, ML, y-13, IW, 13, rgb(0.97,0.97,0.97), null);
+    t(pg, `G(1)  ${initialMark}  Initial return`, ML+6, y-10, 7.5, font, BLACK);
+    y -= 13; y -= 4;
 
     y = sectionBar(pg, y, 'INCOME');
     y = lineRow(pg, y, '1a', 'Gross receipts or sales', irs(inc));
@@ -6214,7 +6418,7 @@ async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extend
 
     const pg = pdfDoc.addPage([W, H]);
     pageHeader(pg, '7004', `Application for Automatic Extension of Time To File — ${formName}`, 1, 1);
-    t(pg, `Tax year: January 1, ${taxYear} - December 31, ${taxYear}`, ML, H-47, 7, font, GRAY6);
+    t(pg, `Tax year: January 1, ${taxYear} - December 31, ${taxYear}`, ML, H-54, 7, font, GRAY6);
 
     let y = H - 58;
     y = companyBlock(pg, y);
@@ -6253,7 +6457,7 @@ async function buildIRSAcroBlob(p, filtered, taxYear, corpName, formType, extend
     t(pg, p.title||'Owner / Managing Member', ML+4, y-49, 8.5, font, BLACK);
     hline(pg, y-52, ML+4, ML+260, 0.7, BLACK);
     t(pg, 'Print / Type name', ML+270, y-36, 6.5, font, GRAY6);
-    t(pg, p.ownerName||corpName||'', ML+270, y-49, 8.5, font, BLACK);
+    t(pg, signerName, ML+270, y-49, 8.5, font, BLACK);
     hline(pg, y-52, ML+270, W-MR-4, 0.7, BLACK);
   }
 
@@ -6295,6 +6499,10 @@ function selectIRSFormType(type) {
   // Show/hide extension sub-selector
   const extRow = document.getElementById('irs-extend-row');
   if (extRow) extRow.style.display = type === '7004' ? 'block' : 'none';
+  const initialRow = document.getElementById('irs-initial-row');
+  if (initialRow) initialRow.style.display = type === '7004' ? 'none' : 'flex';
+  const assetsRow = document.getElementById('irs-assets-row');
+  if (assetsRow) assetsRow.style.display = type === '7004' ? 'none' : 'flex';
   // Update send label
   const labelMap = {
     '5472_1120': 'USPS Certified Mail · Pro Forma 1120 + Form 5472 · IRS Ogden, UT 84409',
@@ -6307,7 +6515,7 @@ function selectIRSFormType(type) {
 
 async function openIRSFilingModal() {
   const p = getTaxProfile();
-  if (!p.ein) { alert('Please complete your LLC profile first (EIN is required).'); return; }
+  if (!checkFilingEin(p) || !checkFilingProfile(p) || !checkFilingPartners()) return;
 
   // Populate sender address block
   const fromEl = document.getElementById('irs-modal-from');
@@ -6323,6 +6531,11 @@ async function openIRSFilingModal() {
   // Show selected tax year
   const tyEl = document.getElementById('irs-modal-taxyear');
   if (tyEl) tyEl.textContent = irsFilingYear;
+  const initialEl = document.getElementById('irs-modal-initial');
+  if (initialEl) {
+    initialEl.style.display = irsFormType === '7004' ? 'none' : 'block';
+    initialEl.textContent = `Initial return: ${isInitialReturn(p, irsFilingYear) ? 'Yes' : 'No'}`;
+  }
 
   // Update dynamic form-type fields
   const IRS_INFO = {
@@ -6374,6 +6587,7 @@ async function sendToIRS() {
   const p       = getTaxProfile();
   const btn     = document.getElementById('irs-send-btn');
   const status  = document.getElementById('irs-send-status');
+  if (!checkFilingEin(p) || !checkFilingProfile(p) || !checkFilingPartners()) return;
 
   btn.disabled = true;
   btn.textContent = 'Generating PDF…';
@@ -6450,6 +6664,7 @@ function initIRSYearPicker() {
   }
   // Sync variable to actual picker state (in case it was reset)
   irsFilingYear = parseInt(sel.value);
+  syncIRSInitialCheckbox();
 }
 
 // ── IRS Letter History ──────────────────────────────────────────────────────
@@ -6954,8 +7169,16 @@ function saveAccountModal() {
     ein:       g('acc-ein'),      address:   g('acc-address'), city:     g('acc-city'),
     incDate:   g('acc-inc-date'), activity:  g('acc-activity'), country: g('acc-country'),
     shName:    g('acc-sh-name'),  shAddress: g('acc-sh-address'),
-    shCountry: g('acc-sh-country'), shFtin:  g('acc-sh-ftin'), shRes:   g('acc-sh-res')
+    shCountry: g('acc-sh-country'), shFtin:  g('acc-sh-ftin'), shRes:   g('acc-sh-res'),
+    initialReturnOverrides: getTaxProfile().initialReturnOverrides,
+    totalAssetsByYear: getTaxProfile().totalAssetsByYear
   };
+  if (p.ein) {
+    const ein = normalizeEIN(p.ein);
+    if (!ein) { alert('The EIN must have 9 digits, e.g. 12-3456789.'); return; }
+    p.ein = ein;
+    document.getElementById('acc-ein').value = ein;
+  }
   localStorage.setItem(TAX_PROFILE_KEY, JSON.stringify(p));
 
   // Build one single updateUser payload to avoid the USER_UPDATED race condition
@@ -7184,8 +7407,9 @@ function addEntity() {
   if (_newEntityType === 'multi') {
     const filled = _newPartners.filter(p => p.name.trim());
     if (!filled.length) { alert('Please add at least one partner name.'); return; }
-    const total = filled.reduce((s,p)=>s+(parseFloat(p.ownership)||0),0);
-    if (total > 100) { alert('Total ownership exceeds 100%. Please adjust.'); return; }
+    if (_newPartners.some(p => !p.name.trim() && String(p.ownership).trim())) { alert('Please enter a name for every partner with an ownership share.'); return; }
+    const sharesError = validatePartnerShares(filled);
+    if (sharesError) { alert(sharesError); return; }
   }
   const id = 'e_' + Date.now();
   const partners = _newEntityType==='multi' ? _newPartners.filter(p=>p.name.trim()).map(p=>({name:p.name.trim(),ownership:parseFloat(p.ownership)||0})) : [];
@@ -7604,11 +7828,12 @@ function parseBankCSV(text) {
   }
 
   const rows = [];
+  let skippedBankRows = 0;
   for (let i = 1; i < lines.length; i++) {
-    const cols = lines[i].split(',').map(c => c.replace(/"/g,'').trim());
+    const cols = splitCSVLine(lines[i]);
     if (cols.length < 2) continue;
-    const rawAmt = parseFloat(cols[amountIdx]?.replace(/[^0-9.\-]/g,''));
-    if (isNaN(rawAmt)) continue;
+    const rawAmt = parseAmountStr(cols[amountIdx]);
+    if (isNaN(rawAmt)) { skippedBankRows++; continue; }
     rows.push({
       date: cols[dateIdx] || '',
       vendor: vendorIdx >= 0 ? cols[vendorIdx] : 'Unknown',
@@ -7618,6 +7843,7 @@ function parseBankCSV(text) {
   }
 
   renderBankPreview(rows);
+  if (skippedBankRows) showToast(`${skippedBankRows} row${skippedBankRows === 1 ? '' : 's'} skipped: no valid amount.`);
 }
 
 function renderBankPreview(rows) {
@@ -7861,6 +8087,26 @@ function recalcInvoice() {
 
 // Logo is managed in Invoice Sender Profile modal (previewProfileLogo / removeProfileLogo)
 
+function validateInvoiceNumbers() {
+  for (const row of document.querySelectorAll('[id^="inv-row-"]')) {
+    const id = row.id.replace('inv-row-', '');
+    const desc = document.getElementById(`inv-desc-${id}`)?.value || '';
+    const qtyRaw = document.getElementById(`inv-qty-${id}`)?.value ?? '';
+    const priceRaw = document.getElementById(`inv-price-${id}`)?.value ?? '';
+    if (!desc && !priceRaw) continue;
+    if (!(parseFloat(qtyRaw) > 0)) return 'Quantity must be greater than 0.';
+    if (!(parseFloat(priceRaw) >= 0)) return 'Unit price must be 0 or more.';
+  }
+  const discountRaw = document.getElementById('inv-discount-val').value;
+  const discount = discountRaw === '' ? 0 : parseFloat(discountRaw);
+  if (!(discount >= 0)) return 'Discount cannot be negative.';
+  if (document.getElementById('inv-discount-type').value === 'pct' && discount > 100) return 'Discount cannot exceed 100%.';
+  const taxRaw = document.getElementById('inv-tax-rate').value;
+  const tax = taxRaw === '' ? 0 : parseFloat(taxRaw);
+  if (!(tax >= 0 && tax <= 100)) return 'Tax rate must be between 0% and 100%.';
+  return null;
+}
+
 async function saveInvoice(status) {
   const { data: { user } } = await sb.auth.getUser();
   if (!user) return;
@@ -7869,6 +8115,8 @@ async function saveInvoice(status) {
   if (!clientName) { showInvMsg('Please enter a client name.', 'warn'); return; }
   const lineItems = getLineItems();
   if (lineItems.length === 0) { showInvMsg('Please add at least one line item.', 'warn'); return; }
+  const invoiceInputError = validateInvoiceNumbers();
+  if (invoiceInputError) { showInvMsg(invoiceInputError, 'warn'); return; }
   // Check monthly limit (new invoices only)
   if (!editingInvoiceId) {
     const now = new Date();
@@ -8979,6 +9227,7 @@ document.addEventListener('click', e => {
       <div style="background:var(--bg3);border:1px solid rgba(124,58,237,0.25);border-radius:10px;padding:12px 14px;margin-bottom:14px">
         <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Filing Details</div>
         <div style="font-size:12px;color:var(--text2);margin-bottom:3px">&#128197; Tax Year: <strong id="irs-modal-taxyear" style="color:#a78bfa">—</strong> &nbsp;(Jan 1 – Dec 31)</div>
+        <div id="irs-modal-initial" style="font-size:12px;color:var(--text2);margin-bottom:3px"></div>
         <div style="font-size:12px;color:var(--text2);margin-bottom:3px">&#128196; Forms: <strong id="irs-modal-forms" style="color:var(--text)">Pro Forma 1120 + Form 5472</strong></div>
         <div style="font-size:12px;color:var(--text2)">&#128236; Estimated delivery: <strong style="color:var(--text)">5–7 business days</strong> · USPS Certified Mail</div>
       </div>
