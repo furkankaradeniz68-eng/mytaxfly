@@ -114,7 +114,8 @@ export async function generatePdf({
   const ein          = company.ein || '';
   const corpName     = company.name || '';
   const taxYear      = tax_year;
-  const todayStr     = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+  const initialMark  = (company.initial_return ?? String(company.incorporated_date || '').startsWith(`${tax_year}-`)) ? '[X]' : '[  ]';
+  const todayStr    = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
   const ownerTitle   = company.title || 'Owner / Managing Member';
   const ownerName    = company.owner_name || corpName;
   const owner        = foreign_owner || {};
@@ -122,6 +123,7 @@ export async function generatePdf({
   const sigData      = signature_png_base64;
 
   // ── pdf-lib setup ──────────────────────────────────────────────────────────
+  const { toPdfText } = await import('./_validate-filing.js');
   const pdfDoc = await PDFDocument.create();
   const font   = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const fontB  = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
@@ -133,6 +135,8 @@ export async function generatePdf({
 
   function irs(n)    { return Math.round(Math.abs(n)).toLocaleString('en-US'); }
   function dollar(n) { return '$ ' + irs(n); }
+  const totalAssets  = company.total_assets == null ? null : Number(company.total_assets);
+  const assetsDollar = totalAssets === null ? '' : dollar(totalAssets);
 
   // ── Drawing helpers (identical to dashboard) ───────────────────────────────
   const hline = (pg, y, x0=ML, x1=W-MR, w=0.4, c=rgb(0.7,0.7,0.7)) =>
@@ -145,11 +149,11 @@ export async function generatePdf({
   };
   const t = (pg, s, x, y, sz=8.5, f=font, c=BLACK) => {
     if (s == null || s === '') return;
-    pg.drawText(String(s), {x, y, size:sz, font:f, color:c});
+    pg.drawText(toPdfText(s), {x, y, size:sz, font:f, color:c});
   };
   const tR = (pg, s, rx, y, sz=8.5, f=font, c=BLACK) => {
     if (s == null || s === '') return;
-    const str = String(s);
+    const str = toPdfText(s);
     pg.drawText(str, {x: rx - f.widthOfTextAtSize(str, sz), y, size:sz, font:f, color:c});
   };
 
@@ -215,7 +219,7 @@ export async function generatePdf({
     t(pg, 'Employer Identification Number', rx, startY-9,  6.5, font, GRAY6);
     t(pg, ein||'(not set)',                 rx, startY-21, 9,   fontB, BLACK);
     t(pg, 'Total Assets',                   rx, startY-34, 6.5, font, GRAY6);
-    t(pg, dollar(inc),                      rx, startY-46, 8.5, font, BLACK);
+    t(pg, assetsDollar,                     rx, startY-46, 8.5, font, BLACK);
     t(pg, 'Tax period',                     rx, startY-59, 6.5, font, GRAY6);
     t(pg, `01/01/${taxYear} - 12/31/${taxYear}`, rx, startY-71, 8, font, BLACK);
 
@@ -285,6 +289,7 @@ export async function generatePdf({
     y -= 4;
     box(pg, ML, y-13, IW, 13, rgb(0.97,0.97,0.97), null);
     t(pg, '[X]  Foreign-owned U.S. disregarded entity (Reg. sec.1.6012-2(g)(2))', ML+6, y-10, 7.5, font, BLACK);
+    tR(pg, `E(1)  ${initialMark}  Initial return`, W-MR-6, y-10, 7.5, font, BLACK);
     y -= 13; y -= 4;
 
     y = sectionBar(pg, y, 'INCOME');
@@ -390,7 +395,7 @@ export async function generatePdf({
     // ── Page 1: Parts I – III + Part IV received ──────────────────────────
     const pg = pdfDoc.addPage([W, H]);
     pageHeader(pg, '5472', 'Information Return of a 25% Foreign-Owned U.S. Corporation (Rev. December 2023)', 1, 3);
-    t(pg, `For tax year of the reporting corporation beginning 01/01/${taxYear} and ending 12/31/${taxYear}`, ML, H-47, 7, font, GRAY6);
+    t(pg, `For tax year of the reporting corporation beginning 01/01/${taxYear} and ending 12/31/${taxYear}`, ML, H-54, 7, font, GRAY6);
 
     let y = H - 58;
 
@@ -399,12 +404,12 @@ export async function generatePdf({
 
     const GH = 26, DX = ML + IW*0.62;
     const gridTop = y;
-    box(pg, ML, gridTop - GH*4 - 26, IW, GH*4+26, LGRAY, null);
-    box(pg, ML, gridTop - GH*4 - 26, IW, GH*4+26, null, rgb(0.55,0.55,0.55));
-    vline(pg, DX, gridTop-GH*4-26, gridTop);
+    box(pg, ML, gridTop - GH*4, IW, GH*4, LGRAY, null);
+    box(pg, ML, gridTop - GH*4, IW, GH*4, null, rgb(0.55,0.55,0.55));
+    vline(pg, DX, gridTop-GH*4, gridTop);
 
     const cell = (row, col, label, val, boldVal=false) => {
-      const cy = gridTop - row*GH;
+      const cy = gridTop - (row-1)*GH;
       const cx = col === 0 ? ML : DX;
       const cw = col === 0 ? DX - ML : W-MR - DX;
       if (row > 0) hline(pg, cy, cx, cx+cw, 0.5, rgb(0.55,0.55,0.55));
@@ -415,16 +420,17 @@ export async function generatePdf({
     cell(1, 0, '1a  Name of reporting corporation',                                corpName, true);
     cell(1, 1, '1b  Employer identification number (EIN)',                         ein, true);
     cell(2, 0, '    Number, street, and room or suite no.',                        street);
-    cell(2, 1, '1c  Total assets',                                                 dollar(company.total_assets ?? inc));
+    cell(2, 1, '1c  Total assets',                                                 assetsDollar);
     cell(3, 0, '    City or town, state, and ZIP code',                            cityStateZip);
     cell(3, 1, '1d/1e  Business activity' + (company.naics_code ? `  (NAICS: ${company.naics_code})` : ''), company.business_activity || 'Professional Services');
     cell(4, 0, '1f  Total gross payments made or received on this Form 5472',      dollar(totalReceived + totalPaid));
     cell(4, 1, company.incorporated_date ? `1m  Date incorporated: ${company.incorporated_date}` : '1g  Total number of Forms 5472 filed for the tax year', company.incorporated_date || '1');
 
-    y = gridTop - GH*4 - 26;
+    y = gridTop - GH*4;
     box(pg, ML, y-22, IW, 22, rgb(0.97,0.97,0.97), null);
     box(pg, ML, y-22, IW, 22, null, rgb(0.55,0.55,0.55));
-    t(pg, '3  [X]  This is a foreign-owned domestic disregarded entity (DE) treated as a corporation for purposes of section 6038A.', ML+4, y-15, 7.5, font, BLACK);
+    t(pg, `1j  ${initialMark}  Check here if this is the initial year for which the U.S. reporting corporation is filing Form 5472.`, ML+4, y-9, 7.5, font, BLACK);
+    t(pg, '3  [X]  This is a foreign-owned domestic disregarded entity (DE) treated as a corporation for purposes of section 6038A.', ML+4, y-18, 7.5, font, BLACK);
     y -= 22; y -= 10;
 
     y = sectionBar(pg, y, 'PART II — 25% FOREIGN SHAREHOLDER');
@@ -549,7 +555,7 @@ export async function generatePdf({
     y3 = lineRow(pg3, y3, '39', 'Gross receipts of the DE from all sources',                                        irs(inc));
     y3 = lineRow(pg3, y3, '40', 'Total deductions of the DE',                                                       irs(exp));
     y3 = lineRow(pg3, y3, '41', 'Net income (loss) of the DE (line 39 minus line 40)',                              irs(profit), true);
-    y3 = lineRow(pg3, y3, '42', 'Total assets of the DE at end of year',                                            irs(company.total_assets ?? inc));
+    y3 = lineRow(pg3, y3, '42', 'Total assets of the DE at end of year',                                            totalAssets === null ? '' : irs(totalAssets));
     y3 -= 14;
 
     // Part V summary box
@@ -564,7 +570,7 @@ export async function generatePdf({
     t(pg3, 'Net income / (loss) of the DE (Line 41):', ML+8, y3-53, 8, font, BLACK);
     tR(pg3, dollar(profit), W-MR-8, y3-53, 8.5, fontB, BLACK);
     t(pg3, 'Total assets at year-end (Line 42):', ML+8, y3-66, 8, font, BLACK);
-    tR(pg3, dollar(company.total_assets ?? inc), W-MR-8, y3-66, 8.5, fontB, BLACK);
+    tR(pg3, assetsDollar, W-MR-8, y3-66, 8.5, fontB, BLACK);
     y3 -= 76;
 
     // Disclaimer
@@ -588,11 +594,14 @@ export async function generatePdf({
 
     const pg = pdfDoc.addPage([W, H]);
     pageHeader(pg, '1065', 'U.S. Return of Partnership Income', 1, totalPages);
-    t(pg, `For calendar year ${taxYear} - beginning 01/01/${taxYear} and ending 12/31/${taxYear}`, ML, H-47, 7, font, GRAY6);
+    t(pg, `For calendar year ${taxYear} - beginning 01/01/${taxYear} and ending 12/31/${taxYear}`, ML, H-54, 7, font, GRAY6);
 
     let y = H - 58;
     y = companyBlock(pg, y);
-    y -= 8;
+    y -= 4;
+    box(pg, ML, y-13, IW, 13, rgb(0.97,0.97,0.97), null);
+    t(pg, `G(1)  ${initialMark}  Initial return`, ML+6, y-10, 7.5, font, BLACK);
+    y -= 13; y -= 4;
 
     y = sectionBar(pg, y, 'INCOME');
     y = lineRow(pg, y, '1a', 'Gross receipts or sales',                           irs(inc));
@@ -810,7 +819,7 @@ export async function generatePdf({
 
     const pg = pdfDoc.addPage([W, H]);
     pageHeader(pg, '7004', `Application for Automatic Extension of Time To File — ${formName}`, 1, 1);
-    t(pg, `Tax year: January 1, ${taxYear} - December 31, ${taxYear}`, ML, H-47, 7, font, GRAY6);
+    t(pg, `Tax year: January 1, ${taxYear} - December 31, ${taxYear}`, ML, H-54, 7, font, GRAY6);
 
     let y = H - 58;
     y = companyBlock(pg, y);
@@ -878,6 +887,7 @@ export async function generatePdf({
  */
 export async function generateK1Pdfs({ partners = [], company, financials = {}, transactions = [], tax_year, preview = false }) {
   if (!partners.length) return [];
+  const { toPdfText } = await import('./_validate-filing.js');
 
   const INCOME_TYPES_SET  = new Set(['services_received', 'rent_received', 'royalties_received', 'loan_to_owner']);
   const EXPENSE_TYPES_SET = new Set(['services_paid', 'rent_paid', 'royalties_paid', 'loan_from_owner', 'capital_contribution', 'distribution']);
@@ -923,11 +933,11 @@ export async function generateK1Pdfs({ partners = [], company, financials = {}, 
     };
     const t = (pg, s, x, y, sz=8.5, f=font, c=BLACK) => {
       if (s == null || s === '') return;
-      pg.drawText(String(s), {x, y, size:sz, font:f, color:c});
+      pg.drawText(toPdfText(s), {x, y, size:sz, font:f, color:c});
     };
     const tR = (pg, s, rx, y, sz=8.5, f=font, c=BLACK) => {
       if (s == null || s === '') return;
-      const str = String(s);
+      const str = toPdfText(s);
       pg.drawText(str, {x: rx - f.widthOfTextAtSize(str, sz), y, size:sz, font:f, color:c});
     };
     const lineRow = (pg, y, num, label, val, bold=false, indent=0) => {
