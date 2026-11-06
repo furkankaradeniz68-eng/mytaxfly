@@ -43,6 +43,9 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing foreign_owner.name or foreign_owner.country.' });
   if (form_type === '1065' && !partners?.length)
     return res.status(400).json({ error: 'Missing partners array for form_type 1065.' });
+  const { validateFilingNumbers } = await import('./_validate-filing.js');
+  const numbersError = validateFilingNumbers({ form_type, tax_year, company, foreign_owner, transactions, partners, financials });
+  if (numbersError) return res.status(400).json({ error: numbersError });
 
   let pdfBytes;
   try {
