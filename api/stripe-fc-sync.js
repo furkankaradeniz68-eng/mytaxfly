@@ -12,6 +12,11 @@ export default async function handler(req, res) {
   const { data: { user }, error: authError } = await sb.auth.getUser(token);
   if (authError || !user) return res.status(401).json({ error: 'Unauthorized' });
 
+  const { hasBusinessAccess } = await import('./_plan-access.js');
+  if (!await hasBusinessAccess(sb, user)) {
+    return res.status(403).json({ error: 'Bank Sync is available on the Business plan.' });
+  }
+
   const { accountId } = req.body || {};
 
   // Load connection record — if accountId supplied, sync only that; else sync all
