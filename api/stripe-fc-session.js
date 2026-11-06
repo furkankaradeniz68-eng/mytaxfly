@@ -12,6 +12,11 @@ export default async function handler(req, res) {
   const { data: { user }, error: authError } = await sb.auth.getUser(token);
   if (authError || !user) return res.status(401).json({ error: 'Unauthorized' });
 
+  const { hasBusinessAccess } = await import('./_plan-access.js');
+  if (!await hasBusinessAccess(sb, user)) {
+    return res.status(403).json({ error: 'Bank Sync is available on the Business plan.' });
+  }
+
   const Stripe = (await import('stripe')).default;
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' });
 
