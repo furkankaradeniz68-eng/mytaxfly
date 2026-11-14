@@ -1169,6 +1169,12 @@ footer {
   color:var(--text3);
 }
 
+.made-by { display:block; margin-top:6px; }
+.made-by a { display:inline-flex; align-items:center; gap:3px; color:var(--accent); font-weight:600; text-decoration:underline 1px; text-underline-offset:3px; transition:color 0.15s, text-decoration-thickness 0.15s; }
+.made-by a:hover { color:var(--accent2); text-decoration-thickness:2px; }
+.made-by svg { width:11px; height:11px; flex:0 0 auto; }
+.sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+
 .footer-disclaimer {
   max-width:1200px;
   margin:16px auto 0;
@@ -2080,7 +2086,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
   </div>
   <div class="footer-bottom">
-    <div><span id="t-footer-copy">© 2026 MyTaxFly. All rights reserved.</span></div>
+    <div>
+      <span id="t-footer-copy">© 2026 MyTaxFly. All rights reserved.</span>
+      <span class="made-by">Made by <a href="https://portfolio-fk-nine.vercel.app/" target="_blank" rel="noopener">Furkan.<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 8.5 3.5M4.5 3.5h4v4"/></svg><span class="sr-only"> (opens in a new tab)</span></a></span>
+    </div>
     <div><span id="t-footer-tagline">Made for LLC founders worldwide</span></div>
   </div>
   <div class="footer-disclaimer">
