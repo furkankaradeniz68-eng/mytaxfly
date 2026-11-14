@@ -178,6 +178,11 @@ footer { border-top:1px solid var(--border); padding:32px 0 40px; color:var(--te
 footer .wrap { display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; }
 footer a { color:var(--text2); text-decoration:none; margin-right:16px; }
 footer a:hover { color:var(--accent); }
+.made-by { display:block; margin-top:6px; }
+footer .made-by a { display:inline-flex; align-items:center; gap:3px; margin:0; color:var(--accent); font-weight:600; text-decoration:underline 1px; text-underline-offset:3px; transition:color .15s, text-decoration-thickness .15s; }
+footer .made-by a:hover { color:var(--accent2); text-decoration-thickness:2px; }
+.made-by svg { width:11px; height:11px; flex:0 0 auto; }
+.sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
 .disclaimer { max-width:1120px; margin:20px auto 0; padding:0 5vw; line-height:1.6; }
 
 @media (max-width:860px) {
@@ -421,7 +426,10 @@ X-API-Key: mtf_live_•••
       <a href="/legal#privacy" data-i18n="footer_privacy">Privacy Policy</a>
       <a href="mailto:info@mytaxfly.com">info@mytaxfly.com</a>
     </div>
-    <div>© 2026 MyTaxFly</div>
+    <div>
+      © 2026 MyTaxFly
+      <span class="made-by">Made by <a href="https://portfolio-fk-nine.vercel.app/" target="_blank" rel="noopener">Furkan.<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 8.5 3.5M4.5 3.5h4v4"/></svg><span class="sr-only" data-i18n="new_tab"> (opens in a new tab)</span></a></span>
+    </div>
   </div>
   <p class="disclaimer" data-i18n="disclaimer">MyTaxFly is a software tool and is not a licensed tax advisor, accountant or legal consultant. Nothing on this page constitutes tax, legal or financial advice.</p>
 </footer>
@@ -473,6 +481,7 @@ const DE = {
   cta_h2: 'Biete US-LLC-Compliance unter deiner eigenen Marke an',
   cta_p: 'Schreib uns ein paar Zeilen zu deiner Agentur und deinen Kunden. Wir melden uns mit einer Demo und einem Angebot, das zu deinem Volumen passt.',
   cta_btn: 'Partner werden →',
+  new_tab: ' (öffnet in neuem Tab)',
   footer_home: 'Startseite', footer_imprint: 'Impressum', footer_privacy: 'Datenschutz',
   disclaimer: 'MyTaxFly ist ein Softwarewerkzeug und kein zugelassener Steuerberater, Buchhalter oder Rechtsberater. Nichts auf dieser Seite stellt eine Steuer-, Rechts- oder Finanzberatung dar.'
 };
